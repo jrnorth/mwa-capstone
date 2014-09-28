@@ -1,0 +1,112 @@
+\documentclass[12pt]{article}
+
+%\usepackage{times} %for Times New Roman, if required
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry} %adjust margins. TODO: hack to fix large top margin
+\usepackage{setspace} %allows doublespacing, onehalfspacing, singlespacing
+\usepackage{enumitem} %for continuing lists
+\usepackage{titling} %for moving the title
+\usepackage[normalem]{ulem} %for underlining
+
+\begin{document}
+
+\begin{spacing}{.4}
+\setlength{\droptitle}{-7em}
+\title{CSE 485 Project Initialization}
+\author{Connor Alfheim \and Ryan Dougherty \and David Ganey \and Dylan Lusi \and Joseph North \and Ben Roos}
+\maketitle
+\newpage
+\end{spacing}
+
+\begin{spacing}{1.5}
+
+\section{Table of Contents}
+\begin{enumerate}
+\item Overview
+\item Requirements
+\item First Semester Plan
+\item Conclusion
+\end{enumerate}
+\newpage
+
+\section{Overview}
+\subsection{Introduction}
+NOTE: this is stolen from the Bowman document.
+\newline \newline
+New radio telescopes, including the upcoming Hydrogen Epoch of Reionization Array
+(HERA; reionization.org), are the next generation of observational cosmology
+telescopes. In many engineering terms these are not the most complicated telescopes
+ever built, but they do involve the integration of dozens of independent computer
+systems and generate petabytes of highly complex data every year – a situation that is
+very new to astronomy projects. Hence, the new telescopes present unique
+operational and data analysis challenges, many of which stem from the volume of data
+and the complexity of processing the data. Commanding the telescopes and data
+processing are much more automatic than with traditional telescopes, but the
+operational model and user interfaces for controlling and monitoring the telescopes has
+yet to be well-implemented. The top level user interfaces need to be developed so that
+users can easily monitor data flow, search meta-data, and initiate pre-defined
+processing steps on subsets of the data archive. Partial solutions have been developed
+to allow more efficient and routine observing command and analysis, however they still
+lack a unified interface -- leaving much of the data hidden. When completed, this
+project will be a foundation that enables international teams of astrophysicists and
+cosmologists to make important cosmological observations for many years to come.
+
+\subsection{Description}
+How does this differ from the introduction?
+
+\subsection{Assumptions}
+We will not require any assumptions because this is a real project, not a hypothetical one.
+
+\newpage
+
+\section{Requirements}
+The web system has the following requirements:
+\begin{enumerate}
+\item The web application should display the current status of the Murchison Widefield Array
+	\begin{enumerate}
+	\item The application should display the status of the array in a visual format
+	\end{enumerate}
+\item The application will support user accounts
+	\begin{enumerate}
+	\item Signing in will be required to act on the website, but not to read it
+	\item Users should be able to customize their experience by subscribing to various feeds, modules, etc.
+	\item Users can create accounts only with permission from a site admin
+	\end{enumerate}
+\item The team should generate an API which allows astronomers with limited knowledge of software development to add, extend, and modify the application functionality.
+\end{enumerate}
+
+\subsection{Deliverables}
+The team will deliver a functional website running on an EC2 instance. Additionally, maybe some documentation or something.
+
+\subsection{Use-case diagram}
+I hate diagrams, someone else make this.
+
+\subsection{User stories}
+\subsubsection{User not signed in}
+A user who is not signed in will navigate to the website and see....
+\subsubsection{User signed in}
+Users who are signed in can...
+
+\subsection{Non-functional requirements}
+I'm not sure what this is 
+
+\newpage
+
+\section{First semester plan}
+BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH 
+
+\subsection{Initial scope}
+BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH 
+
+\subsection{Milestones}
+\subsubsection{Table 1}
+\begin{tabular}{l | l}
+Date		&	Goal \\
+\hline
+1/1/2015		&	Finished this \\
+\hline
+2/2/2015		&	Finished that \\
+\end{tabular}
+
+\end{spacing}
+\end{document}
+
