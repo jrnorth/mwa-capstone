@@ -30,7 +30,7 @@
 
 \section{Overview}
 \subsection{Introduction}
-NOTE: this is stolen from the Bowman document.
+\emph{NOTE: this is stolen from the Bowman document. We should rewrite this a bit}
 \newline \newline
 New radio telescopes, including the upcoming Hydrogen Epoch of Reionization Array
 (HERA; reionization.org), are the next generation of observational cosmology
@@ -54,7 +54,7 @@ cosmologists to make important cosmological observations for many years to come.
 How does this differ from the introduction?
 
 \subsection{Assumptions}
-We will not require any assumptions because this is a real project, not a hypothetical one.
+No significant assumptions will be required for this project. Because the project involves improving an existing system, we are able to know how the system will be used and tailor the performance to those situations.
 
 \newpage
 
@@ -71,14 +71,18 @@ The web system has the following requirements:
 	\item Users should be able to customize their experience by subscribing to various feeds, modules, etc.
 	\item Users can create accounts only with permission from a site admin
 	\end{enumerate}
+\item The application should support some data processing
+	\begin{enumerate}
+	\item Data contained in periods during which the MWA had malfunctioning nodes should be flagged
+	\end{enumerate}
 \item The team should generate an API which allows astronomers with limited knowledge of software development to add, extend, and modify the application functionality.
 \end{enumerate}
 
 \subsection{Deliverables}
-The team will deliver a functional website running on an EC2 instance. Additionally, maybe some documentation or something.
+The team will deliver a functional website running on an EC2 instance. The team will be agile, so as the requirements change, so will the specifics of the delivered website. Accompanying the web platform will be documentation, to maintain extensibility in the future after the conclusion of the project.
 
 \subsection{Use-case diagram}
-I hate diagrams, someone else make this.
+LETS MAKE A DIAGRAM
 
 \subsection{User stories}
 \subsubsection{User not signed in}
@@ -87,24 +91,32 @@ A user who is not signed in will navigate to the website and see....
 Users who are signed in can...
 
 \subsection{Non-functional requirements}
-I'm not sure what this is 
+The primary goal of the project is \emph{extensibility}. The API developed by the team should allow individuals who are not software developers to modify and add functionality to the website. As a result, scalability and longterm maintainability are significant nonfunctional requirements. Additionally, standard constraints on security and efficiency apply. The website should not be vulnerable to standard exploits (e.g. no passwords stored in plaintext), and should scale appropriately to deliver a pleasant experience to all users.
 
 \newpage
 
 \section{First semester plan}
-BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH 
+During the first semester, roles will be assigned to the team. All members should be functional in all areas, but the sponsors and the team agree that some team members will specialize in specific areas (e.g. the database). After dividing roles, the database team will meet with the sponsors to discuss the database schema. Due to the complexity of the database, a small portion of it will be copied to our test instance to be used in testing.
+\newline \newline
+Once the EC2 instance is up and running with the database, the team will clone the existing code repository to use it as a base. Whether any of the current code remains in the website is a decision the team will make after reviewing the source code itself. The team can then begin to build features. It is likely that the basic login/logout functionality will be built first, followed by the primary visualization dashboards.
 
 \subsection{Initial scope}
-BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH BLAH 
+WHAT IS THIS?
 
 \subsection{Milestones}
 \subsubsection{Table 1}
 \begin{tabular}{l | l}
-Date		&	Goal \\
+Date			&	Goal \\
 \hline
-1/1/2015		&	Finished this \\
+10/3/2014		&	Project Initialization form sent to sponsors \\
 \hline
-2/2/2015		&	Finished that \\
+10/11/2014		&	Project Initialization form complete \\
+\hline
+10/20/2014		&	Database copy completed \\
+\hline
+11/1/2014		&	Begin work \\
+\hline
+12/6/2014		&	When does class end? \\
 \end{tabular}
 
 \end{spacing}
