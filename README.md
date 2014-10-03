@@ -28,11 +28,14 @@ Attendees: Joseph North, Connor Alfheim, Ben Roos, David Ganey, Ryan Dougherty, 
 
 #### Summary ####
 + Project sponsors discussed more detail regarding use-cases and user stories
-+ Also discussed specific implementation details (e.g. source code hosting, EC2 instances)
++ Specifically, we determined what features are 'must-haves' and identified some 'nice-to-haves'
++ Also discussed specific implementation details (e.g. source code hosting, EC2 instances) and came up with a list of resources we'll need access to
++ We discussed splitting up the team into multiple subteams to focus on different parts of the project
 
 #### Results and Action Items ####
 + We will write up a requirements document in our own words to confirm we fully understand the sponsors' goals
 + The sponsors will approve this when ready and work on the project can begin at that point
++ Once we get access to the database, we'll need to clone a portion of it so we can get a better understanding of the types of data we'll be working with
 
 Meeting 1 Summary
 -----------------
