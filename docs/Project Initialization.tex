@@ -31,25 +31,7 @@
 
 \section{Overview}
 \subsection{Introduction}
-\emph{NOTE: this is stolen from the Bowman document. We should rewrite this a bit}
-\newline \newline
-New radio telescopes, including the upcoming Hydrogen Epoch of Reionization Array
-(HERA; reionization.org), are the next generation of observational cosmology
-telescopes. In many engineering terms these are not the most complicated telescopes
-ever built, but they do involve the integration of dozens of independent computer
-systems and generate petabytes of highly complex data every year – a situation that is
-very new to astronomy projects. Hence, the new telescopes present unique
-operational and data analysis challenges, many of which stem from the volume of data
-and the complexity of processing the data. Commanding the telescopes and data
-processing are much more automatic than with traditional telescopes, but the
-operational model and user interfaces for controlling and monitoring the telescopes has
-yet to be well-implemented. The top level user interfaces need to be developed so that
-users can easily monitor data flow, search meta-data, and initiate pre-defined
-processing steps on subsets of the data archive. Partial solutions have been developed
-to allow more efficient and routine observing command and analysis, however they still
-lack a unified interface -- leaving much of the data hidden. When completed, this
-project will be a foundation that enables international teams of astrophysicists and
-cosmologists to make important cosmological observations for many years to come.
+The Murchison Widefield Array is a radio telescope being used to measure hydrogen in space with the goal of obtaining a better understanding of how stars form. This type of telescope comes with some significant engineering problems: firstly, it involves the coordination of dozens of independent computer systems, and secondly, it generates petabytes of complex data yearly that requires intensive processing. The end result is a situation unfamiliar to the field of astronomy. What this situation requires is a system that enables the monitoring of the telescope and the orchestration of data flow, metadata searching, and data processing commands within a unified interface. That is the goal of this project: to create a platform that allows astrophysicists and cosmologists to extract more meaning out of the data they have so they can make sense of it.
 
 \subsection{Description}
 The project involves all the major components of a modern web application. The foundations of the application will be on Amazon Web Services, specifically the Elastic Compute Cloud (EC2) Platform as a Service. On this server framework, MySQL will handle the database operations. Python will likely be used for some data processing scripts, and standard web tools (e.g. HTML, Javascript) will be used to handle the user interactions. While not all the technology choices have been made yet, it is clear the project will involve the entire stack.
@@ -76,13 +58,13 @@ The web system has the following requirements:
 	\end{enumerate}
 \item The application should support some data processing
 	\begin{enumerate}
-	\item Data contained in periods during which the MWA had malfunctioning nodes should be flagged
+	\item Data collected in periods during which the MWA had malfunctioning nodes should be flagged
 	\end{enumerate}
 \item The team should generate an API which allows astronomers with limited knowledge of software development to add, extend, and modify the application functionality.
 \end{enumerate}
 
 \subsection{Deliverables}
-The team will deliver a functional website running on an EC2 instance. The team will be agile, so as the requirements change, so will the specifics of the delivered website. Accompanying the web platform will be documentation, to maintain extensibility in the future after the conclusion of the project.
+The team will deliver a functional website running on an EC2 instance. The team will be agile, so as the requirements change, so will the specifics of the delivered website. Documentation to maintain future extensibility after the conclusion of the project will accompany the web platform.
 
 \subsection{Use-case diagram}
 The use-cases for the website are fairly straightforward. Since the application is primarily a data viewer and status monitor, most use-cases simply involve observing data.
