@@ -46,20 +46,14 @@ No significant assumptions will be required for this project. Because the projec
 \section{Requirements}
 The Web system has the following requirements:
 \begin{enumerate}
-\item The Web application should display the current status of the Murchison Widefield Array
+\item The Web application should display the current status of the Murchison Widefield Array. The application should display the status of the array in a visual format.
+\item The application will support user accounts.
 	\begin{enumerate}
-	\item The application should display the status of the array in a visual format
-	\end{enumerate}
-\item The application will support user accounts
-	\begin{enumerate}
-	\item Signing in will be required to act on the website, but not to read it
+	\item Signing in will be required to act on the website, but not to read it.
 	\item Users should be able to customize their experience by subscribing to various feeds, modules, etc.
-	\item Users can create accounts only with permission from a site admin
+	\item Users can create accounts only with permission from a site admin.
 	\end{enumerate}
-\item The application should support some data processing
-	\begin{enumerate}
-	\item Data collected in periods during which the MWA had malfunctioning nodes should be flagged
-	\end{enumerate}
+\item The application should support some data processing. Data collected in periods during which the MWA had malfunctioning nodes should be flagged.
 \item The team should generate an API which allows astronomers with limited knowledge of software development to add, extend, and modify the application functionality.
 \end{enumerate}
 
@@ -69,11 +63,15 @@ The team will deliver a functional website running on an EC2 instance. The team 
 \subsection{Use-case diagrams}
 The use-cases for the website are fairly straightforward. Since the application is primarily a data viewer and status monitor, most use-cases simply involve observing data.
 \subsubsection{Figure 1: User with account}
+\begin{center}
 \includegraphics{usecase1} %we can use this to insert .png files in the same directory
+\end{center}
 \newpage
 Users who are not logged in are not permitted to edit the data:
 \subsubsection{Figure 2: User without account}
+\begin{center}
 \includegraphics{usecase2}
+\end{center}
 
 \subsection{User stories}
 \subsubsection{User not signed in}
@@ -95,7 +93,7 @@ Once the EC2 instance is up and running with the database, the team will clone t
 The initial goal of the project is to build the framework for the website. Once user functionality is enabled, different view modules will be added. Throughout the project, the team will make easy extensibility a high priority.
 
 \subsection{Milestones}
-\subsubsection{Table 1}
+\subsubsection{Table 1: First Semester Schedule}
 \begin{tabular}{l | l}
 Date			&	Goal \\
 \hline
