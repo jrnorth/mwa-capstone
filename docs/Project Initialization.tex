@@ -74,10 +74,29 @@ Users who are not logged in are not permitted to edit the data:
 \end{center}
 
 \subsection{User stories}
-\subsubsection{User not signed in}
-Users who navigate to the website will see a graphical representation of the Murchison Widefield Array. The visualization will make it clear if any nodes are malfunctioning. Users will be able to see other default data streams on the main page.
-\subsubsection{User signed in}
-Users who are signed in have additional privileges above standard users. Signed in users have the option to choose which data streams they see through their subscription settings. Additionally, these users can leave comments on data streams to communicate with other users.
+\begin{enumerate}
+\item User views website
+	\begin{itemize}
+		\item As a user who is not signed in, I should see a graphical representation of the Murchison Widefield Array. This visualization should make it clear if any nodes are malfunctioning.
+		\item Acceptance criteria TODO
+	\end{itemize}
+\item User signs in
+	\begin{itemize}
+        		\item As as user with an account, I should be able to sign in to a persistent account on the server.
+        		\item Acceptance criteria TODO
+	\end{itemize}
+\item User modifies settings
+	\begin{itemize}
+		\item As a user, I should be able to modify my subscription settings after signing in.
+		\item I should be able to choose which data streams I can see.
+		\item Acceptance criteria TODO
+	\end{itemize}
+\item User flags data
+	\begin{itemize}
+		\item As a user, I should be able to leave comments on data streams after signing in.
+		\item Acceptance criteria TODO
+	\end{itemize}
+\end{enumerate}
 
 \subsection{Non-functional requirements}
 The primary goal of the project is \emph{extensibility}. The API developed by the team should allow individuals who are not software developers to modify and add functionality to the website. As a result, scalability and long-term maintainability are significant nonfunctional requirements. Additionally, standard constraints on security and efficiency apply. The website should not be vulnerable to standard exploits (e.g. no passwords stored in plaintext), and should scale appropriately to deliver a pleasant experience to all users.
