@@ -78,23 +78,26 @@ Users who are not logged in are not permitted to edit the data:
 \item User views website
 	\begin{itemize}
 		\item As a user who is not signed in, I should see a graphical representation of the Murchison Widefield Array. This visualization should make it clear if any nodes are malfunctioning.
-		\item Acceptance criteria TODO
+		\item Given that the data stream is valid, when the customer loads the page, the page should show a graphic which shows the state of the array
 	\end{itemize}
 \item User signs in
 	\begin{itemize}
         		\item As as user with an account, I should be able to sign in to a persistent account on the server.
-        		\item Acceptance criteria TODO
+        		\item Given that the user credentials are valid, the website should allow the user to sign in and should load their personal settings before rendering the page
+		\item Given that the user credentials are invalid, the website should refuse to allow the user to sign in but should still show the status of the array
 	\end{itemize}
 \item User modifies settings
 	\begin{itemize}
 		\item As a user, I should be able to modify my subscription settings after signing in.
 		\item I should be able to choose which data streams I can see.
-		\item Acceptance criteria TODO
+		\item Given that the user is properly signed in, the user should be permitted to modify subscription settings
+		\item Given that the user is not properly signed in, the user should not be permitted to see or modify subscription settings
 	\end{itemize}
 \item User flags data
 	\begin{itemize}
-		\item As a user, I should be able to leave comments on data streams after signing in.
-		\item Acceptance criteria TODO
+		\item As a user, I should be able to leave comments on data streams after signing in. The comments should contain information such as username and date in addition to the user's text.
+		\item Given that the user is properly signed in, and that the data stream is valid, the user should be permitted to leave comments on a data stream.
+		\item Given that the user is not properly signed in or that the data stream is not valid, the user should not be permitted to leave comments on that data stream.
 	\end{itemize}
 \end{enumerate}
 
