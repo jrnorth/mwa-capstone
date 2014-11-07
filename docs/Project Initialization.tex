@@ -74,10 +74,31 @@ Users who are not logged in are not permitted to edit the data:
 \end{center}
 
 \subsection{User stories}
-\subsubsection{User not signed in}
-Users who navigate to the website will see a graphical representation of the Murchison Widefield Array. The visualization will make it clear if any nodes are malfunctioning. Users will be able to see other default data streams on the main page.
-\subsubsection{User signed in}
-Users who are signed in have additional privileges above standard users. Signed in users have the option to choose which data streams they see through their subscription settings. Additionally, these users can leave comments on data streams to communicate with other users.
+\begin{enumerate}
+\item User views website
+	\begin{itemize}
+		\item As a user who is not signed in, I want to see a graphical representation of the Murchison Widefield Array so I can tell whether any of the telescope's nodes are malfunctioning.
+		\item Given that the data stream is valid, when the user loads the page, the page should show a graphic that shows the state of the array.
+	\end{itemize}
+\item User signs in
+	\begin{itemize}
+        		\item As as user with an account, I want to sign in with my account on the site so I can view the site with my custom settings enabled.
+        		\item Given that the user's credentials are valid, the website should allow the user to sign in and should load their personal settings before rendering the page.
+		\item Given that the user's credentials are invalid, the website should refuse to allow the user to sign in but should still show the status of the array.
+	\end{itemize}
+\item User modifies settings
+	\begin{itemize}
+		\item As a signed-in user, I want to modify my subscription settings so I can choose which data streams I will be shown.
+		\item Given that the user is signed in, the user should be permitted to modify subscription settings.
+		\item Given that the user is not signed in, the user should not be permitted to see or modify subscription settings.
+	\end{itemize}
+\item User flags data
+	\begin{itemize}
+		\item As a signed-in user, I want to leave comments on data streams so I can collaborate with other users and generate discussions about the data.
+		\item Given that the user is signed in, and that the data stream is valid, the user should be permitted to leave comments on a data stream.
+		\item Given that the user is not signed in or that the data stream is not valid, the user should not be permitted to leave comments on that data stream.
+	\end{itemize}
+\end{enumerate}
 
 \subsection{Non-functional requirements}
 The primary goal of the project is \emph{extensibility}. The API developed by the team should allow individuals who are not software developers to modify and add functionality to the website. As a result, scalability and long-term maintainability are significant nonfunctional requirements. Additionally, standard constraints on security and efficiency apply. The website should not be vulnerable to standard exploits (e.g. no passwords stored in plaintext), and should scale appropriately to deliver a pleasant experience to all users.
