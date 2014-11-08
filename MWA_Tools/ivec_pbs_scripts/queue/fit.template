@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Fit some nice phases to the calibrator scan
+
+#PBS -W group_list=GROUPQ
+#PBS -q STANDARDQ
+#PBS -l walltime=00:30:00,mem=10gb
+
+cd DATADIR/PROJ/OBSNUM
+echo "caltable='OBSNUM.cal'" > fit.py
+cat CODEDIR/bin/fit_phases.py >> fit.py
+DATADIR/casapy-42.0.28322-021-1-64b/casapy --nologger -c fit.py 1>> output.log 2>> error.log
+#/scratch/astronomy556/MWA/ngas_rt/bin/ngamsCClient -host 192.168.212.5 -port 7777 -cmd PARCHIVE -mimeType application/octet-stream -nexturl http://store04.icrar.org:7777/QARCHIVE -fileUri OBSNUM_phases.png
+scp OBSNUM_phases.png tash@glados.ivec.org:/home/tash/data/Dropbox/Phase_solutions/PROJ/

@@ -1,0 +1,109 @@
+############################################################################
+# This is a parameter set file to drive the pipeline mwapipe_uv.py. 
+# All useful parameters are divorced from the pipeiline and stored here.
+# Note, do not add spaces between the '=' for all parameters below - it will read
+# the white space and crash. Do not add extra lines either.
+############################################################################ 
+doimage=True
+# doimage: If True, it will produce an image, if False it will just do
+# calibration (useful for stacking etc).
+dormsfind=False
+# dormsfind: Create a preview image from which to get the rms, for better cleaning
+dosub=False
+# dosub: True = prouduce subband images i.e. it will divide the 30 MHz 
+# into a number of subbands (defined by 'nfreqs') and produce images. 
+# If this is set to False, the full bandwidth image will be produced only. 
+nfreqs=2
+# nfreqs: Define the number of subband images you want to produce. Must have
+# dosub=True for this parameter to work.
+dopbcor=True
+# dopbcor: Create PB image(s) for all images, it will create an additional fits
+# image cube called beam_+obsname.fits. Requires 'delays_file' see below.  
+expedition='X13'
+# expedition: This tells the pipeline the recommended flags for the expedition
+#################################
+#        Locations              #
+#################################
+OBSLIST='/media/data/MWA/SIPTEST2/obslist.txt'
+# A list of file(s) that you want to process through the pipeline
+# Obslist contains the *full* path to the uvfits files, one per line. 
+UVFITS_Scratch='/media/data/MWA/SIPTEST2/scratch/'
+# Scratch file: all uvfits files are copied here and worked on. 
+# All calibration and imaging is performed in here and the results are copied
+# to the results directory when finished. 
+results_dir='/media/data/MWA/SIPTEST2/results/'
+# All final fits *images* are copied here. Note, only one fits image is
+# produced per uvfits file - all subband images are stored as extra extensions.
+results_folder_prefix='X13_121'
+# Give a name to your output folder, it will be results_dir/prefix+Date+Time so you can
+# keep re-running the pipe without having to make new dirs.
+delays_file='/media/data/MWA_Tools/SIP/X13_delays.txt'
+# If pbcor=True the delays_file is read and it searches for the corresponding
+# delays to the observation. This is the only input needed for PB calculation.    
+###############################
+#         Imaging             #
+###############################
+imsize=[512,512]
+# imsize: try to keep this < 1024 otherwise things get slow.  
+cell='2.5arcmin'
+# cellsize: desired pixel size in the image.
+cleanweight='briggs'
+# cleanweight: used to define the weighting of uvdata, can also have robust,
+# natural etc. However in CASA 'briggs' weighting has an additional parameter
+# 'robust' which can be set between -2 (uniform) and +2 (natural) - which is
+# more flexible than just 'natural' etc. Also has 'superuniform'.
+robust=-2
+# -2 = uniform (best resolution)  and +2 = natural (best noise). 
+im_uvrange='0.01~1klambda'
+niter=2000
+wprojplanes=1
+# wprojplanes: If you are debugging set to 1, to speed
+# things up considerably. When you need to produce your final image set to
+# ~512. 
+facets=1
+threshold=0.3
+# Minimum threshold for cleaning
+psfmode='clark'
+cyclefactor=1.5
+# Set to 100 if you have a good beam/sidelobes (very slow); set to 1.5 if
+# everythings looks ok. 
+imagermode='csclean'
+gridmode='widefield'
+mode='mfs'
+stokes=['XX','YY']
+doStokesI=True
+# This will generate a Stokes I map using immath, not you must request both XX
+# and YY in 'stokes' above otherwise it will crash. 
+##################################
+#        Calibration             #
+##################################
+cal_method=3
+# 1 = Setjy; 2 = mutlisource; 3 = copy solutions
+#_________________________________
+refant='Tile01'
+bsolint='inf'
+cal_uvrange='>0.05klambda'
+minsnr=3.0 
+#_______________________________#
+# Calibration via setjy 
+calflux=[579.590,0.0,0.0,0.0]
+# calflux: Set IQUV flux 
+calspex=-0.89
+# Spectral Index
+calfreq='74.0MHz'
+# Reference Frequency. Example of Hyd A set by VLSS flux. 
+#_______________________________#
+# Calibration via cl comp list
+#cal_loc='your/dir/to/cl/HydA.cl' 
+# where HydA.cl contains the component list you want to calibrate on. 
+# Hash this out when using calibration via copying
+#_______________________________#
+#Calibration via copying
+cal_loc='/home/tash/data/MWA/CALIBRATORS/HerA_122_20110925100640/HerA_122_20110925100640_2.cal'
+#################################
+#           FITS File           #
+#################################
+cube=False
+# True = produce one final fits image (+beam)
+# False = output all fits images seperately (+beams) n.b. this will create a lot
+# of files 

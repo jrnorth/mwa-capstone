@@ -1,0 +1,115 @@
+#!/usr/bin/python
+
+import sys
+import os
+from datetime import datetime
+import pgdb
+
+import mwaconfig
+
+from mwapy import tspan
+from obssched.base import schedule
+
+db = schedule.getdb()
+curs = db.cursor()
+
+
+def ts2gps(s):
+  """Takes a timestamp string, eg '1968-02-01 09:10:23.00', and return 
+     the time in GPS seconds as an integer.
+  """
+  try:
+    curs.execute("select gps_seconds('%s')" % s)
+    return curs.fetchall()[0][0]
+  except:
+    print "Error converting timestamp"
+    
+    
+def gps2ts(d):
+  """Takes a time in GPS seconds and returns a timestamp string, eg
+     '1968-02-01 09:10:23.00'
+  """
+  try:
+    curs.execute("select timestamp_gps(%d) at time zone 'UTC'" % d)
+    ts = curs.fetchall()[0][0]
+    return datetime.strptime(ts,"%Y-%m-%d %H:%M:%S")
+  except:
+    print "Error converting GPS seconds value"
+    
+
+tspec = ' '.join(sys.argv[1:])
+dval, unparsed = tspan.parse(tspec)
+
+if type(dval) == int:
+  starttime = dval
+  sdt = gps2ts(dval)
+else:
+  sdt = dval
+  starttime = ts2gps(dval.isoformat())
+
+print "Time specified: %d = %s UTC" % (starttime,sdt.isoformat()[:-6].replace('T','  '))
+if unparsed:
+  print "Not recognised in time specifier: ", ','.join(unparsed)
+  yesno = raw_input("Keep this starttime? (y/N): ")
+  if len(yesno)==0 or yesno[0].upper()<>'Y':
+    print "Aborting log message."
+    sys.exit()
+
+print "Enter log message, or an empty message to abort."  
+message = raw_input("-> ")
+message = pgdb.escape_string(message)
+
+print "Enter your name."
+creator = raw_input("-> ")
+if not creator:
+  creator = os.getlogin()
+creator = pgdb.escape_string(creator)
+
+
+endtime,edt = None,None
+etspec = raw_input("Enter 'end time' for log, ENTER for none: ")
+if etspec:
+  dval, unparsed = tspan.parse(etspec)
+
+  if type(dval) == int:
+    endtime = dval
+    edt = gps2ts(dval)
+  else:
+    edt = dval
+    endtime = ts2gps(dval.isoformat())
+
+  print "Time specified: %d = %s" % (endtime,edt.isoformat()[:-6].replace('T','  '))
+  if unparsed:
+    print "Not recognised in time specifier: ", ','.join(unparsed)
+    yesno = raw_input("Keep this endtime? (y/N): ")
+    if len(yesno)==0 or yesno[0].upper()<>'Y':
+      print "Aborting log message."
+      sys.exit()
+
+if not message:
+  print "Aborting log entry."
+  sys.exit()
+
+if endtime and (endtime < starttime):
+  print "End time is before start time - invalid entry, aborting."
+  sys.exit()
+
+
+log = schedule.MWA_Log(db=db)
+log.referencetime = starttime
+log.creator = creator
+log.comment = message
+if endtime:
+  log.endtime = endtime
+log.logtype = 1         #General
+errors = log.save(db=db)
+if errors:
+  print "Errors saving log message: ",errors
+else:
+  print "Log message saved."
+  
+
+
+      
+
+

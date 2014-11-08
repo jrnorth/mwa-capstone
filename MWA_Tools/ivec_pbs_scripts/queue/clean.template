@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Clean the data
+
+#PBS -W group_list=GROUPQ
+#PBS -q STANDARDQ
+#PBS -l walltime=00:30:00
+#PBS -l select=1:ncpus=12:mem=HOSTMEM
+
+module load openmpi python/2.6.9 numpy/1.6.2 scipy/0.11.0 matplotlib
+
+cd DATADIR/PROJ/OBSNUM
+echo "import re" > clean.py
+echo "vis='OBSNUM.ms'" >> clean.py
+echo "root=re.sub('.ms','',vis)" >> clean.py
+echo "stokes='XX'" >> clean.py
+echo "uvrange='UVRANGE'" >> clean.py
+echo "weighting='WEIGHTING'" >> clean.py
+echo "antoption='ANTOPTION'" >> clean.py
+echo "imagename=vis+'_'+stokes+'_'+weighting+'_'+uvrange+'NAME'" >> clean.py
+echo "fitsimage=imagename+'.fits'" >> clean.py
+echo "clean(vis=vis, imagename=imagename, gridmode='widefield', psfmode='clark', imagermode='csclean', wprojplanes=1, facets=1, niter=20000, imsize=[4000,4000], cell=['0.5arcmin', '0.5arcmin'], threshold='0.1Jy', stokes=stokes, mode='mfs', selectdata=True, uvrange=uvrange, antenna=antoption, weighting=weighting,nterms=1,cyclefactor=1.5,robust=ROBUST)" >> clean.py
+echo "exportfits(fitsimage=fitsimage,imagename=imagename+'.image')" >> clean.py
+DATADIR/casapy-42.0.28322-021-1-64b/casapy --nologger -c clean.py

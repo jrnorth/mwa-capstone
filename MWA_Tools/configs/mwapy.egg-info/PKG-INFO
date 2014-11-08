@@ -1,0 +1,185 @@
+Metadata-Version: 1.1
+Name: mwapy
+Version: 0.0.2
+Summary: Set of tools for using and developing the MWA.
+Home-page: http://mwa-lfd.haystack.mit.edu
+Author: D. Jacobs
+Author-email: daniel.c.jacobs@asu.edu
+License: BSD
+Description:  ___ ___ __    __  ____ ______  ___   ___  _     _____
+        |   |   |  |__|  |/    |      |/   \ /   \| |   / ___/
+        | _   _ |  |  |  |  o  |      |     |     | |  (   \_ 
+        |  \_/  |  |  |  |     |_|  |_|  O  |  O  | |___\__  |
+        |   |   |  `  '  |  _  | |  | |     |     |     /  \ |
+        |   |   |\      /|  |  | |  | |     |     |     \    |
+        |___|___| \_/\_/ |__|__| |__|  \___/ \___/|_____|\___|
+                                                              
+        
+        
+        
+                        D. Kaplan
+                        C. Williams
+                        A. Williams
+                        Commissioner D. Jacobs (primary contact: daniel.c.jacobs@asu.edu)
+                        Commissioner N. Hurley-Walker
+                        
+        Changelog:
+        9 July 2012: Major reorganization. V0.0.1 preview tarball released
+        
+        Quick Install:
+        
+        $ tar -xvf mwapy-0.0.1.tar.gz
+        $ cd mwapy-0.0.1
+        $ make
+        $ python setup.py install
+        $ test_db.py #test db connection
+        
+        ---> Fail? See Installation section below. Note prerequisites and local install instructions.
+        
+        
+          ___  _                 _  
+         / _ \| |               | |  
+        / /_\ \ |__   ___  _   _| |_ 
+        |  _  | '_ \ / _ \| | | | __|
+        | | | | |_) | (_) | |_| | |_ 
+        \_| |_/_.__/ \___/ \__,_|\__|
+        
+        MWA_Tools provides:
+            Connection to the observation list database to search for past observations or plan new ones.    
+            A model of the MWA tile beam.
+            Tools for planning observations with tile beams. Plot the beam on the sky!
+            Source catalog (including recent observations).
+            Catalog API for including catalog interactions and computing apparent fluxes.
+            Stuff in MandC. Regular observers shouldn't need to install MandC! 
+        
+        
+         _____          _        _ _       _   _             
+        |_   _|        | |      | | |     | | (_)            
+          | | _ __  ___| |_ __ _| | | __ _| |_ _  ___  _ __  
+          | || '_ \/ __| __/ _` | | |/ _` | __| |/ _ \| '_ \ 
+         _| || | | \__ \ || (_| | | | (_| | |_| | (_) | | | |
+         \___/_| |_|___/\__\__,_|_|_|\__,_|\__|_|\___/|_| |_|
+        
+        (linux, mac, and cygwin):
+        
+            Prerequisites:
+                matplotlib
+                pyephem
+                pyfits
+                cfitsio
+                psycopg2
+                AIPY (https://casper.berkeley.edu/astrobaki/index.php/AIPY)
+        
+            Global install (might need root/sudo depending...):
+                MWA_Tools$ make
+                MWA_Tools$ python setup.py install
+        
+            Local install
+                MWA_Tools$ make
+                MWA_Tools$ python setup.py install --prefix=~
+        
+                And make sure to add these lines to your .bashrc 
+                (now accepting non-bash instructions)
+                
+                PATH=~/bin/:$PATH
+                export PATH
+        
+                PYTHONPATH=~/lib/python2.6/site-packages/:$PYTHONPATH
+        
+            Virtual Environments install 
+            (google virtualenvironments and "virtual environment workon")
+                MWA_Tools$ workon My-Environment
+                (My-Environment) MWA_Tools$ python setup.py install
+                
+         _____   ___   _____  ___    _____          _        _ _       _   _             
+        /  __ \ / _ \ /  ___|/ _ \  |_   _|        | |      | | |     | | (_)            
+        | /  \// /_\ \\ `--./ /_\ \   | | _ __  ___| |_ __ _| | | __ _| |_ _  ___  _ __  
+        | |    |  _  | `--. \  _  |   | || '_ \/ __| __/ _` | | |/ _` | __| |/ _ \| '_ \ 
+        | \__/\| | | |/\__/ / | | |  _| || | | \__ \ || (_| | | | (_| | |_| | (_) | | | |
+         \____/\_| |_/\____/\_| |_/  \___/_| |_|___/\__\__,_|_|_|\__,_|\__|_|\___/|_| |_|
+                                                                                         
+        Some of the packages in MWA_Tools are designed to work within the 
+        Common Astronomy Software Applications (CASA).
+        NB: Mac installation not yet supported. Email Danny
+        
+            Prerequisites:
+                CASA V<=3.3 (http://casa.nrao.edu)
+                PAPERcasa >=1.3  (http://loco.lab.asu.edu/~jacobs/Software.html)
+        
+        
+            Installation:
+                casapython setup.py install
+        
+            Add the following to: ~/.casa/init.py
+            execfile('/home/djacobs/MWA/MWA_Tools/casatasks/mwatasks.py')
+        
+            Installed tasks
+                pbgain: Task for generating fits images of tile beams given beamformer 
+                    delays
+                flagDC, flagChanGaps: Tasks for most common flagging 
+                    operations
+                SIP: CASA imaging pipeline
+        
+            Installed Modules:
+                Same as regular python install
+        
+        
+        ______          _                      _     _     _   
+        | ___ \        | |                    | |   (_)   | |  
+        | |_/ /_ _  ___| | ____ _  __ _  ___  | |    _ ___| |_ 
+        |  __/ _` |/ __| |/ / _` |/ _` |/ _ \ | |   | / __| __|
+        | | | (_| | (__|   < (_| | (_| |  __/ | |___| \__ \ |_ 
+        \_|  \__,_|\___|_|\_\__,_|\__, |\___| \_____/_|___/\__|
+                                   __/ |                       
+                                  |___/   
+        
+        
+            Installed Scripts:
+                primarybeammap.py: plot gain contours of any tile pointing on haslam.
+                primary_beam.py: generate a fits map of any pointing gain contours 
+                    (cf pbgain in CASA, above)
+                pyhead.py: print the header of a fits file. 
+                    (cf edhead ...google it)
+                splat_average.py: combines together DAS bands into a single file
+                create_uvfits.py: goes from DAS correlator outputs to a 
+                    uvfits file. makes database calls to fill in header, does 
+                    flagging of coarse pfb band edges, and more
+        
+            Installed Modules:
+                primarybeammap: exposes functionality of above script as a module
+                primary_beam: exposes functionality of eponymous script in a module
+                mwapb: provides voltage patterns, and gains for MWA tile based 
+                    on short dipole model. 
+                generic_catalog: provides ability to read votable or text catalog
+                    files into aipy catalog objects which can compute many
+                    relevant timing and geometry values
+                
+        
+            Data:
+                various catalogs (see catalog/README)
+                configuration files 
+                    AIPY config files (array location for ephemeris, 
+                        interface between catalog and beam. 
+                        Used by delaycal in CASA. etc AIPY scripts)
+                    MandC configuration file (database connection, 
+                        array location for ephemeris, used by primarybeammap etc)
+                antenna location files (used by create_uvfits)
+                default spectrum mask (used by create_uvfits)
+                default instrument config (used by create_uvfits)
+                projection of haslam beam map for primarybeammap background
+                list of MWA tile beam pointings
+        
+        
+                                                                                         
+                             
+        
+        
+        
+        
+                                                            
+        
+Keywords: MWA radio
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Topic :: Utilities
+Classifier: License :: OSI Approved :: BSD License

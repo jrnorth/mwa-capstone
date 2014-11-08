@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Clean the data
+
+#PBS -W group_list=GROUPQ
+#PBS -q STANDARDQ
+#PBS -l walltime=00:10:00
+#PBS -l mem=HOSTMEM
+
+module load python/2.6.9 numpy/1.6.2 scipy/0.11.0
+
+cd DATADIR/PROJ/OBSNUM
+#root="OBSNUM.ms_STOKES_WEIGHTING_UVRANGENAME"
+file=FILENAME
+cd `dirname ${file}`
+root=`echo $file | awk 'BEGIN {FS="/"} {print $NF}' | sed "s;.fits;;g"`
+channel=`get_observation_info.py -g OBSNUM | grep "Channels" | awk '{print $2}' | awk 'BEGIN {FS=","} {print $13}'`
+delays=`get_observation_info.py -g OBSNUM  | grep "delays" | awk '{print $3}'`
+delays_nocommas=`echo $delays | sed "s/,/_/g"`
+beam=${channel}_${delays_nocommas}_I_beam
+
+#Fix DATE-OBS
+newdate=`get_observation_info.py -g OBSNUM | head -2 | tail -1 | sed "s/(//g" | sed "s/)//g" | awk '{print $2"T"$3}' | sed "s/\//-/g"`
+pyhead.py -u DATE-OBS $newdate -i $file
+
+if [[ ! -e $beam.fits ]]
+then
+     make_beam.py -f $file -d $delays
+     mv ${root}_beamXX.fits ${channel}_${delays_nocommas}_XX_beam.fits
+     mv ${root}_beamYY.fits ${channel}_${delays_nocommas}_YY_beam.fits
+     fits op=xyin in=${channel}_${delays_nocommas}_XX_beam.fits out=${channel}_${delays_nocommas}_XX_beam.im
+     fits op=xyin in=${channel}_${delays_nocommas}_YY_beam.fits out=${channel}_${delays_nocommas}_YY_beam.im
+        # Fake a Stokes I beam
+     maths exp="(<${channel}_${delays_nocommas}_XX_beam.im>+<${channel}_${delays_nocommas}_YY_beam.im>)/2" out=$beam.im
+     fits op=xyout in=$beam.im out=$beam.fits
+     fits op=xyin in=$beam.fits out=$beam.im
+fi
+
+exit 0

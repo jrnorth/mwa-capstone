@@ -1,0 +1,80 @@
+##################################################
+# this file maps inputs into the receiver/correlator to antennas and polarisations.
+# in addition, a cable length delta (in meters) can be specified
+# the first column is not actually used by the uvfits writer, but is there as
+# an aide to human readers. Inputs are ordered from 0 to n_inp-1
+# antenna numbering starts at 0 and is an index into the corresponding antenna_locations.txt file
+# lines beginning with '\#' and blank lines are ignored. Do not leave spaces in empty lines.
+#
+# Input flagging: put a 1 in the flag column to flag all data from that input.
+#                 0 means no flag.
+# Cable lengths: if length is prefixed by EL_ then no velocity correction factor is needed
+# Written by make_metafiles.pyc
+# for observation at 1032364488
+# 2012-11-15T05:49:44
+##################################################
+# INPUT   ANTENNA   POL     DELTA   FLAG 
+0	3	Y	EL_-572.17	0 # Rx002 Slot04 Tile024
+1	3	X	EL_-572.17	0 # Rx002 Slot04 Tile024
+2	2	Y	EL_-646.24	0 # Rx002 Slot03 Tile023
+3	2	X	EL_-646.24	0 # Rx002 Slot03 Tile023
+4	1	Y	EL_-646.24	0 # Rx002 Slot02 Tile022
+5	1	X	EL_-646.24	0 # Rx002 Slot02 Tile022
+6	0	Y	EL_-646.24	0 # Rx002 Slot01 Tile021
+7	0	X	EL_-646.24	0 # Rx002 Slot01 Tile021
+8	7	Y	EL_-646.24	0 # Rx002 Slot08 Tile028
+9	7	X	EL_-646.24	0 # Rx002 Slot08 Tile028
+10	6	Y	EL_-572.17	0 # Rx002 Slot07 Tile027
+11	6	X	EL_-572.17	0 # Rx002 Slot07 Tile027
+12	5	Y	EL_-572.17	0 # Rx002 Slot06 Tile026
+13	5	X	EL_-572.17	0 # Rx002 Slot06 Tile026
+14	4	Y	EL_-572.17	0 # Rx002 Slot05 Tile025
+15	4	X	EL_-572.17	0 # Rx002 Slot05 Tile025
+16	11	Y	EL_-211.87	0 # Rx003 Slot04 Tile034
+17	11	X	EL_-211.87	0 # Rx003 Slot04 Tile034
+18	10	Y	EL_-285.95	0 # Rx003 Slot03 Tile033
+19	10	X	EL_-285.95	0 # Rx003 Slot03 Tile033
+20	9	Y	EL_-285.95	0 # Rx003 Slot02 Tile032
+21	9	X	EL_-285.95	0 # Rx003 Slot02 Tile032
+22	8	Y	EL_-285.95	0 # Rx003 Slot01 Tile031
+23	8	X	EL_-285.95	0 # Rx003 Slot01 Tile031
+24	15	Y	EL_-211.87	0 # Rx003 Slot08 Tile038
+25	15	X	EL_-211.87	0 # Rx003 Slot08 Tile038
+26	14	Y	EL_-211.87	0 # Rx003 Slot07 Tile037
+27	14	X	EL_-211.87	0 # Rx003 Slot07 Tile037
+28	13	Y	EL_-211.87	0 # Rx003 Slot06 Tile036
+29	13	X	EL_-211.87	0 # Rx003 Slot06 Tile036
+30	12	Y	EL_-211.87	0 # Rx003 Slot05 Tile035
+31	12	X	EL_-211.87	0 # Rx003 Slot05 Tile035
+32	27	Y	EL_-211.87	0 # Rx006 Slot04 Tile064
+33	27	X	EL_-211.87	0 # Rx006 Slot04 Tile064
+34	26	Y	EL_-211.87	0 # Rx006 Slot03 Tile063
+35	26	X	EL_-211.87	0 # Rx006 Slot03 Tile063
+36	25	Y	EL_-211.87	0 # Rx006 Slot02 Tile062
+37	25	X	EL_-211.87	0 # Rx006 Slot02 Tile062
+38	24	Y	EL_-211.87	0 # Rx006 Slot01 Tile061
+39	24	X	EL_-211.87	0 # Rx006 Slot01 Tile061
+40	31	Y	EL_-211.87	0 # Rx006 Slot08 Tile068
+41	31	X	EL_-211.87	0 # Rx006 Slot08 Tile068
+42	30	Y	EL_-211.87	0 # Rx006 Slot07 Tile067
+43	30	X	EL_-211.87	0 # Rx006 Slot07 Tile067
+44	29	Y	EL_-211.87	0 # Rx006 Slot06 Tile066
+45	29	X	EL_-211.87	0 # Rx006 Slot06 Tile066
+46	28	Y	EL_-113.11	0 # Rx006 Slot05 Tile065
+47	28	X	EL_-113.11	0 # Rx006 Slot05 Tile065
+48	19	Y	EL_-211.87	0 # Rx004 Slot04 Tile044
+49	19	X	EL_-211.87	0 # Rx004 Slot04 Tile044
+50	18	Y	EL_-211.87	0 # Rx004 Slot03 Tile043
+51	18	X	EL_-211.87	0 # Rx004 Slot03 Tile043
+52	17	Y	EL_-211.87	0 # Rx004 Slot02 Tile042
+53	17	X	EL_-211.87	0 # Rx004 Slot02 Tile042
+54	16	Y	EL_-211.87	0 # Rx004 Slot01 Tile041
+55	16	X	EL_-211.87	0 # Rx004 Slot01 Tile041
+56	23	Y	EL_-285.95	0 # Rx004 Slot08 Tile048
+57	23	X	EL_-285.95	0 # Rx004 Slot08 Tile048
+58	22	Y	EL_-211.87	0 # Rx004 Slot07 Tile047
+59	22	X	EL_-211.87	0 # Rx004 Slot07 Tile047
+60	21	Y	EL_-285.95	0 # Rx004 Slot06 Tile046
+61	21	X	EL_-285.95	0 # Rx004 Slot06 Tile046
+62	20	Y	EL_-211.87	0 # Rx004 Slot05 Tile045
+63	20	X	EL_-211.87	0 # Rx004 Slot05 Tile045

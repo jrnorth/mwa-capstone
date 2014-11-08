@@ -1,0 +1,1 @@
+{"virtualbox":{"/mnt/MWA_Tools":{"guestpath":"/mnt/MWA_Tools","hostpath":"/home/joe/Documents/capstone/mwa-capstone/MWA_Tools","disabled":false},"/vagrant":{"guestpath":"/vagrant","hostpath":"/home/joe/Documents/capstone/mwa-capstone/MWA_Tools/eorlive_v2","disabled":false}}}

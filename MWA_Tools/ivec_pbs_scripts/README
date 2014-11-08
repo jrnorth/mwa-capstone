@@ -1,0 +1,14 @@
+# Currently no automatic installation
+# Instead, copy the bin/ and queue/ directories to your /home/<user> directory
+# You will need to put casa4.2 (the February 2014 release, not the old 'stable' version) in your /scratch/astronomy???/<user> directory
+# Cotter needs to be installed and accessible in your $PATH
+# Your .bashrc file should load the modules:
+module unload intel
+module load gcc
+module load fftw atlas openmpi
+# But NOT numpy, matplotlib, or scipy, as these may cause casa4.1++ to break when run in these environments
+# If you do wish to use python modules, make sure to use:
+module load python/2.6.9 numpy/1.6.2 scipy matplotlib
+# To get the right environment
+# Customise the 'send' templates to send your calibration solutions and plots to other computers
+# (Remember to use ssh-copy-id first so you aren't asked for a password.)

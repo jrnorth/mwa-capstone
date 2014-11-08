@@ -1,0 +1,215 @@
+ ___ ___ __    __  ____ ______  ___   ___  _     _____
+|   |   |  |__|  |/    |      |/   \ /   \| |   / ___/
+| _   _ |  |  |  |  o  |      |     |     | |  (   \_ 
+|  \_/  |  |  |  |     |_|  |_|  O  |  O  | |___\__  |
+|   |   |  `  '  |  _  | |  | |     |     |     /  \ |
+|   |   |\      /|  |  | |  | |     |     |     \    |
+|___|___| \_/\_/ |__|__| |__|  \___/ \___/|_____|\___|
+                                                      
+
+
+Building on the work of many, new and old.
+Recent contributions from:
+
+                D. Kaplan
+                C. Williams
+                A. Williams
+                Commissioner D. Jacobs (primary contact: daniel.c.jacobs@asu.edu)
+                Commissioner N. Hurley-Walker
+                Steve Ord
+
+                
+Changelog:
+9  July 2012: Major reorganization. V0.0.1 preview tarball released
+1  Oct 2012: README updated
+12 Dec 2012: README updated. Makefiles for build_files and corr2uvfits use system cfitsio when present.
+                            copy-and-paste dependency install for Ubuntu 12.04
+
+Quick Install:
+$ git clone gitolite@git.mwa512t.org:MWA_Tools/
+$ cd MWA_Tools
+$ ./make_MWA_Tools.sh
+$ python setup.py install
+$ test_db.py #test db connection
+
+Note!: The default database setup is for on site users.  To connect from off site, after python setup.py install, do
+$ cd configs/
+$ change_db.py curtin
+$ cd ..
+$ python setup.py install
+
+
+---> Fail? See Installation section below. Note prerequisites and local install instructions.
+
+
+  ___  _                 _  
+ / _ \| |               | |  
+/ /_\ \ |__   ___  _   _| |_ 
+|  _  | '_ \ / _ \| | | | __|
+| | | | |_) | (_) | |_| | |_ 
+\_| |_/_.__/ \___/ \__,_|\__|
+
+MWA_Tools provides:
+    Connection to the observation list database to search for past observations or plan new ones.    
+    A model of the MWA tile beam.
+    Tools for planning observations with tile beams. Plot the beam on the sky!
+    Source catalog (including recent observations).
+    Catalog API for including catalog interactions and computing apparent fluxes.
+    Stuff in MandC. Regular observers shouldn't need to install MandC! 
+    See the MWA wiki for the latest updates!
+            http://mwa-lfd.haystack.mit.edu/twiki/bin/view/Main/MWA_Tools
+
+
+ _____          _        _ _       _   _             
+|_   _|        | |      | | |     | | (_)            
+  | | _ __  ___| |_ __ _| | | __ _| |_ _  ___  _ __  
+  | || '_ \/ __| __/ _` | | |/ _` | __| |/ _ \| '_ \ 
+ _| || | | \__ \ || (_| | | | (_| | |_| | (_) | | | |
+ \___/_| |_|___/\__\__,_|_|_|\__,_|\__|_|\___/|_| |_|
+
+(linux, mac, and cygwin):
+
+    Prerequisites:
+        matplotlib
+        pyephem, pyfits, pywcs, scipy
+        cfitsio
+        psycopg2
+        postgresql-client
+        AIPY (https://casper.berkeley.edu/astrobaki/index.php/AIPY)
+        psycopg2
+        scipy
+    for mwacasa tools
+        xvfb
+        CASA
+        java
+        PAPERcasa
+        geos
+        AIPY
+
+On Ubuntu 12.04:
+# install all dependencies except AIPY, as well as python requirements for easy_install
+sudo apt-get install build-essential python-matplotlib libcfitsio3-dev python-setuptools python-psycopg2 python-dev postgresql-client 
+# install python modules (requires python-dev and python-setuptools installed above)
+sudo easy_install pyephem pyfits pywcs scipy
+# install AIPY (not required for core functionality like making UVFITS files)
+sudo easy_install aipy
+
+
+    Global install (might need root/sudo depending...):
+        MWA_Tools$ ./make_MWA_Tools.sh
+        MWA_Tools$ python setup.py install
+
+    Local install
+        MWA_Tools$ ./make_MWA_Tools.sh
+        MWA_Tools$ python setup.py install --prefix=~
+
+        And make sure to add these lines to your .bashrc 
+        (now accepting non-bash instructions)
+        
+        PATH=~/bin/:$PATH
+        export PATH
+
+        # NOTE, you will have to change the 2.6 below to whatever version of pythong you are using
+        PYTHONPATH=~/lib/python2.6/site-packages/:$PYTHONPATH
+
+    PostgreSQL set up:
+        To use the psql database command-line client, set up the following environment variables in your .bashrc (or equiv)
+        # NOTE: database usernames/passwords will be removed from hard-coded in the future. Please do this even if you don't
+        # currently use the psql client.
+        export PGHOST=ngas01.ivec.org   # change this for non-Curtin database
+        export PGPASSWORD=<ask>         # change this as required for non-Curtin database
+        export PGDATABASE=mwa
+        export PGUSER=mwa
+
+
+    Virtual Environments install 
+    (google virtualenvironments and "virtual environment workon")
+        MWA_Tools$ workon My-Environment
+        (My-Environment) MWA_Tools$ python setup.py install
+        
+ _____   ___   _____  ___    _____          _        _ _       _   _             
+/  __ \ / _ \ /  ___|/ _ \  |_   _|        | |      | | |     | | (_)            
+| /  \// /_\ \\ `--./ /_\ \   | | _ __  ___| |_ __ _| | | __ _| |_ _  ___  _ __  
+| |    |  _  | `--. \  _  |   | || '_ \/ __| __/ _` | | |/ _` | __| |/ _ \| '_ \ 
+| \__/\| | | |/\__/ / | | |  _| || | | \__ \ || (_| | | | (_| | |_| | (_) | | | |
+ \____/\_| |_/\____/\_| |_/  \___/_| |_|___/\__\__,_|_|_|\__,_|\__|_|\___/|_| |_|
+                                                                                 
+Some of the packages in MWA_Tools are designed to work within the 
+Common Astronomy Software Applications (CASA).
+NB: Mac installation not yet supported. Email Danny
+
+    Prerequisites:
+        CASA V<=3.3 (http://casa.nrao.edu)
+        PAPERcasa >=1.3  (http://loco.lab.asu.edu/~jacobs/Software.html)
+
+
+    Installation:
+        casapython setup.py install
+
+    Add the following to: ~/.casa/init.py
+    execfile('/home/djacobs/MWA/MWA_Tools/casatasks/mwatasks.py')
+
+    Installed tasks
+        pbgain: Task for generating fits images of tile beams given beamformer 
+            delays
+        flagDC, flagChanGaps: Tasks for most common flagging 
+            operations
+        SIP: CASA imaging pipeline
+
+    Installed Modules:
+        Same as regular python install
+
+
+______          _                      _     _     _   
+| ___ \        | |                    | |   (_)   | |  
+| |_/ /_ _  ___| | ____ _  __ _  ___  | |    _ ___| |_ 
+|  __/ _` |/ __| |/ / _` |/ _` |/ _ \ | |   | / __| __|
+| | | (_| | (__|   < (_| | (_| |  __/ | |___| \__ \ |_ 
+\_|  \__,_|\___|_|\_\__,_|\__, |\___| \_____/_|___/\__|
+                           __/ |                       
+                          |___/   
+
+
+    Installed Scripts:
+        primarybeammap.py: plot gain contours of any tile pointing on haslam.
+        primary_beam.py: generate a fits map of any pointing gain contours 
+            (cf pbgain in CASA, above)
+        pyhead.py: print the header of a fits file. 
+            (cf edhead ...google it)
+        splat_average.py: combines together DAS bands into a single file
+        create_uvfits.py: goes from DAS correlator outputs to a 
+            uvfits file. makes database calls to fill in header, does 
+            flagging of coarse pfb band edges, and more
+
+    Installed Modules:
+        primarybeammap: exposes functionality of above script as a module
+        primary_beam: exposes functionality of eponymous script in a module
+        mwapb: provides voltage patterns, and gains for MWA tile based 
+            on short dipole model. 
+        generic_catalog: provides ability to read votable or text catalog
+            files into aipy catalog objects which can compute many
+            relevant timing and geometry values
+        
+
+    Data:
+        various catalogs (see catalog/README)
+        configuration files 
+            AIPY config files (array location for ephemeris, 
+                interface between catalog and beam. 
+                Used by delaycal in CASA. etc AIPY scripts)
+            MandC configuration file (database connection, 
+                array location for ephemeris, used by primarybeammap etc)
+        antenna location files (used by create_uvfits)
+        default spectrum mask (used by create_uvfits)
+        default instrument config (used by create_uvfits)
+        projection of haslam beam map for primarybeammap background
+        list of MWA tile beam pointings
+
+
+                                                                                 
+                     
+
+
+
+
+                                                    

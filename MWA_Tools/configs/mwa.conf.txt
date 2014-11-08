@@ -1,0 +1,87 @@
+
+[DEFAULT]
+pypath: /home/mwa/MandC
+
+dbhost: ngas01.ivec.org
+dbuser: mwa
+dbpass: Qm93VGll
+dbname: mwa
+dbport: 5432
+
+dbschedulehost: mwa-db
+dbscheduleuser: secret
+dbschedulepass: c2VjcmV0
+dbschedulename: mwa
+dbscheduleport: 5432
+
+dbcodehost: mwa-db
+dbcodeuser: secret
+dbcodepass: c2VjcmV0
+dbcodename: mwa
+dbcodeport: 5432
+
+teldbcodehost: mwa-tel-db
+teldbcodeuser: secret
+teldbcodepass: c2VjcmV0
+teldbcodename: telemetry
+teldbcodeport: 5432
+
+ngasuser: ngas
+ngaspass: bmdhcw==
+
+#Note that the items in the [DEFAULT] section above are considered to
+#be in ALL sections, and the values given above are used unless they
+#are specifically overridden inside a section.
+#
+#For example, if you want RTS code to use a different 'dbuser' and/or
+#'dbname' values, just add those attributes to the 'rts' section.
+
+[glob]
+numtiles: 128
+
+[mandc]
+nagioshost: nagios.mwa128t.org
+iohost: cerberus.mwa128t.org
+ioport: 50007
+#The port that the status server listens on:
+statusport: 31001
+#The port that the receivers communicate over:
+rxport: 30002
+statuswebdir: /var/www/monitor-vhost/scheduled/mwa_status_data/
+tools_das_dir: /home/mwa/32T_TOOLS
+
+[nagios]
+ip_prefix:      10.128
+#Hosts to monitor. Categories are for convenience only, it
+#makes no difference which category a host is placed in.
+#names must match those in nagios_hosts.conf
+network:        mc-switch mc-fibre-switch mc-vlan-switch zeus zeus2 hera01 hera02 hera03 hera04 hera05 hera06 hera07 hera08 hera09 hera10
+hardware:       gps1 vcs01 vcs02 vcs03 vcs04 vcs05 vcs06 vcs07 vcs08 vcs09 vcs10 vcs11 vcs12 vcs13 vcs14 vcs15 vcs16
+receivers:      rec01 rec02 rec03 rec04 rec05 rec06 rec07 rec08 rec09 rec10 rec11 rec12 rec13 rec14 rec15 rec16
+dasen:          gpubox01 gpubox02 gpubox03 gpubox04 gpubox05 gpubox06 gpubox07 gpubox08 gpubox09 gpubox10 gpubox11 gpubox12 gpubox13 gpubox14 gpubox15 gpubox16 gpubox17 gpubox18 gpubox19 gpubox20 gpubox21 gpubox22 gpubox23 gpubox24
+correlator:     oddjob oddjob2 atcashelf1 atcashelf2 minibox minibox2
+other:          arch1 arch2 esxi1 esxi2 helios2 helios vulcan apollo
+
+[rts]
+inputfile: ~/RTS_Input.txt
+# This file contains all of the non-observation-specific RTS parameters:
+templatefile: ~/RTS_Template.txt
+dipolefile: ~/dipole_delays.txt
+
+[correlator]
+#The name or IP of the ATCA shelf connected to this host
+#It will be minibox for oddjob, or minibox2 for oddjob2
+shelf: minibox2
+#The base address for the thrift correlator services on this host
+thriftport: 0x1234
+#Offset to add to the slot number to generate board_id values in the database tables
+#Shelf ID - use 1 for oddjob, 2 for oddjob2, etc
+shelfid: 2
+#max temps and maximum fractional voltage errors used to determine Nagios status
+temp_critical = 75
+temp_warning = 65
+voltage_critical = 0.06
+voltage_warning = 0.04
+
+[gui]
+

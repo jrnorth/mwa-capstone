@@ -1,0 +1,348 @@
+#!/bin/bash -l
+
+# Phase 2 imaging pipeline
+
+#PBS -P fm1
+#PBS -q STANDARDQ
+#PBS -l walltime=12:00:00
+#PBS -l ncpus=NCPUS
+#PBS -l mem=HOSTMEMgb
+
+# Template modified by self_prev.sh
+
+# Substituted by template
+obsnum=OBSNUM
+prevobs=PREVOBS
+datadir=DATADIR
+absmem=HOSTMEM
+proj=PROJ
+chan=CHAN
+
+cd $datadir
+
+if [[ ! -d ${proj} ]]
+then
+    mkdir ${proj}
+fi
+cd ${proj}
+
+# Significance of sources to search for
+nsigma=8
+# Significance of sources to trust for rescaling factor
+nsigma_clip_init=30
+nsigma_clip_deep=100
+# Allowable RMS in picking sources for rescaling factor (Jy)
+rms_init=1.0
+rms_deep=0.5
+# Polarisations to generate using pbcorrect
+pols="I Q U V"
+# Polarisations to rescale
+allpols="I Q U V XX XY XYi YY"
+# WSClean suffixes for subchannels and MFS
+subchans="0000 0001 0002 0003 MFS"
+# Briggs weighting schemes to use
+robusts="-1.0 0.0"
+# Self-cal
+docal="True"
+# Kinds of image to rescale and upload to NGAS
+#images="image model"
+images="image"
+# Image size
+imsize=4000
+# Model for auto-peeling
+model=../bsm_v1.txt
+
+# Tweak pixel scale depending on the frequency of observation
+
+if [[ ! $chan ]]
+then
+    chan=`get_observation_info.py -g ${obsnum} | grep "Channels" | awk 'BEGIN {FS=","} {print $13}'`
+fi
+if [[ $chan ]]
+then
+    scale=`echo "1.1 / $chan" | bc -l` # At least 4 pix per synth beam for each channel
+else
+    echo "No channel given and database is inaccessible to calculate one."
+    exit 1
+fi
+
+if [[ -e ${obsnum}.tar.gz && ! -d $obsnum ]]
+then
+    tar -I pigz -xf ${obsnum}.tar.gz
+    rm ${obsnum}.tar.gz
+fi
+
+# Will need to change this filetest to reflect a correctly-named output image
+if [[ -d $obsnum && ! -e ${obsnum}/${obsnum}_rescaled-I-image.fits ]]
+then
+    cd $obsnum
+
+# Delete Phase 1 processing to save inodes
+    rm -rf *MHz*v1.0*
+
+# Autoprocess: first check if it's going to do some peeling
+    autoprocess -noselfcal $model ${obsnum}.ms | tee peel_test.txt
+    if grep -q "Peel out source" peel_test.txt
+    then
+        autoprocess -noselfcal -go $model ${obsnum}.ms
+        caldatacolumn="-datacolumn CORRECTED_DATA"
+    fi
+
+    time chgcentre -minw -shiftback ${obsnum}.ms
+
+    if [[ ! -e ${obsnum}_initial-XX-image.fits ]]
+    then
+
+    ## quick n dirty image-based clean to get the initial model
+        time wsclean -name ${obsnum}_initial -size ${imsize} ${imsize} -niter 4000 -threshold 0.01 -pol xx,yy,xy,yx -weight briggs -1.0 -scale ${scale:0:8} -stopnegative -absmem ${absmem} -smallinversion -joinpolarizations -j 16 -cleanborder 1 ${obsnum}.ms
+    fi
+
+# Generate the primary beam
+    if [[ ! -e beam-MFS-xxi.fits ]]
+    then
+        beam -2014 -proto ${obsnum}_initial-XX-model.fits -ms ${obsnum}.ms -name beam-MFS
+    fi
+
+# Make a pb-corrected image, for later use in source-finding
+    pbcorrect ${obsnum}_initial image.fits beam-MFS ${obsnum}_initial
+    for pol in $pols
+    do
+        mv ${obsnum}_initial-${pol}.fits ${obsnum}_initial-${pol}-image.fits
+    done
+    root=${obsnum}_initial-I-image
+# Measure the RMS of the image, for later use in source-finding
+    if [[ ! -e ${root}_rms.fits && ! -e ${root}_bkg.fits ]]
+    then
+        bkg_rms_tool.py --cores=8 ${root}.fits ; mv out_bkg.fits ${root}_bkg.fits ; mv out_rms.fits ${root}_rms.fits
+    fi
+# Might as well add the rms to the headers since we've gone to the trouble of calculating it
+    rms=`rms_measure.py --middle --mean -f ${root}_rms.fits`
+    pyhead.py -u IMAGERMS $rms ${root}.fits
+    # We'll probably be tweaking aegean options and it's pretty fast, so remove any existing vo tables
+    if [[ -e ${root}_comp.vot ]] ; then rm ${root}_comp.vot ; fi
+    if [[ -e ${root}_comp.cat ]] ; then rm ${root}_comp.cat ; fi
+    aegean.py --maxsummits=5 --cores=16 --noise=${root}_rms.fits --background=${root}_bkg.fits  --out=${root}.cat --table=${root}.vot --seedclip=$nsigma ${root}.fits
+
+# Make a primary-beam corrected model, for use NOW in calibrating
+    pbcorrect ${obsnum}_initial model.fits beam-MFS ${obsnum}_initcor
+# Set Q, U, V to zero
+    if [[ ! -d unused ]]
+    then
+        mkdir unused
+    fi
+    mv ${obsnum}_initcor-Q.fits unused/
+    mv ${obsnum}_initcor-U.fits unused/
+    mv ${obsnum}_initcor-V.fits unused/
+
+# "Uncorrect" the beam
+    pbcorrect -uncorrect ${obsnum}_initunc model.fits beam-MFS ${obsnum}_initcor
+
+# predict the visibilities (FT the model)
+    if [[ $prevobs ]]
+    then
+# Use the previous deep observation
+# Copy the primary-beam corrected I image -- leave Q, U, and V (we expect sources to be unpolarised)
+        cp ../$prevobs/${prevobs}_rescaled-I-model.fits ./${prevobs}_rescaled-model-I.fits
+
+# Regrid the old image to the new frame
+        fits op=xyin in=${prevobs}_rescaled-model-I.fits out=${prevobs}_rescaled-model-I.im
+        fits op=xyin in=beam-MFS-xxi.fits out=beam-MFS-xxi.im
+        regrid in=${prevobs}_rescaled-model-I.im out=${prevobs}_rescaled_regridded-model-I.im axes=1,2 tol=0 tin=beam-MFS-xxi.im
+        fits op=xyout in=${prevobs}_rescaled_regridded-model-I.im out=${prevobs}_rescaled_regridded-model-I.fits
+# Add the keywords that miriad breaks for some reason
+        pyhead.py -u "CUNIT1" "deg" ${prevobs}_rescaled_regridded-model-I.fits
+        pyhead.py -u "CUNIT2" "deg" ${prevobs}_rescaled_regridded-model-I.fits
+        pyhead.py -u "CUNIT3" "Hz" ${prevobs}_rescaled_regridded-model-I.fits
+        pyhead.py -u "CUNIT4" "Hz" ${prevobs}_rescaled_regridded-model-I.fits
+# "Uncorrect" the beam
+        pbcorrect -uncorrect ${prevobs}_deepunc model.fits beam-MFS ${prevobs}_rescaled_regridded-model
+# FT model from the previous observation
+        time wsclean -predict -name ${prevobs}_deepunc -size ${imsize} ${imsize} -pol xx,yy,xy,yx -weight briggs -1.0 -scale ${scale:0:8} -absmem ${absmem} -smallinversion -j 16 ${obsnum}.ms
+    else
+# Use the initial image
+        time wsclean -predict -name ${obsnum}_initunc -size ${imsize} ${imsize} -pol xx,yy,xy,yx -weight briggs -1.0 -scale ${scale:0:8} -absmem ${absmem} -smallinversion -j 16 -cleanborder 1 ${obsnum}.ms
+    fi
+
+    # self-cal
+# Try minimum baseline = 60 m (30 lambda at 150 MHz = 2 m)
+# Hack to work around broken PYTHONPATH look-up
+    mkdir mwapy
+    mkdir mwapy/pb
+    cp $MWA_CODE_BASE/MWA_Tools/mwapy/pb/*atrix.fits ./mwapy/pb/
+    time calibrate -j 16 -minuv 60 -a 0.001 0.0001 -p phases.txt gains.txt $caldatacolumn ${obsnum}.ms solutions.bin | tee calibrate.log
+
+    flaggedchans=`grep "gains to NaN" calibrate.log | awk '{printf("%03d\n",$2)}' | sort | uniq | wc -l`
+    if [[ $flaggedchans -gt 200 || ! -s solutions.bin ]]
+    then
+        echo "More than a third of the channels were flagged!"
+        echo "Will not apply calibration solutions or clean any more deeply."
+        docal="False"
+    fi
+    if [[ ${docal} == "True" ]]
+    then
+        time applysolutions $caldatacolumn -copy ${obsnum}.ms solutions.bin
+
+        rms=`rms_measure.py -f ${obsnum}_initial-YY-residual.fits`
+        newthreshold=`echo "$rms * 3" | bc -l`
+        # super-deep clean with sub-bands
+
+        for robust in $robusts
+        do
+# Need some way of distinguising between the robusts before I can use this
+#            if [[ ! -e ${obsnum}_deeper-MFS-XX-image.fits ]]
+#            then
+                echo "Cleaning to new clean threshold $newthreshold Jy, using robust=${robust} Briggs weighting."
+                time wsclean -name ${obsnum}_deeper -size ${imsize} ${imsize} -niter 50000 -threshold $newthreshold -pol XX,YY,XY,YX -weight briggs ${robust} -scale ${scale:0:8} -absmem ${absmem} -smallinversion -joinpolarizations -j 16 -cleanborder 1 -mgain 0.85 -joinchannels -channelsout 4 ${obsnum}.ms
+#            else
+#                echo "Keeping existing ${obsnum}_deeper-MFS-XX-image.fits to save CPU time."
+#            fi
+    # After imaging, make and rescale the polarised images
+            for subchan in $subchans
+            do
+            # Generate sub-channel beams
+                if [[ ! -e beam-${subchan}-xxi.fits ]]
+                then
+                    beam -2014 -proto ${obsnum}_deeper-${subchan}-XX-model.fits -ms ${obsnum}.ms -name beam-${subchan}
+                fi
+                
+            # Make polarised images and models
+                for imagetype in $images
+                do
+                    pbcorrect ${obsnum}_deeper-${subchan} ${imagetype}.fits beam-${subchan} ${obsnum}_deeper-${subchan}
+                    for pol in $pols
+                    do
+        # Restore any peeled components
+                        if [[ -e model-restore.txt && ${pol} == "I" ]]
+                        then
+                           render -t ${obsnum}_deeper-${subchan}-I.fits -o ${obsnum}_deeper-${subchan}-I-${imagetype}.fits -r -a model-restore.txt
+                           rm ${obsnum}_deeper-${subchan}-I.fits
+                        else
+                            mv ${obsnum}_deeper-${subchan}-${pol}.fits ${obsnum}_deeper-${subchan}-${pol}-${imagetype}.fits
+                        fi
+             # Copy WS fits keys from linear pol images to Stokes pol images
+                        copy_metafitsheader.py -i ${obsnum}_deeper-${subchan}-${pol}-${imagetype}.fits -m ${obsnum}_deeper-${subchan}-XX-${imagetype}.fits
+                    done
+                done
+            done
+
+    # Update rms in header for Q,U,V images (not models!)
+    # (We will do I-MFS more carefully in a minute)
+    # Disadvantage is that the sub-channels of I are not done
+    # Quite a hard problem to fix without running Bane, since the noise varies over the map
+            for pol in $pols
+            do
+                if [[ ${pol} != "I" ]]
+                then
+                    for subchan in $subchans
+                    do
+                        rms=`rms_measure.py --middle -f ${obsnum}_deeper-${subchan}-${pol}-image.fits`
+                        pyhead.py -u IMAGERMS $rms ${obsnum}_deeper-${subchan}-${pol}-image.fits
+                    done
+                fi
+            done
+
+    # Source-finding and rescaling
+    # Do all the calculations on the Stokes I MFS images, and apply to all pols and all sub-bands
+            root=${obsnum}_deeper-MFS-I-image
+            bkg_rms_tool.py --cores=8 ${root}.fits ; mv out_bkg.fits ${root}_bkg.fits ; mv out_rms.fits ${root}_rms.fits
+    # Might as well add the rms to the headers since we've gone to the trouble of calculating it
+            rms=`rms_measure.py --middle --mean -f ${root}_rms.fits`
+            pyhead.py -u IMAGERMS $rms ${root}.fits
+            # We'll probably be tweaking aegean options and it's pretty fast, so remove any existing vo tables
+            if [[ -e ${root}_${robust}_comp.vot ]] ; then rm ${root}_${robust}_comp.vot ; fi
+            if [[ -e ${root}_${robust}_comp.cat ]] ; then rm ${root}_${robust}_comp.cat ; fi
+            aegean.py --maxsummits=5 --cores=16 --noise=${root}_rms.fits --background=${root}_bkg.fits  --out=${root}_${robust}.cat --table=${root}_${robust}.vot --seedclip=$nsigma ${root}.fits
+
+            #stilts tmatch2 documentation
+            # http://www.star.bris.ac.uk/~mbt/stilts/sun256/tmatch2.html
+            #full list of cmd's ('addcol' etc.)
+            # http://www.star.bris.ac.uk/~mbt/stilts/sun256/pipes.html
+
+            out=matched_sources_${robust}.vot
+            if [[ -e $out ]] ; then rm ${out} ; fi
+
+                # 10 arcsecond matching radius, rename all columns to have suffixes
+                # remove any points where the local noise is > 500 mJy
+            stilts tmatch2 matcher=sky params=10 \
+                    in1=./${obsnum}_initial-I-image_comp.vot  values1="ra dec" suffix1="_init" \
+                    icmd1="select (local_rms<${rms_init})&&(peak_flux/local_rms)>${nsigma_clip_init}" \
+                    in2=./${obsnum}_deeper-MFS-I-image_${robust}_comp.vot  values2="ra dec" suffix2="_self" \
+                    icmd2="select (local_rms<${rms_deep})&&(peak_flux/local_rms)>${nsigma_clip_deep}" \
+                    out=${out} \
+                    fixcols=all 2>&1 | tee new.log
+
+# Found that any obs which doesn't have >50 sigma sources is actually broken, so this is not a good idea
+
+#            if grep -q "^0 rows in match region" new.log
+#            then
+#                echo "Not enough sources detected at $nsigma_clip sigma -- dropping to 50 sigma."
+#                nsigma_clip=50
+#                stilts tmatch2 matcher=sky params=10 \
+#                    in1=./${obsnum}_initial-I-image_comp.vot  values1="ra dec" suffix1="_init" \
+#                    icmd1="select (local_rms<0.5)&&(peak_flux/local_rms)>${nsigma_clip}" \
+#                    in2=./${obsnum}_deeper-MFS-I-image_${robust}_comp.vot  values2="ra dec" suffix2="_self" \
+#                    icmd2="select (local_rms<0.5)&&(peak_flux/local_rms)>${nsigma_clip}" \
+#                    out=${out} \
+#                    fixcols=all 2>&1 | tee new.log
+#            fi
+
+
+            if ! grep -q "^0 rows in match region" new.log
+            then
+    # Apply the rescaling factor
+                for pol in $allpols
+                do
+                    for imagetype in $images
+                    do
+                        for subchan in $subchans
+                        do
+                            deep=${obsnum}_deeper-${subchan}-${pol}-${imagetype}
+                            rescale=${obsnum}_rescaled-${subchan}-${pol}-${imagetype}
+                            scaleimage ${out} peak_flux_init peak_flux_self $deep.fits $rescale.fits | tee rescale_${robust}.txt
+                            rescalefactor=`grep "=" rescale_${robust}.txt  | awk '{print $3}'`
+        # Record fits keys
+                            rms=`pyhead.py -p IMAGERMS $deep.fits | awk '{print $3}'`
+                            if [[ $rms != "None" ]]
+                            then
+                                newrms=`echo $rms / $rescalefactor | bc -l`
+                                echo "Rescaling image rms from $rms to $newrms when converting from $deep to $rescale."
+                                pyhead.py -u IMAGERMS $newrms $rescale.fits
+                            fi
+                            pyhead.py -u RESCALE $rescalefactor $rescale.fits
+                            copy_metafitsheader.py -m ${obsnum}.metafits -i $rescale.fits -e MJD,LST,HA,RA,DEC,DATESTRT
+        # HACK SINCE WSCLEAN DOESN'T REPORT MFS IMAGE KEYS PROPERLY
+        # DELETE THIS SECTION WHEN AO HAS FIXED THE BUG
+                            if [[ ${subchan} == "MFS" ]]
+                            then
+                                copy_metafitsheader.py -m ${obsnum}_deeper-0001-${pol}-${imagetype}.fits -i $rescale.fits
+                            else
+                                copy_metafitsheader.py -m $deep.fits -i $rescale.fits
+                            fi
+        # Rename file to match GLEAM output format
+                            newfilename=`wsclean2gleam.py -f $rescale.fits`
+                            mv $rescale.fits $newfilename
+                        done
+                    done
+                done
+            else
+                echo "No sources found at $nsigma_clip_deep sigma! $obsnum needs manual intervention."
+                exit 1
+            fi
+        done
+    fi
+fi
+
+cd $datadir/$proj/$obsnum
+if [[ -d mwapy ]]
+then
+    rm -rf mwapy
+fi
+
+# Make the uploadable tarballs
+cd $datadir/$proj/
+
+tar -I pigz -cf ${obsnum}.tar.gz ${obsnum}/${obsnum}.ms* ${obsnum}/*solutions.bin ${obsnum}/calibrate.log ${obsnum}/*.txt ${obsnum}/*.vot ${obsnum}/${obsnum}.metafits
+tar -cf ${obsnum}_images.tar ${obsnum}/${obsnum}*MHz*fits
+
+# Save space
+rm -rf ${obsnum}

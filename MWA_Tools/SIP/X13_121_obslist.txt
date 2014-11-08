@@ -1,0 +1,15 @@
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100322120954/HydA_121_20100322120954.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100322124450/HydA_121_20100322124450.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100322131946/HydA_121_20100322131946.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100322135442/HydA_121_20100322135442.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100322142938/HydA_121_20100322142938.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100322150434/HydA_121_20100322150434.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100322153930/HydA_121_20100322153930.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100326113458/HydA_121_20100326113458.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100326120954/HydA_121_20100326120954.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100326124450/HydA_121_20100326124450.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100326131946/HydA_121_20100326131946.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100326134242/HydA_121_20100326134242.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100322113458/HydA_121_20100328113458.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100328120954/HydA_121_20100328120954.av.uvfits
+/export/tesla1/mebell/MWA_Raw/X13/HydA_121_20100328124450/HydA_121_20100328124450.av.uvfits

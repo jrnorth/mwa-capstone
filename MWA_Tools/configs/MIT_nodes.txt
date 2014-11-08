@@ -1,0 +1,13 @@
+eor-02	/mwa-02/d1/uvfits_scratch
+eor-03	/mwa-03/d1/uvfits_scratch
+eor-04	/mwa-04/d1/uvfits_scratch
+eor-05	/mwa-05/d1/uvfits_scratch
+eor-06	/mwa-06/d1/uvfits_scratch
+eor-07	/mwa-07/d1/uvfits_scratch
+eor-08	/mwa-08/d1/uvfits_scratch
+eor-09	/mwa-09/d1/uvfits_scratch
+eor-10	/mwa-10/d1/uvfits_scratch
+eor-11	/mwa-11/d1/uvfits_scratch
+eor-12	/mwa-12/d1/uvfits_scratch
+eor-13	/mwa-13/d1/uvfits_scratch
+eor-14	/mwa-14/d1/uvfits_scratch

@@ -1,0 +1,11 @@
+if [[ ! -e OBSNUM.tar.gz && ! -d OBSNUM ]]
+then
+    wget --quiet -O OBSNUM.tar.gz http://store04.icrar.org:7777/RETRIEVE?file_id=OBSNUM.tar.gz\&file_version=1
+    if [[ ! -s OBSNUM.tar.gz ]]
+    then
+        echo "Version 1 of the tarball had zero size; trying whatever the latest version is!"
+        rm OBSNUM.tar.gz
+        wget -O OBSNUM.tar.gz http://store04.icrar.org:7777/RETRIEVE?file_id=OBSNUM.tar.gz
+    fi
+fi
+

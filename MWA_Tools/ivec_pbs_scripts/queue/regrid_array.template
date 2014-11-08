@@ -1,0 +1,111 @@
+#!/bin/bash
+
+# Clean the data
+
+#PBS -W group_list=GROUPQ
+#PBS -q STANDARDQ
+#PBS -l walltime=01:00:00
+#PBS -l mem=HOSTMEM
+#PBS -J 1-FILELENGTH
+
+module load python/2.6.9 numpy/1.6.2 scipy/0.11.0
+
+regrid_commands="REGRID_COMMANDS"
+identifier=`echo FILELIST | awk 'BEGIN {FS="/"} {print $NF}' | awk 'BEGIN {FS="."} {print $1}'`
+
+cd DATADIR/PROJ/
+# Expecting the file list in here, if you didn't provide a full path
+# Expecting a path like /path/to/data/10212obsid_clean_options_stokes.fits
+# But any should work as long as the files are in the usual PROJ/OBSNUM directories
+
+
+filewpath=`sed "${PBS_ARRAY_INDEX}q;d" FILELIST`
+file=`echo $filewpath | awk 'BEGIN {FS="/"} {print $NF}'`
+obsnum=${file:0:10}
+cd `dirname ${filewpath}`
+echo "Regridding $file"
+
+# Apply fixhdr if it hasn't been done already -- commenting out for now since I now do this at the cleaning stage
+#origin=`pyhead.py -p ORIGIN -i $file | awk '{print $3}'`
+#if [[ $origin == "AO/WSImager" ]]
+#then
+## Don't want to slant-orthographically-project wscleaned images
+#  pyhead.py -d PV2_1 -i $file
+#  pyhead.py -d PV2_2 -i $file
+#else
+## Casa images have PV=0 in headers
+#  if [[ $origin == "CASA" ]]
+#  then
+#     fixhdr -R -v -T -o new.fits $file
+#     mv new.fits $file
+#  fi
+#fi
+
+# Read in the primary beam
+stokeskey=`pyhead.py -p CRVAL4 -i $file | awk '{print int(substr($3,1,4))}'`
+if [[ $stokeskey -eq 1 ]]
+then
+   stokes="I"
+elif [[ $stokeskey -eq -5 ]]
+then
+   stokes="XX"
+elif [[ $stokeskey -eq -6 ]]
+then
+   stokes="YY"
+else
+   echo "Unrecognised Stokes parameter!"
+   exit 1
+fi
+
+# Try to get the delays from the metafits files so as not to spam the database
+if [[ -e ${obsnum}.metafits ]]
+then
+    echo "Found ${obsnum}.metafits."
+    delays=`pyhead.py -p DELAYS -i ${obsnum}.metafits | awk '{print $3}'`
+    channel=`pyhead.py -p CHANNELS -i  ${obsnum}.metafits  | awk '{print $3}' | awk 'BEGIN {FS=","} {print $13}'`
+else
+    echo "Couldn't find ${obsnum}.metafits: calling database instead."
+    delays=`get_observation_info.py -g $obsnum | grep "delays" | awk '{print $3}'`
+    channel=`get_observation_info.py -g $obsnum | grep "Channels" | awk '{print $2}' | awk 'BEGIN {FS=","} {print $13}'`
+fi
+
+delays_nocommas=`echo $delays | sed "s/,/_/g"`
+beam=${channel}_${delays_nocommas}_${stokes}_beam
+
+if [[ ! -e DATADIR/PROJ/mosaics/${identifier}/$beam.fits ]]
+then
+	echo "No beam found!! Help!!"
+    exit 1
+else
+	fits op=xyin in=DATADIR/PROJ/mosaics/${identifier}/$beam.fits out=$beam.im
+fi
+
+root=`echo $file | sed "s/.fits//"`
+
+echo "Regridding $root"
+
+rm -rf ${root}*regrid.im
+rm -rf ${root}.im
+
+fits op=xyin in=$file out=$root.im
+regrid in=$root.im out=$root.regrid.im $regrid_commands
+
+# Give beam the same header as the image
+ra=`gethd in=$root.im/crval1`
+dec=`gethd in=$root.im/crval2`
+puthd in=$beam.im/crval1 value=${ra}
+puthd in=$beam.im/crval2 value=${dec}
+
+regrid in=$beam.im out=${root}_beam.regrid.im $regrid_commands
+
+echo "Multiplying $root"
+maths exp="<${root}.regrid.im>*<${root}_beam.regrid.im>" out=${root}_mult.regrid.im options=unmask #mask="<${root}_beam.regrid.im>.gt.0.3"
+maths exp="<${root}_beam.regrid.im>*<${root}_beam.regrid.im>" out=${root}_beamsq.regrid.im options=unmask #mask="<${root}_beam.regrid.im>.gt.0.3"
+maths exp="<${root}_beam.regrid.im>*1.0" out=${root}_beam.regrid.trunc.im options=unmask #mask="<${root}_beam.regrid.im>.gt.0.3"
+rm -rf ${root}_beam.regrid.im
+mv ${root}_beam.regrid.trunc.im ${root}_beam.regrid.im
+mv ${root}*regrid.im DATADIR/PROJ/mosaics/$identifier/
+rm -rf ${root}*.im
+rm -rf ${beam}.im
+
+exit 0

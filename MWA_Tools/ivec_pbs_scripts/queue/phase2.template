@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Clean the data
+
+#PBS -W group_list=GROUPQ
+#PBS -q STANDARDQ
+#PBS -l walltime=03:00:00
+#PBS -l select=1:ncpus=12:mem=HOSTMEM
+
+cd DATADIR/PROJ/OBSNUM
+echo "vis='OBSNUM.ms'" > clean.py
+echo "stokes='I'" >> clean.py
+echo "uvrange='UVRANGE'" >> clean.py
+echo "weighting='WEIGHTING'" >> clean.py
+echo "antoption='ANTOPTION'" >> clean.py
+echo "imagename=vis+'_'+stokes+'_'+weighting+'_'+uvrange+'NAME'" >> clean.py
+echo "fitsimage=imagename+'.fits'" >> clean.py
+echo "clean(vis=vis, imagename=imagename, gridmode='widefield', psfmode='clark', imagermode='csclean', wprojplanes=1, facets=1, niter=20000, imsize=[4000,4000], cell=['0.75arcmin', '0.75arcmin'], threshold='0.5Jy', stokes=stokes, mode='mfs', selectdata=True, uvrange=uvrange, antenna=antoption, weighting=weighting,nterms=1,cyclefactor=5,robust=ROBUST)" >> clean.py
+echo "exportfits(fitsimage=fitsimage,imagename=imagename+'.image')" >> clean.py
+#DATADIR/casapy-34.0.19988-002-64b/casapy --nologger -c clean.py
+DATADIR/casapy-stable-42.0.25701-001-64b/casapy --nologger -c clean.py
+
+
+
