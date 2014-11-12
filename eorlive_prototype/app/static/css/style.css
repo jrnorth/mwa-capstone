@@ -1,0 +1,6 @@
+#observations_div {
+	max-width: 50%;
+	margin: auto;
+	max-height: 400px;
+	overflow: auto;
+}
