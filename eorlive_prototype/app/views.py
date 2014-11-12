@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, session, url_for, request, g, jsonify
+from flask import render_template, flash, redirect, session, url_for, request, g
 from app import app
 import requests
 import json
@@ -19,6 +19,8 @@ def get_observations():
 
 	params = {'projectid': 'G0009', 'mintime': starttime, 'maxtime': endtime}
 
-	data = requests.get(requestURL, params=params)
+	data = requests.get(requestURL, params=params).text
 
-	return jsonify({'observations': json.loads(data.text)})
+	observations = json.loads(data)
+
+	return render_template('observation_table.html', observations=observations)

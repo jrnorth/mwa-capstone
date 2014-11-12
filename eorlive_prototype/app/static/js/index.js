@@ -1,8 +1,6 @@
 $(function() {
 	$("#datepicker_start").datetimepicker();
 	$("#datepicker_end").datetimepicker();
-	$("#observations_div").hide();	
-	$("#no_obs_label").hide();
 });
 
 function getObservations() {
@@ -34,33 +32,14 @@ function getObservations() {
 	starttime = Math.floor((starttime - gpsTimeBegin) / 1000) + LEAP_SECONDS;
 	endtime = Math.floor((endtime - gpsTimeBegin)/1000) + LEAP_SECONDS;
 
-	var div = $("#observations_div");
-	var table = div.find("table");
-	var tbody = table.find("tbody").empty();
-	div.hide();
-
 	$.ajax({
 		type: "POST",
 		url: "/get_observations",
 		data: {'starttime': starttime, 'endtime': endtime},
 		success: function(data) {
-			if (data !== undefined && data.observations.length > 0) {
-				$("#no_obs_label").hide();
-				$.each(data.observations, function(i, v) {
-					tbody.append("<tr>")
-						.append("<td>" + v[0] + "</td>")
-						.append("<td>" + v[1] + "</td>")
-						.append("<td>" + v[2] + "</td>")
-						.append("</tr>");
-				});
-				table.show();
-			} else {
-				$("#no_obs_label").show();
-				table.hide();
-			}
-			div.show();
+			$("#observations_div").html(data);
 		},
-		dataType: "json"
+		dataType: "html"
 	});
 };
 
