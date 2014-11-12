@@ -1,0 +1,24 @@
+#!/bin/bash -l
+
+# Download calibrated measurement set
+
+#PBS -P fm1
+#PBS -q copyq
+#PBS -l walltime=10:00:00
+#PBS -l ncpus=1
+#PBS -l mem=100mb
+
+# Template modified by self_prev.sh
+
+# observation number
+obsnum=OBSNUM
+datadir=DATADIR
+
+cd $datadir
+
+if [[ ! -d PROJ ]]
+then
+    mkdir PROJ
+fi
+cd PROJ
+

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Clean the data in short intervals
+
+#PBS -W group_list=GROUPQ
+#PBS -q STANDARDQ
+#PBS -l walltime=03:00:00
+#PBS -l select=1:ncpus=12:mem=HOSTMEM
+
+cd DATADIR/PROJ/OBSNUM
+DATADIR/casapy-42.0.28322-021-1-64b/casapy --nologger -c clean_timesteps.py

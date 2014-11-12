@@ -1,0 +1,9 @@
+Note the contents of MWA_Tools/mwapy/obsched/
+is copied from the MandC_Core/obssched/ for the convienence 
+of observers etc other non-project users.
+
+In particular the modules in base,
+as well as single_observation.py, which is used to schedule the telescope
+
+D. Jacobs
+July 2013 

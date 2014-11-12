@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Andre's cool new pipeline
+
+#PBS -W group_list=GROUPQ
+#PBS -q STANDARDQ
+#PBS -l walltime=08:00:00
+#PBS -l select=1:ncpus=12:mem=HOSTMEM
+#PBS -J 1-FILELENGTH
+
+module load lapack
+cd DATADIR/PROJ/Phase2
+obsnum=`sed "${PBS_ARRAY_INDEX}q;d" FILELIST`
+# Get the data column with basic bandpass applied
+if [[ ! -d $obsnum ]]
+then
+ mkdir $obsnum
+ cd $obsnum
+else
+ cd $obsnum
+ if [[ -d old ]]
+ then
+   rm -rf old/*
+ else
+   mkdir old
+ fi
+ mv *.* old/
+fi
+echo "split(vis='../../$obsnum/$obsnum.ms',outputvis='$obsnum.ms',datacolumn='corrected',antenna='!Tile032;!Tile101;!Tile105;!Tile085')" > self-cal.py
+/scratch/astronomy556/nhurleywalker/casapy-stable-42.0.25701-001-64b/casapy --nologger -c self-cal.py
+autoprocess -go -nosubtract /scratch/astronomy556/code/anoko/mwa-reduce/catalogue/model-catalogue.txt $obsnum.ms 1>>output_${PBS_ARRAY_INDEX}.log 2>>error_${PBS_ARRAY_INDEX}.log
+# Phase to location which requires the minimum number of w-layers
+chgcentre -minw $obsnum.ms 1>>output_${PBS_ARRAY_INDEX}.log 2>>error_${PBS_ARRAY_INDEX}.log
+if [[ -e model-restore.txt ]]
+then
+	modelops="-addmodelapp model-restore.txt"
+fi
+# Bandpass makes the fluxes lower (with solnorm=False) or higher, and increases the noise, likely because there is not enough S/N per baseline, per channel, per pol
+# gaincal just does per-antenna, not per-channel, so has better S/N but less improvement in calibration error
+# Shallow clean to first negative
+wsclean -pol XX -mgain 0.80 -size 9728 9728 -scale 0.012 -stopnegative -nwlayers 10 -niter 5000 -gain 0.05 -gridmode kb -threshold 1 -datacolumn DATA -weight uniform -name ${obsnum}_XX_v1 $obsnum.ms 1>>output_${PBS_ARRAY_INDEX}.log 2>>error_${PBS_ARRAY_INDEX}.log
+wsclean -pol YY -mgain 0.80 -size 9728 9728 -scale 0.012 -stopnegative -nwlayers 10 -niter 5000 -gain 0.05 -gridmode kb -threshold 1 -datacolumn DATA -weight uniform -name ${obsnum}_YY_v1 $obsnum.ms 1>>output_${PBS_ARRAY_INDEX}.log 2>>error_${PBS_ARRAY_INDEX}.log
+# Self-cal
+echo "gaincal(vis='$obsnum.ms',caltable='${obsnum}_v1.cal',refant='Tile012',uvrange='>0.03klambda',calmode='p',solint='30s')" > self-cal.py
+# Apply the new calibration
+echo "applycal(vis='$obsnum.ms',gaintable='${obsnum}_v1.cal')" >> self-cal.py
+/scratch/astronomy556/nhurleywalker/casapy-stable-42.0.25701-001-64b/casapy --nologger -c self-cal.py
+# Do a final, deeper clean
+wsclean $modelops -pol XX -mgain 0.80 -size 9728 9728 -scale 0.012 -negative -nwlayers 10 -niter 20000 -gain 0.05 -gridmode kb -threshold 0.1 -datacolumn CORRECTED_DATA -weight uniform -name ${obsnum}_XX_v2 $obsnum.ms 1>>output_${PBS_ARRAY_INDEX}.log 2>>error_${PBS_ARRAY_INDEX}.log
+wsclean $modelops -pol YY -mgain 0.80 -size 9728 9728 -scale 0.012 -negative -nwlayers 10 -niter 20000 -gain 0.05 -gridmode kb -threshold 0.1 -datacolumn CORRECTED_DATA -weight uniform -name ${obsnum}_YY_v2 $obsnum.ms 1>>output_${PBS_ARRAY_INDEX}.log 2>>error_${PBS_ARRAY_INDEX}.log
+wsclean $modelops -mgain 0.80 -size 9728 9728 -scale 0.012 -negative -nwlayers 10 -niter 20000 -gain 0.05 -gridmode kb -threshold 0.1 -datacolumn CORRECTED_DATA -weight uniform -name ${obsnum}_v2 $obsnum.ms 1>>output_${PBS_ARRAY_INDEX}.log 2>>error_${PBS_ARRAY_INDEX}.log

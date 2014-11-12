@@ -1,0 +1,35 @@
+import numpy
+
+vis='OBSNUM.ms'
+stokes='STOKES'
+uvrange='UVRANGE'
+weighting='WEIGHTING'
+antoption=''
+timestep=qa.quantity(INTERVAL,'s')
+timestep_days=qa.convert(timestep,'d')
+
+ms.open(vis)
+rec=ms.summary()
+ms.close()
+
+starttime=qa.quantity(rec['BeginTime'],'d')
+endtime=qa.quantity(rec['EndTime'],'d')
+
+minus_timestep_days=qa.quantity(-INTERVAL,'s')
+endofloop=qa.add(endtime,minus_timestep_days)
+for chs in range(1,4):
+  interval=0
+  for mjd_time in numpy.arange(starttime['value'],endofloop['value'],timestep_days['value']):
+    chstart=str(chs*192)
+    chend=str(((chs+1)*192)-1)
+    timestart=qa.time(qa.quantity(mjd_time,'d'),form='ymd')
+    timeend=qa.time(qa.add(qa.quantity(mjd_time,'d'),timestep_days),form='ymd')
+    timerange=str(timestart[0])+' ~ '+str(timeend[0])
+    printerval='%02d' % interval
+    imagename=vis+'_'+stokes+'_'+weighting+'_'+uvrange+'_'+printerval+'_INTERVALs'+'_sb'+str(chs+1)
+    clean(vis=vis, imagename=imagename, gridmode='widefield', psfmode='clark', imagermode='csclean', wprojplanes=1, facets=1, niter=20000, imsize=[4000,4000], cell=['0.75arcmin', '0.75arcmin'], threshold='2.5Jy', stokes=stokes, mode='mfs', selectdata=True, timerange=timerange, uvrange=uvrange, antenna=antoption, weighting=weighting,nterms=1,cyclefactor=5,robust=0,spw='0:'+chstart+'~'+chend)
+# CASA always uses the start of the observation as date-obs, rather than the actual time, so update the header
+    imhead(imagename=imagename+'.image',hdkey='date-obs',mode='put',hdvalue=qa.time(qa.quantity(mjd_time,'d'),form='ymd')[0])
+    fitsimage=imagename+'.fits'
+    exportfits(fitsimage=fitsimage,imagename=imagename+'.image')
+    interval+=1

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<?xml-stylesheet type="text/xsl" ?>  
+<casaxml xmlns="http://casa.nrao.edu/schema/psetTypes.html"  
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://casa.nrao.edu/schema/casa.xsd  
+file:///opt/casa/code/xmlcasa/xml/casa.xsd">  
+
+  <task type="function" name="flagDC">
+    <shortdescription>Flag the \"DC Spikes\" in the MWA coarse channels</shortdescription>  
+ 
+    <description>  
+      Flags the \"DC Spikes\" which appear in MWA data in the center of the
+      coarse channels
+    </description>     
+    <input>  
+      <param type="string" name="vis" kind="ms" mustexist="True">  
+	<description>name of input visibility file</description>  
+	<value></value>  
+      </param>  
+      <constraints/>
+    </input>  
+    <returns type="void"/> 
+    <example>
+      Example:
+      vis='test.ms'
+      flagDC(vis)
+    </example>
+  </task>
+</casaxml>

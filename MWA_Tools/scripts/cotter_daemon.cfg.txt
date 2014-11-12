@@ -1,0 +1,18 @@
+#note absmem is in GB
+#timeres in seconds
+#freqres in khz
+# -j is number of cores
+export cotter_args="-timeres 2 -freqres 80 -usepcentre -initflag 2 -noflagautos -absmem 10 -j 2"
+export scratch="/eor-12/d1/uvfits_scratch/"
+export production_dir="/nfs/eor-14/r1/EoRuvfits/batch"
+export version="4"
+export subversion="0"
+export sleep_cadence=4
+export global_dir="/nfs/eor-09/r1/djc/uvfits_batch"
+
+export n_success=200 # number of successful runs before resetting NOPROCESS
+export n_baddies=5 # number of baddies that have to show up before sending an email
+export email="adam.p.beardsley@gmail.com,daniel.c.jacobs@asu.edu"
+
+export allow_flagging=1 # let the daemon do its own flagging if flag files are not found in the db.
+

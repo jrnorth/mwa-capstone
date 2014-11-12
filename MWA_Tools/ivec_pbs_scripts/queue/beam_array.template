@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# Create primary beam fits files for the mosaicing script
+
+#PBS -W group_list=GROUPQ
+#PBS -q STANDARDQ
+#PBS -l walltime=00:10:00
+#PBS -l mem=HOSTMEM
+#PBS -J 1-FILELENGTH
+
+module load python/2.6.9 numpy/1.6.2 scipy/0.11.0
+
+cd DATADIR/PROJ
+
+identifier=`echo FILELIST | awk 'BEGIN {FS="/"} {print $NF}' | awk 'BEGIN {FS="."} {print $1}' | sed "s/_beams//g"`
+
+filewpath=`sed "${PBS_ARRAY_INDEX}q;d" FILELIST | awk '{print $1}'`
+delays=`sed "${PBS_ARRAY_INDEX}q;d" FILELIST | awk '{print $2}'`
+channel=`sed "${PBS_ARRAY_INDEX}q;d" FILELIST | awk '{print $3}'`
+
+file=`echo $filewpath | awk 'BEGIN {FS="/"} {print $NF}'`
+obsnum=${file:0:10}
+
+root=`echo $file | awk 'BEGIN {FS="/"} {print $NF}' | sed "s;.fits;;g"`
+
+delays_nocommas=`echo $delays | sed "s/,/_/g"`
+beam=${channel}_${delays_nocommas}_I_beam
+
+#Fix DATE-OBS
+# this was a hack for MWACS, can safely skip now
+#newdate=`get_observation_info.py -g ${obsnum} | head -2 | tail -1 | sed "s/(//g" | sed "s/)//g" | awk '{print $2"T"$3}' | sed "s/\//-/g"`
+#pyhead.py -u DATE-OBS $newdate -i $file
+
+if [[ ! -e DATADIR/PROJ/mosaics/${identifier}/$beam.fits ]]
+then
+    if [[ -e $obsnum/$file ]]
+    then
+        cd $obsnum
+    else
+        cd `dirname $filewpath`
+    fi
+    make_beam.py -f $file -d $delays
+    mv ${root}_beamXX.fits ${channel}_${delays_nocommas}_XX_beam.fits
+    mv ${root}_beamYY.fits ${channel}_${delays_nocommas}_YY_beam.fits
+    fits op=xyin in=${channel}_${delays_nocommas}_XX_beam.fits out=${channel}_${delays_nocommas}_XX_beam.im
+    fits op=xyin in=${channel}_${delays_nocommas}_YY_beam.fits out=${channel}_${delays_nocommas}_YY_beam.im
+       # Fake a Stokes I beam, assuming the data were equally weighted when being combined (i.e. typical clean process)
+    maths exp="(<${channel}_${delays_nocommas}_XX_beam.im>+<${channel}_${delays_nocommas}_YY_beam.im>)/2" out=$beam.im
+       # If the data were weighted properly by their beams in the first place, then this expression should be used instead; however note that it might be too long for miriad to handle!
+    #maths exp="(<${channel}_${delays_nocommas}_XX_beam.im>*<${channel}_${delays_nocommas}_XX_beam.im>+<${channel}_${delays_nocommas}_YY_beam.im>*<${channel}_${delays_nocommas}_YY_beam.im>)/(<${channel}_${delays_nocommas}_XX_beam.im>+<${channel}_${delays_nocommas}_YY_beam.im>)" out=$beam.im
+    fits op=xyout in=$beam.im out=$beam.fits
+    fits op=xyin in=$beam.fits out=$beam.im
+    mv *_beam.fits DATADIR/PROJ/mosaics/${identifier}/
+    rm -rf *beam.im
+else
+    echo "Beam already created: DATADIR/PROJ/mosaics/${identifier}/$beam.fits -- delete and try again."
+fi
+
+exit 0

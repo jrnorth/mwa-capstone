@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<?xml-stylesheet type="text/xsl" ?>  
+<casaxml xmlns="http://casa.nrao.edu/schema/psetTypes.html"  
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://casa.nrao.edu/schema/casa.xsd  
+file:///opt/casa/code/xmlcasa/xml/casa.xsd">  
+
+  <task type="function" name="flagChanGaps">
+    <shortdescription>Flag the gaps between the MWA coarse channels</shortdescription>  
+ 
+    <description>  
+      Flags the low gain regions at the edge of the MWA coarse channels
+    </description>  
+    
+    <input>  
+      <param type="string" name="vis" kind="ms" mustexist="true">  
+	<description>name of input visibility file</description>  
+	<value></value>  
+      </param>  
+      <param type="int" name="width">  
+	<description>Number of fine channels to flag on each edge (the total gap between 2 channels will be 2*width channels wide)</description>  
+	<value>3</value>
+	<allowed kind="range">
+          <value range="min">0</value>  
+          <value range="max">16</value>
+	</allowed>
+      </param>  
+    </input>  
+    <returns type="void"/> 
+    <example>
+      Example:
+      vis='test.ms'
+      flagChanGaps(vis,width=2)
+    </example>
+    <constraints/>
+    
+  </task>
+</casaxml>

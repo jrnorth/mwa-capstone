@@ -1,0 +1,8 @@
+README
+setup.py
+CONV2UVFITS/corr2uvfits
+mwapy/mwa_32T_pb.py
+mwapy/mwapy.egg-info/PKG-INFO
+mwapy/mwapy.egg-info/SOURCES.txt
+mwapy/mwapy.egg-info/dependency_links.txt
+mwapy/mwapy.egg-info/top_level.txt

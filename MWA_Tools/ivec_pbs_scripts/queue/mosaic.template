@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Mosaic lots of images
+
+#PBS -W group_list=GROUPQ
+#PBS -q STANDARDQ
+#PBS -l walltime=01:00:00
+#PBS -l mem=HOSTMEM
+
+# Expecting the file list in here, if you didn't provide a full path
+# Expecting a path like /path/to/data/10212obsid_clean_options_stokes.fits
+# But any should work as long as the files are in the usual PROJ/OBSNUM directories
+
+cd DATADIR/PROJ/
+
+filelist=`cat FILELIST`
+
+identifier=`echo FILELIST | awk 'BEGIN {FS="/"} {print $NF}' | awk 'BEGIN {FS="."} {print $1}'`
+
+cd mosaics/${identifier}
+
+for filewpath in $filelist
+do
+# There's a limit to the number of files miriad can handle in a single expression,
+# so it's necessary to sequentially build up the mosaic from individual files
+	file=`echo $filewpath | awk 'BEGIN {FS="/"} {print $NF}'`
+	obsnum=${file:0:10}
+	root=`echo $file | sed "s/.fits//"`
+	if [[ $i -gt 0 ]]
+# i.e. it's not the first file
+	then
+		maths exp="<$savedfirst>+<${root}_mult.regrid.im>" out=mosaic$i.im options=unmask
+		maths exp="<$savedbeam>+<${root}_beam.regrid.im>" out=beam_mosaic$i.im options=unmask
+		maths exp="<$savedbeamsq>+<${root}_beamsq.regrid.im>" out=beamsq_mosaic$i.im options=unmask
+# Could also delete the regridded files if you're feeling very confident
+		echo "would rm -rf ${root}_mult.regrid.im ${root}_beam.regrid.im ${root}_beamsq.regrid.im"
+		savedfirst="mosaic$i.im"
+		savedbeam="beam_mosaic$i.im"
+		savedbeamsq="beamsq_mosaic$i.im"
+	else
+# it's the very first file: nothing to add or multiply, just save the variables
+		savedfirst=${root}_mult.regrid.im
+		savedbeam=${root}_beam.regrid.im
+		savedbeamsq=${root}_beamsq.regrid.im
+	fi
+	((i+=1))
+done
+
+((i-=1))
+
+# Make the final maps
+
+maths exp="<mosaic$i.im>/<beam_mosaic$i.im>" out=weighted_mosaic.im options=unmask
+maths exp="<mosaic$i.im>/<beamsq_mosaic$i.im>" out=pb-corrected_mosaic.im options=unmask
+fits op=xyout in=beam_mosaic$i.im out=beam_mosaic.fits
+fits op=xyout in=beamsq_mosaic$i.im out=beamsq_mosaic.fits
+fits op=xyout in=weighted_mosaic.im out=weighted_mosaic.fits
+fits op=xyout in=pb-corrected_mosaic.im out=pb-corrected_mosaic.fits
+
+# Each mosaic is huge so it's a good idea to clean up files at the end
+#rm -rf *mosaic*im
+#rm -rf 10*im
+
+exit 0

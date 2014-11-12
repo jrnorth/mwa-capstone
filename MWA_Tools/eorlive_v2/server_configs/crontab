@@ -1,0 +1,14 @@
+*/10 * * * * /home/ubuntu/generate_image.sh
+0 * * * * /home/ubuntu/pull_data.sh
+
+# The python commands are wrapped in shell scripts because of the need for sourcing the venv. See below for example content of the shell scripts.
+
+# generate_iage.sh
+# #! /bin/bash
+# source /opt/pyvenv/eorlive/bin/activate
+# /home/ubuntu/MWA_Tools/eorlive_v2/scripts/generate_beam_image.py
+
+# pull_data.sh
+# #! /bin/bash
+# source /opt/pyvenv/eorlive/bin/activate
+# /home/ubuntu/MWA_Tools/eorlive_v2/scripts/pull_chart_data.py

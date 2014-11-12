@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# FT a model of a calibrator source and run bandpass to calibrate the measurement set
+
+#PBS -W group_list=GROUPQ
+#PBS -q STANDARDQ
+#PBS -l walltime=00:30:00,mem=10gb
+
+cd DATADIR/PROJ/OBSNUM
+echo "vis='OBSNUM.ms'" > cal.py
+cat CODEDIR/bin/test_ft_beam.py >> cal.py
+DATADIR/casapy-42.0.28322-021-1-64b/casapy --nologger -c cal.py 1>> output.log 2>> error.log

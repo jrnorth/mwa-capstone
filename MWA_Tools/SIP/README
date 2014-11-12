@@ -1,0 +1,74 @@
+This pipeline contains:
+
+mwapipe_uv.py
+# This file contains the main code and logic to run the pipeline. Before running this code you must 
+# open this file and set the path to the parset file. The parset file contains all the settings and paths
+# to run the pipeline.
+
+parset.txt
+# This file contains all the parameters to run the pipeline
+
+fits_utils.py
+# Utils for combining fit images. 
+ 
+X13_121_obslist.txt
+# This file contains all the observations you want to reduce. Include the entire path and seperate observations 
+# per line. Do not leave extra lines at the end of the file. 
+
+> X13_delays.txt
+# This file contains the delays (taken from the M&C database) for your observations. This is only used if you want
+# to generate a primary beam corrected image. You will have to generate this file yourself (if not HydA). Include with the pipeline
+# is an example of the X13 delays for Hyd A. Note, the pipline identifies the relevant delay(s) by the observation name.  
+
+> mwapb.py
+# Routines for generating the PB Maps.
+
+##################################################################
+# RUN THE CODE!
+# Make a directory called UVFITS_Scratch and add it to parset.txt (first time only)
+# Make a directory called results and add it to partset.txt (first time only)
+# Once all the paths have been set in parset.txt; to run the pipeline within CASA type:
+> execfile(mwapipe_uv.py)
+
+##################################################################
+#Dependencies: 
+
+#The only depedency the pipeline requires is for pyfits to be installed within the 
+#CASA enviroment.
+
+# Do this by starting casapy and typing:
+
+!which python
+
+# the resulting path should point at CASA's python executable.
+
+# Next, go get PyFITS. It lives at:
+#
+# http://www.stsci.edu/resources/software_hardware/pyfits
+#
+# Go to "download" and get the latest release (the source).
+
+# Untar it and change to the directory (for me pyfits-3.0.4). List and
+# notice that you can see "setup.py" in there? That's your installer.
+
+# Execute "setup.py" using the CASA python version, e.g.:
+
+sudo /Applications/CASA.app/Contents/MacOS/python setup.py install
+
+# The super-user command is needed to give it the permissions it
+# needs (it did fail for me without this).
+
+# Once this is done, you should be able to start casapy and then
+
+import pyfits
+
+# Check with "help pyfits" that this is the right version.
+
+# If you want to see where it put things, I believe that's here:
+
+/Applications/CASA.app/Contents/Frameworks/Python.framework/Versions/2.6/lib/python2.6/site-packages/
+
+# You could have tracked this down from "help" on pyfits.
+
+# It does require some other python modules but we assume that these are already installed (numpy etc). 
+
