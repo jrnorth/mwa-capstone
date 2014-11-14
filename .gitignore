@@ -107,3 +107,10 @@ sympy-plots-for-*.tex/
 
 # xindy
 *.xdy
+
+# prototype
+eorlive_prototype/**/*~
+eorlive_prototype/**/*.db
+eorlive_prototype/flask/
+eorlive_prototype/.vagrant/
+eorlive_prototype/app/__pycache__/
