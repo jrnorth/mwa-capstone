@@ -24,3 +24,11 @@ def get_observations():
 	observations = json.loads(data)
 
 	return render_template('observation_table.html', observations=observations)
+
+@app.route('/login', methods = ['GET', 'POST'])
+def login():
+	return render_template('index.html')
+
+@app.route('/logout')
+def logout():
+	return render_template('index.html')

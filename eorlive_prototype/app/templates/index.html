@@ -1,38 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>EoRLiveP</title>
-	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css"/>
-	<link rel="stylesheet" href="../static/css/jquery.datetimepicker.css"/>
-	<link rel="stylesheet" href="../static/css/style.css"/>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
-</head>
-<body>
-	<div class=page>
-	  <h1>EoRLiveP</h1>
-		  <div class=metanav>
-			<!--login/logout code here-->
-		  </div>
-		  {% for message in get_flashed_messages() %}
-		    <div class=flash>{{ message }}</div>
-		  {% endfor %}
-		  {% block body %}
-			<div id='date_controls'>
-				<span>Range start:</span>
-				<input type='text' id='datepicker_start'/>
-				<span>Range end:</span>
-				<input type='text' id='datepicker_end'/>
-				<button onclick="getObservations()">Get observations</button>
-			</div>
-			<br>
-			<br>
-			<div id='observations_div'></div>
-		  {% endblock %}
+{% extends "layout.html" %}
+{% block body %}
+	<div id='date_controls'>
+		<span>Range start:</span>
+		<input type='text' id='datepicker_start'/>
+		<span>Range end:</span>
+		<input type='text' id='datepicker_end'/>
+		<button onclick="getObservations()">Get observations</button>
 	</div>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-	<script src="../static/js/jquery.datetimepicker.js"></script>
-	<script src="../static/js/index.js"></script>
-</body>
-</html>
+	<br>
+	<br>
+	<div id='observations_div'></div>
+{% endblock %}
