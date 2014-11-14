@@ -27,8 +27,25 @@ def get_observations():
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
-	return render_template('index.html')
+	error = None
+	if request.method == 'POST':
+		username = request.form['username'].strip()
+		password = request.form['password'].strip()
+		if not username:
+			error = 'Invalid username'
+		elif not password:
+			error = 'Invalid password'
+		else:
+			session['logged_in'] = True
+			flash('You were logged in')
+			return redirect(url_for('index'))
+	# It wasn't a POST request, so the user was redirected to this page.
+	return render_template('login.html', error=error)
 
 @app.route('/logout')
 def logout():
-	return render_template('index.html')
+	# Delete the 'logged_in' key from the dictionary (or do nothing if the key is not there).
+	# This means we don't have to check whether the user was logged in.
+	session.pop('logged_in', None)
+	flash('You were logged out')
+	return redirect(url_for('index'))
