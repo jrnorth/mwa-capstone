@@ -13,7 +13,6 @@ flask/bin/pip install Flask-SQLAlchemy
 flask/bin/pip install Flask-Migrate
 flask/bin/pip install Flask-Login
 
-flask/bin/python3.4 -m app.manage db init
 flask/bin/python3.4 -m app.manage db upgrade
 
 ./run.py
