@@ -1,7 +1,10 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
-from app.flask_app import app
+from flask.ext.login import login_user, logout_user, current_user, login_required
+from app.flask_app import app, lm, db
+from app import models
 import requests
 import json
+import hashlib
 
 @app.route('/')
 @app.route('/index')
@@ -25,27 +28,37 @@ def get_observations():
 
 	return render_template('observation_table.html', observations=observations)
 
+@app.before_request
+def before_request():
+	g.user = current_user
+
+@lm.user_loader
+def load_user(id):
+	return models.User.query.get(id)
+
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
+	if g.user is not None and g.user.is_authenticated():
+		return redirect(url_for('index'))
 	error = None
 	if request.method == 'POST':
 		username = request.form['username'].strip()
 		password = request.form['password'].strip()
-		if not username:
-			error = 'Invalid username'
-		elif not password:
-			error = 'Invalid password'
+		
+		u = models.User.query.get(username)
+		password = password.encode('UTF-8')
+		if not u:
+			error = 'Invalid username/password combination.'
+		elif u.password != hashlib.sha512(password).hexdigest():
+			error = 'Invalid username/password combination.'
 		else:
-			session['logged_in'] = True
+			login_user(u)
 			flash('You were logged in')
 			return redirect(url_for('index'))
-	# It wasn't a POST request, so the user was redirected to this page.
 	return render_template('login.html', error=error)
 
 @app.route('/logout')
 def logout():
-	# Delete the 'logged_in' key from the dictionary (or do nothing if the key is not there).
-	# This means we don't have to check whether the user was logged in.
-	session.pop('logged_in', None)
+	logout_user()
 	flash('You were logged out')
 	return redirect(url_for('index'))
