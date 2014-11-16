@@ -8,8 +8,6 @@ function getObservations() {
 	var end = $("#datepicker_end").val();
 	re = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/;
 
-	var LEAP_SECONDS = 16;
-
 	var startDate, endDate;
 
 	if (start.match(re)) {
@@ -26,16 +24,13 @@ function getObservations() {
 		return;
 	}
 
-	var gpsTimeBegin = new Date(1980, 0, 6, 0, 0, 0);
-	var starttime = startDate.getTime();
-	var endtime = endDate.getTime();
-	starttime = Math.floor((starttime - gpsTimeBegin) / 1000) + LEAP_SECONDS;
-	endtime = Math.floor((endtime - gpsTimeBegin)/1000) + LEAP_SECONDS;
+	var startUTC = startDate.toISOString();
+	var endUTC = endDate.toISOString();
 
 	$.ajax({
 		type: "POST",
 		url: "/get_observations",
-		data: {'starttime': starttime, 'endtime': endtime},
+		data: {'starttime': startUTC, 'endtime': endUTC},
 		success: function(data) {
 			$("#observations_div").html(data);
 		},
