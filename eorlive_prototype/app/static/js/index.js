@@ -4,14 +4,31 @@ $(function() {
 	startDatePicker.datetimepicker();
 	endDatePicker.datetimepicker();
 
-	var now = new Date();
-	var nowStr = (1900 + now.getYear()) + "/" + (now.getMonth() + 1) + "/" + now.getDate() + " " + now.getHours() + ":" + now.getMinutes();
+	var isStartDate = startDatePicker.val().length !== 0;
+	var isEndDate = endDatePicker.val().length !== 0;
 
-	if (startDatePicker.val().length === 0)
-		startDatePicker.val(nowStr);
-	if (endDatePicker.val().length === 0)
-		endDatePicker.val(nowStr);
+	if (!isStartDate || !isEndDate) {
+		var now = new Date();
+		var nowStr = getDateTimeString(now);
+
+		var MS_PER_DAY = 86400000;
+		var yesterday = new Date(now.getTime() - MS_PER_DAY);
+		var yesterdayStr = getDateTimeString(yesterday);
+
+		if (!isStartDate)
+			startDatePicker.val(yesterdayStr);
+		if (!isEndDate)
+			endDatePicker.val(nowStr);
+	}
 });
+
+function getDateTimeString(now) {
+	var month = ("0" + (now.getMonth() + 1)).slice(-2);
+	var date = ("0" + now.getDate()).slice(-2);
+	var hours = ("0" + now.getHours()).slice(-2);
+	var minutes = ("0" + now.getMinutes()).slice(-2);
+	return (1900 + now.getYear()) + "/" + month + "/" + date + " " + hours + ":" + minutes;
+};
 
 function getObservations() {
 	var start = $("#datepicker_start").val();
