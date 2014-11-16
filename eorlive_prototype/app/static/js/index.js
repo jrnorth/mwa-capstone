@@ -24,6 +24,8 @@ function getObservations() {
 		return;
 	}
 
+	$("#observations_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
 	var startUTC = startDate.toISOString();
 	var endUTC = endDate.toISOString();
 
