@@ -1,6 +1,16 @@
 $(function() {
-	$("#datepicker_start").datetimepicker();
-	$("#datepicker_end").datetimepicker();
+	var startDatePicker = $("#datepicker_start");
+	var endDatePicker = $("#datepicker_end");
+	startDatePicker.datetimepicker();
+	endDatePicker.datetimepicker();
+
+	var now = new Date();
+	var nowStr = (1900 + now.getYear()) + "/" + (now.getMonth() + 1) + "/" + now.getDate() + " " + now.getHours() + ":" + now.getMinutes();
+
+	if (startDatePicker.val().length === 0)
+		startDatePicker.val(nowStr);
+	if (endDatePicker.val().length === 0)
+		endDatePicker.val(nowStr);
 });
 
 function getObservations() {
