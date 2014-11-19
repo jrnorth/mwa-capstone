@@ -85,5 +85,5 @@ function getDate(datestr) {
 	var day = datestr.substring(8, 10);
 	var hour = datestr.substring(11, 13);
 	var minute = datestr.substring(14, 16);
-	return new Date(year, month - 1, day, hour, minute, 0);
+	return new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
 };
