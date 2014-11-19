@@ -1,0 +1,79 @@
+{% block content %}
+{% if hours_scheduled %}
+	<script>
+		$(function() {
+			// Convert the Python lists passed to this template to JSON objects, so they can be used in JavaScript.
+			var hours_scheduled = {{ hours_scheduled | tojson }};
+			var hours_observed = {{ hours_observed | tojson }};
+			var hours_with_data = {{ hours_with_data | tojson }};
+			var hours_with_uvfits = {{ hours_with_uvfits | tojson }};
+
+			var date_str_to_ms = function(index, value) {
+				// Convert the date string, formatted "YYYY-mm-ddTHH:MM:SSZ", to a timestamp in milliseconds, which is what Highcharts expects.
+				value[0] = Date.parse(value[0]);
+			};
+
+			$.each(hours_scheduled, date_str_to_ms);
+			$.each(hours_observed, date_str_to_ms);
+			$.each(hours_with_data, date_str_to_ms);
+			$.each(hours_with_uvfits, date_str_to_ms);
+
+			$('#hours_plot').highcharts({
+				title: {
+					text: 'Hours observed/scheduled'
+				},
+				xAxis: {
+					type: 'datetime',
+					title: {
+						text: 'Date'
+					}
+				},
+				yAxis: {
+					title: {
+						text: 'Hours'
+					},
+					floor: 0
+				},
+				legend: {
+					layout: 'vertical',
+					align: 'right',
+					verticalAlign: 'middle',
+					borderWidth: 0
+				},
+				series: [{
+					name: 'hours scheduled',
+					data: hours_scheduled
+				}, {
+					name: 'hours observed',
+					data: hours_observed
+				}, {
+					name: 'hours with data',
+					data: hours_with_data
+				}, {
+					name: 'hours with uvfits',
+					data: hours_with_uvfits
+				}]
+			});
+		});
+	</script>
+{% else %}
+	<script>
+		$(function() {
+			// Make a chart with no data, which will be displayed as a chart with a "No data to display" message.
+			$('#hours_plot').highcharts({
+				chart: {
+					plotBackgroundColor: null,
+					plotBorderWidth: null,
+					plotShadow: false
+				},
+				title: {
+					text: 'Hours observed/scheduled'
+				},
+				series: [{
+					data: []
+				}]
+			});
+		});
+	</script>
+{% endif %}
+{% endblock %}

@@ -6,6 +6,8 @@ import requests
 import json
 import hashlib
 from requests_futures.sessions import FuturesSession
+from sqlalchemy import and_
+from datetime import datetime
 
 @app.route('/')
 @app.route('/index')
@@ -47,6 +49,28 @@ def get_observations():
 	observations = json.loads(data)
 
 	return render_template('observation_table.html', observations=observations)
+
+@app.route('/graph_data', methods = ['POST'])
+def graph_data():
+	query = models.GraphData.query
+
+	# Get graph data for the range specified by the user. The values being compared here are strings representing UTC time; comparing dates like this is fine.
+	query = query.filter(and_(models.GraphData.created_on >= request.form['starttime'], models.GraphData.created_on <= request.form['endtime']))
+
+	# Order the data by the "created_on" field. This data is going to be used in a chart, so the data needs to be in time-series order.
+	graph_data = [gd.asDict() for gd in query.order_by(models.GraphData.created_on).all()]
+
+	# Each data point is paired with its creation time. Highcharts needs the data in this format for the x-axis to work properly.
+	hours_scheduled = [[gd['created_on'], gd['hours_scheduled']] for gd in graph_data]
+
+	hours_observed = [[gd['created_on'], gd['hours_observed']] for gd in graph_data]
+
+	hours_with_data = [[gd['created_on'], gd['hours_with_data']] for gd in graph_data]
+
+	hours_with_uvfits = [[gd['created_on'], gd['hours_with_uvfits']] for gd in graph_data]
+
+	return render_template('line_chart.html', hours_scheduled = hours_scheduled, hours_observed = hours_observed,
+		hours_with_data = hours_with_data, hours_with_uvfits = hours_with_uvfits)
 
 @app.before_request
 def before_request():
