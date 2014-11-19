@@ -19,6 +19,8 @@ $(function() {
 			startDatePicker.val(yesterdayStr);
 		if (!isEndDate)
 			endDatePicker.val(nowStr);
+
+		getObservations();
 	}
 });
 
