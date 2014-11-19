@@ -1,4 +1,5 @@
 from app.flask_app import db
+from datetime import datetime
 
 class User(db.Model):
 	username = db.Column(db.String(32), primary_key=True)
@@ -30,3 +31,26 @@ class User(db.Model):
 
 	def get_id(self):
 		return self.username
+
+class GraphData(db.Model):
+	# AUTO_INCREMENT is automatically set on the first Integer primary key column that is not marked as a foreign key.
+	id = db.Column(db.Integer, primary_key=True)
+	# Store a 'created_on' string field for the current time that is automatically inserted with a new entry into the database.
+	# We're using UTC time, so that's why there is a Z at the end of the string.
+	created_on = db.Column(db.String(20), default=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'))
+	hours_scheduled = db.Column(db.Float)
+	hours_observed = db.Column(db.Float)
+	hours_with_data = db.Column(db.Float)
+	hours_with_uvfits = db.Column(db.Float)
+	data_transfer_rate = db.Column(db.Float)
+
+	def asDict(self):
+		return {
+			'id': self.id,
+			'created_on': self.created_on,
+			'hours_scheduled': round(self.hours_scheduled or 0., 4),
+			'hours_observed': round(self.hours_observed or 0., 4),
+			'hours_with_data': round(self.hours_with_data or 0., 4),
+			'hours_with_uvfits': round(self.hours_with_uvfits or 0., 4),
+			'data_transfer_rate': round(self.data_transfer_rate or 0., 4)
+		}
