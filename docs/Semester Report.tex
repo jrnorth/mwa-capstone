@@ -44,7 +44,14 @@ The motivation for this project was to make improvements upon the existing site,
 
 \section{Scope}
 \subsection{Original Definition}
+The original plan was to develop a website with this layout, as was in the document given to us by our project sponsors. However, the original document did not go into much detail as to what the structure of the website would be in relation to users, data, and more. So, we met with our project sponsors on what to change to our project scope, and we decided that there will be three different layers that our team will work on.
+
 \subsection{Change of scope and reason for change}
+The main change to our project was to divide it into three distinct ``layers." The first layer is the logic layer, which will be the layer in-between the User Interface and Data layers. There is not a well-defined API for extracting the data from the databases - our team will have to develop an API - with demos/documents/plots, and more - so that someone else may want to extend functionality later. Also, the databases are extremely complex, so we need to develop an ORM for modeling a user and data. 
+\\ \\
+The second layer is the actual telescope data itself. As said by our project sponsors, the main component of the website itself will be displaying the data - our goal for this layer is to pull the telescope data out of the databases in a meaningful way.
+\\ \\
+The third, and most important, layer is the User Interface. There are several features that needed to be added - one was user accounts. Users need to be able to register and/or login to the website. Another important feature was comments - we need to have a comments feature on each and any data point, allowing for conversations between users. There will also be a forum that will allow direct communication to various UI elements on the website. The project sponsors also wanted more interactivity in the website, such as manually flagging data streams, seeing which other users are also online (possibly to start a conversation), having a photo of the array itself and having it be interactive, and more. 
 
 \section{User Overview}
 The intended users of this website are astrophysicists involved in research which focuses on monitoring hydrogen radiation throughout the universe. The users are already familiar with the Murchison Widefield Array and the science associated with it. Some of the scientists may be familiar with software development (for example, experience with scripting languages like Python), but it is assumed that none of the users have a deep understanding of software development.
@@ -107,7 +114,7 @@ The development for this website uses many of the standard web-development langu
 
 \subsection{Other Tools}
 The development environment used by the team is managed by Vagrant. Vagrant is a tool which allows teams to create specific virtual machines, allowing everyone to develop on their own machine but in environments with identical configurations. This allows the team to focus on the code and not on solving issues related to their specific configuration, which can be an issue with web development when users must simulate web servers on their workstations.
-\newline \newline
+\\ \\
 The version control tool chosen to manage our codebase is Git, with GitHub as a host and collaborative tool. Comments and issues on GitHub allow the team to communicate directly on the code. Slack, a team communication tool, was used to keep the development team connected. Standard email communication was used in conjunction with meetings to communicate with the sponsors.
 
 \section{Preliminary results}
@@ -117,46 +124,61 @@ TODO: Add screenshots of the login page \& the main page.
 \section{Problems and risks}
 
 \section{Summary of Tasks}
+
 \subsection{Connor Alfheim}
 \subsubsection{Team Presentation}
 \subsubsection{Report}
 \subsubsection{Product}
 \subsubsection{Initialization Document}
 \subsubsection{Team Management}
+
+\clearpage
+
 \subsection{Ryan Dougherty}
 \subsubsection{Team Presentation}
-\subsubsection{Report}
-fdsfsdsdf
-\subsubsection{Product}
-\subsubsection{Initialization Document}
-\subsubsection{Team Management}
+Ryan created the shareable Google Drive link for the presentation. Also, in addition to filling out my slides for the section in which he presented, Ryan also gave some feedback to the rest of the team on their slides. Also, when the entire team met to test how much time our presentation took in total, Ryan took account of time for each individual, such as who needed to talk more, who needed to talk less, and other suggestions.
+\subsubsection{Report} Ryan created the initial document that was shared among our group. He also contributed some ideas among the group as to what to include in the final report, such as how much detail was needed to include in sections of the report. Also, he helped review some of the sections that were written by the other group members, by fixing grammar errors, including more details, and fixing flow between paragraphs and separate sections. In addition, Ryan also wrote Sections \#9 and \#10.
+\subsubsection{Product} Ryan was mainly the ``tester" of the group. As soon as a commit was made to the code repository, Ryan would pull the changes down from it and start up the virtual machine. If there were any problems with regard to features/usability that was seen in that pull, Ryan would create an issue/feature request on our repository on Github. After that, Ryan would then communicate with the rest of the team as to specifics of the issue/feature.
+\subsubsection{Initialization Document} Ryan, like in the team presentation, gave feedback on each other's work in the initialization document. 
+\subsubsection{Team Management} Ryan helped team management by being helpful to the team in terms of being able to understand what is needed to move forward in the project, particularly in testing each version of (and commit to) the shared code repository. 
+
+\clearpage
+
 \subsection{David Ganey}
 \subsubsection{Team Presentation}
 \subsubsection{Report}
 \subsubsection{Product}
 \subsubsection{Initialization Document}
 \subsubsection{Team Management}
+
+\clearpage
+
 \subsection{Dylan Lusi}
 \subsubsection{Team Presentation}
 \subsubsection{Report}
 \subsubsection{Product}
 \subsubsection{Initialization Document}
 \subsubsection{Team Management}
+
+\clearpage
+
 \subsection{Joseph North}
 \subsubsection{Team Presentation}
 \subsubsection{Report}
 \subsubsection{Product}
 \subsubsection{Initialization Document}
 \subsubsection{Team Management}
+
+\clearpage
+
 \subsection{Ben Roos}
 \subsubsection{Team Presentation}
 \subsubsection{Report}
-fdsfdsa
 \subsubsection{Product}
 \subsubsection{Initialization Document}
 \subsubsection{Team Management}
 
-
+\clearpage
 
 \section{Conclusions}
 \subsection{Success So Far}
