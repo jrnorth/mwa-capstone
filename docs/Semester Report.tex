@@ -113,7 +113,7 @@ TODO CONTENT
 
 \section{Technology and Tools}
 \subsection{Programming Languages}
-The development for this website uses many of the standard web-development languages. Front-end design is accomplished using HTML and CSS. Some client-side code is run with JavaScript, though this is minimal. The primary server-side language used is Python, in conjunction with a framework called Flask. 
+The development for this website uses many of the standard web-development languages. Front-end design is accomplished using HTML and CSS. Some client-side code is run with JavaScript, though this is minimal. The primary server-side language used is Python, in conjunction with a framework called Flask. We also have some scripts that run regularly to pull data from the MIT databases using PostgreSQL, and we use SQLite for the data we store locally on our server.
 
 \subsection{Other Tools}
 The development environment used by the team is managed by Vagrant. Vagrant is a tool which allows teams to create specific virtual machines, allowing everyone to develop on their own machine but in environments with identical configurations. This allows the team to focus on the code and not on solving issues related to their specific configuration, which can be an issue with web development when users must simulate web servers on their workstations.
@@ -125,7 +125,7 @@ Our primary deliverable for this semester is a small Web site that allows the us
 \\
 TODO: Add screenshots of the login page \& the main page.
 \section{Problems and risks}
-
+One potential problem our sponsor pointed out to us early on is that the queries we would need to make on the MIT database have the potential to place an enormous load on the server. We needed to consider these performance concerns when designing our application. Our sponsor pointed us to a RESTful API maintained by the team that takes care of the database which places a smaller load on the server but only offers certain queries. We've had to figure out how to design our application using these Web services as much as possible so we can avoid using direct database queries.
 \section{Summary of Tasks}
 
 \subsection{Connor Alfheim}
