@@ -6,7 +6,7 @@
 \usepackage{enumitem} %for continuing lists
 \usepackage{titling} %for moving the title
 \usepackage[normalem]{ulem} %for underlining
-\usepackage{graphics}
+\usepackage{graphicx}
 
 %redefine section numbering to match Mayron's style
 \renewcommand{\thesection}{\arabic{section}} %make sections use numbers
@@ -122,8 +122,12 @@ The version control tool chosen to manage our codebase is Git, with GitHub as a 
 
 \section{Preliminary results}
 Our primary deliverable for this semester is a small Web site that allows the user to browse data based on date ranges. It includes support for user accounts, which are added via the command line on the server. The user logs in with their username and password and is taken to the main screen that contains "Start" and "End" datetime selectors that are filled in with reasonable default values (the end time is the current UTC time and the start time is 24 hours prior). Clicking the "Get observations" button loads a table below that displays a list of observations that occurred in that range. Specifically, each entry in the table includes the observation's ID, name, and who scheduled the observation. Below this table is a graph that displays the status of the telescope's data pipeline during that range. This graph is a line graph that shows the total observation hours scheduled for the telescope versus how many hours have actually been observed, and how many hours' worth of observation data have been transferred from the telescope to databases at MIT. The graph is interactive; the user can toggle the data sets in the legend to choose which ones are shown in the graph.
-\\
-TODO: Add screenshots of the login page \& the main page.
+\\ \\
+\includegraphics[width=\textwidth]{screenshot1}
+The login page.
+\\ \\
+\includegraphics[width=\textwidth]{screenshot2}
+The data browsing page.
 \section{Problems and risks}
 One potential problem our sponsor pointed out to us early on is that the queries we would need to make on the MIT database have the potential to place an enormous load on the server. We needed to consider these performance concerns when designing our application. Our sponsor pointed us to a RESTful API maintained by the team that takes care of the database which places a smaller load on the server but only offers certain queries. We've had to figure out how to design our application using these Web services as much as possible so we can avoid using direct database queries.
 \section{Summary of Tasks}
