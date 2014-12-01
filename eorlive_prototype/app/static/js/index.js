@@ -25,11 +25,11 @@ $(function() {
 });
 
 function getDateTimeString(now) {
-	var month = ("0" + (now.getMonth() + 1)).slice(-2);
-	var date = ("0" + now.getDate()).slice(-2);
-	var hours = ("0" + now.getHours()).slice(-2);
-	var minutes = ("0" + now.getMinutes()).slice(-2);
-	return (1900 + now.getYear()) + "/" + month + "/" + date + " " + hours + ":" + minutes;
+	var month = ("0" + (now.getUTCMonth() + 1)).slice(-2);
+	var date = ("0" + now.getUTCDate()).slice(-2);
+	var hours = ("0" + now.getUTCHours()).slice(-2);
+	var minutes = ("0" + now.getUTCMinutes()).slice(-2);
+	return now.getUTCFullYear() + "/" + month + "/" + date + " " + hours + ":" + minutes;
 };
 
 function getObservations() {
