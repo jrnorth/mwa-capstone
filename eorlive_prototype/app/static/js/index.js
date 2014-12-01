@@ -19,9 +19,9 @@ $(function() {
 			startDatePicker.val(yesterdayStr);
 		if (!isEndDate)
 			endDatePicker.val(nowStr);
-
-		getObservations();
 	}
+
+	getObservations();
 });
 
 function getDateTimeString(now) {

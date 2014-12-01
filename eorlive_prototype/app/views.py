@@ -12,7 +12,9 @@ from datetime import datetime
 @app.route('/')
 @app.route('/index')
 def index():
-	return render_template('index.html')
+	# GET is the default request method.
+	# Since we're using GET, we have to access arguments by request.args.get() rather than request.form[]
+	return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
 
 @app.route('/get_observations', methods = ['POST'])
 def get_observations():

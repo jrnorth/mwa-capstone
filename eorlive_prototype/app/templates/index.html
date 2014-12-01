@@ -2,9 +2,19 @@
 {% block body %}
 	<div id='date_controls'>
 		<span>Range start:</span>
-		<input type='text' id='datepicker_start'/>
+		{% if starttime %}
+		<input type='text' id='datepicker_start' value='{{starttime}}'
+		{% else %}
+		<input type='text' id='datepicker_start'
+		{% endif %}
+		autocomplete='off'/>
 		<span>Range end:</span>
-		<input type='text' id='datepicker_end'/>
+		{% if endtime %}
+		<input type='text' id='datepicker_end' value='{{endtime}}'
+		{% else %}
+		<input type='text' id='datepicker_end'
+		{% endif %}
+		autocomplete='off'/>
 		<button onclick="getObservations()">Get observations</button>
 	</div>
 	<br>
