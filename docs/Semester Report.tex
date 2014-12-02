@@ -106,10 +106,19 @@ For the first semester, one goal of the project was to identify and refine the m
 For the second semester, the goal of the project is to port the improvements made to the prototype to the full site. Additional features will be added to create version three of the EoRLive website. User communication functionality will help the scientists collaborate more effectively and discuss data in new ways. For example, the ability to generate hyperlinks to specific date ranges will allow for quick sharing of information. Additionally, the team will work to maintain extensibility on the website by providing an API through which scientists can create additional plots and views for new types of data streams. These three new features (user forum style communication, hyperlinks to data ranges, and extended plotting capabilities) define the backbone of the second semester development effort, though additional functionality may be added as well if time permits.
 
 \section{Development Approach}
-TODO CONTENT
+ While the team spent longer in the requirements and design phase than the normal agile process, we used agile development methods to create our prototype. During the first few weeks of the semester, our team fell into the same trap that occurs to many waterfall projects: we were overly focused on documentation and gathering of requirements at the expence of producing usable software. During this time, each new idea from us or our sponsor changed our potential design. After multiple weeks of working through design descisions and restructuring the design of our product, we moved to an agile methodology to produce a usable product. 
+\\ \\
+Once we adopted agile development, our focus changed from producing a fullly fuctional website to creating a core site with extensible code that can be later changed to add additional features. Our reasoning for adopting an agile process is to quickly produce a usable site that our sponsors can use and provide feedback. From our core site, the sponsors and our team were able to identify the current features that need refinement and the next set of features that need to be implemented. 
+
 
 \section{Design Overview and Decisions}
-TODO CONTENT
+\subsection{Modularity}
+For the prototype, each feature was programmed to be a separate module from the other features. This design allows for highly reusable code as the same item on different pages does not become duplicated code. For instance, our header at the top of the page is located in one file that is used throughout the site. Our team only needs to modify one file in order to change the behavior of the site. In additon, this design can aid in the implementation of subscription feeds later. The users could customize which views of the data they have through subscribing to different modules.
+
+\subsection{Database}
+Our prototype database is hosted through SQLite and contains a mock version of the database we will use for the  main site. This database contains all of the custom site information like user information, comments, and data feeds that users make. 
+\\ \\
+In addition to the site specific data, the database stores consolidated information from the many outside databases that contain the data feeds for this project. The data from the telescope are stored in multiple different remote databases. The data germaine to this project is a small subset of the total data and needs to be combined from the miltiple databases. A query to select and join the relevent data from the many databases has too long of a response time for a positive user experience. To fix this slow consolidation of data, a script runs that imports the new data every few minutes. Once the data is processed and stored locally, the site can deliver the proper content quickly.
 
 \section{Technology and Tools}
 \subsection{Programming Languages}
@@ -130,14 +139,20 @@ The login page.
 The data browsing page.
 \section{Problems and risks}
 One potential problem our sponsor pointed out to us early on is that the queries we would need to make on the MIT database have the potential to place an enormous load on the server. We needed to consider these performance concerns when designing our application. Our sponsor pointed us to a RESTful API maintained by the team that takes care of the database which places a smaller load on the server but only offers certain queries. We've had to figure out how to design our application using these Web services as much as possible so we can avoid using direct database queries.
+\clearpage
 \section{Summary of Tasks}
 
 \subsection{Connor Alfheim}
 \subsubsection{Team Presentation}
+Connor prepared  and presented on the Design Overview content of the team presentation. He also offered suggestions for the lessons learned and tools section of the presentation during a mock team presentation. 
 \subsubsection{Report}
+Connor was the primary contributor to the Development Approach and the Design Overview section of the report. He also helped edit and proofread the rest of the report.
 \subsubsection{Product}
+Connor aided in the design of the database for the prototype. He helped identify and narrow down the key elements of the site to be first implemented. He also actively participated in the initial development of the design and structure of the prototype.
 \subsubsection{Initialization Document}
+Connor helped proofread the Initialization Document and offered content suggestions. 
 \subsubsection{Team Management}
+Connor helped with team management by steering team meetings to the appropriate subjects and keeping the meetings on track. Connor made sure the proper topics at each meeting were addressed concisely and adequately.
 
 \clearpage
 
