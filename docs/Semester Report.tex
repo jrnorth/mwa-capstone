@@ -131,10 +131,10 @@ The version control tool chosen to manage our codebase is Git, with GitHub as a 
 
 \section{Preliminary Results}
 Our primary deliverable for this semester is a small Web site that allows the user to browse data based on date ranges. It includes support for user accounts, which are added via the command line on the server. The user logs in with their username and password and is taken to the main screen that contains "Start" and "End" datetime selectors that are filled in with reasonable default values (the end time is the current UTC time and the start time is 24 hours prior). Clicking the "Get observations" button loads a table below that displays a list of observations that occurred in that range. Specifically, each entry in the table includes the observation's ID, name, and who scheduled the observation. Below this table is a graph that displays the status of the telescope's data pipeline during that range. This graph is a line graph that shows the total observation hours scheduled for the telescope versus how many hours have actually been observed, and how many hours' worth of observation data have been transferred from the telescope to databases at MIT. The graph is interactive; the user can toggle the data sets in the legend to choose which ones are shown in the graph.
-\\ \\
+
 \subsection{Figure 3: The login page}
 \includegraphics[width=\textwidth]{screenshot1}
-\\ \\
+
 \subsection{Figure 4: The data browsing page}
 \includegraphics[width=\textwidth]{screenshot2}
 \section{Problems and Risks}
