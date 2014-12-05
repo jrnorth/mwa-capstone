@@ -6,7 +6,7 @@ import requests
 import json
 import hashlib
 from requests_futures.sessions import FuturesSession
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from datetime import datetime
 
 @app.route('/')
@@ -73,6 +73,36 @@ def graph_data():
 
 	return render_template('line_chart.html', hours_scheduled = hours_scheduled, hours_observed = hours_observed,
 		hours_with_data = hours_with_data, hours_with_uvfits = hours_with_uvfits)
+
+@app.route('/histogram_data', methods = ['POST'])
+def histogram_data():
+	starttime = datetime.strptime(request.form['starttime'], '%Y-%m-%dT%H:%M:%SZ')
+
+	endtime = datetime.strptime(request.form['endtime'], '%Y-%m-%dT%H:%M:%SZ')
+
+	# The Julian day for January 1, 2000 was 2,451,545 (http://en.wikipedia.org/wiki/Julian_day).
+	jan_1_2000 = datetime(2000, 1, 1)
+
+	jan_1_2000_julian_day = 2451545
+
+	# Get the time delta between this observation date and January 1, 2000.
+	delta_start = starttime - jan_1_2000
+
+	# Add the number of days in the time delta to the Julian day to get this datetime's Julian day.
+	julian_day_start = delta_start.days + jan_1_2000_julian_day
+
+	delta_end = endtime - jan_1_2000
+
+	julian_day_end = delta_end.days + jan_1_2000_julian_day
+
+	julian_days = list(range(julian_day_start, julian_day_end))
+
+	# Take the observations with Julian dates within the specified range, count the number of observations for each Julian date, and group the
+	# counts by the Julian date. The result is the number of observations for each Julian date in the specified range as a list.
+	observation_counts = db.session.query(func.count(models.HistogramData.julian_day)).group_by(models.HistogramData.julian_day).\
+		filter(and_(models.HistogramData.julian_day >= julian_day_start, models.HistogramData.julian_day <= julian_day_end)).all()
+
+	return render_template('histogram.html', julian_days = julian_days, observation_counts = [obs_count[0] for obs_count in observation_counts])
 
 @app.before_request
 def before_request():
