@@ -17,4 +17,6 @@ flask/bin/pip install psycopg2
 
 flask/bin/python3.4 -m app.manage db upgrade
 
+crontab crontab
+
 ./run.py
