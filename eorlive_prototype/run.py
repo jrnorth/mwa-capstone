@@ -2,4 +2,4 @@
 from app.flask_app import app
 from app import views, models
 
-app.run(debug=True, host='0.0.0.0')
+app.run(debug=True)
