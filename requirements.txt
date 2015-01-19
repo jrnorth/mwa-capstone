@@ -6,3 +6,4 @@ psycopg2==2.5.4
 requests==2.5.1
 requests-futures==0.9.5
 gunicorn==19.1.1
+APScheduler==3.0.0
