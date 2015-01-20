@@ -8,30 +8,13 @@ from datetime import datetime
 from app import models
 from app.flask_app import db
 
-PATH_TO_LOG = '/tmp/pull_chart_data.log'
-
 eor_conn = None  # Lazy load globals
 ngas_conn = None
 mwa_conn = None
 profiling_mark = None
 
-TESTING = False
-
-cur_d = os.path.dirname(__file__)
-
 def write_to_log(msg):
     print(msg)
-
-    if TESTING:
-        return
-
-    f = open(os.path.join(cur_d, PATH_TO_LOG), 'a')
-
-    try:
-        f.write(msg)
-    finally:
-        f.close()
-
 
 def send_query(db, query):
     cur = db.cursor()
@@ -190,9 +173,6 @@ def update():
                  total_uvfits_hours)
     write_to_log("Data transfer rate = %.6f" % data_transfer_rate)
 
-    if TESTING:
-        return exit(0)
-
     graph_datum = models.GraphData(hours_scheduled = total_sch_hours, hours_observed = total_obs_hours, hours_with_data = total_data_hours,
 	hours_with_uvfits = total_uvfits_hours, data_transfer_rate = data_transfer_rate)
 
@@ -207,7 +187,7 @@ if __name__ == '__main__':
     # Establish the database connection
     try:
         eor_conn = psycopg2.connect(
-            database='mwa', host='eor-db.mit.edu', user='<insert username>', password='<insert password>')
+            database='mwa', host='eor-db.mit.edu', user=os.environ['MWA_DB_USERNAME'], password=os.environ['MWA_DB_PW'])
     except Exception as e:
         write_to_log(
             "Can't connect to the eor database at eor-db.mit.edu - %s" % e)
@@ -215,7 +195,7 @@ if __name__ == '__main__':
 
     try:
         ngas_conn = psycopg2.connect(
-            database='ngas', user='<insert username>', host='ngas.mit.edu', password='<insert password>')
+            database='ngas', user=os.environ['NGAS_DB_USERNAME'], host='ngas.mit.edu', password=os.environ['NGAS_DB_PW'])
     except Exception as e:
         write_to_log(
             "Can't connect to the ngas database at ngas.mit.edu - %s" % e)
@@ -223,7 +203,7 @@ if __name__ == '__main__':
 
     try:
         mwa_conn = psycopg2.connect(
-            database='mwa', user='<insert username>', password='<insert password>', host='mwa.mit.edu')
+            database='mwa', user=os.environ['MWA_DB_USERNAME'], password=os.environ['MWA_DB_PW'], host='mwa.mit.edu')
     except Exception as e:
         write_to_log(
             "Can't connect to the mwa database at mwa.mit.edu - %s" % e)

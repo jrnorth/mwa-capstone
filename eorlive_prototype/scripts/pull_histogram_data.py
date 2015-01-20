@@ -76,6 +76,8 @@ def update():
 		# Merge rather than add because the 1-minute buffer means we might insert existing entries into the table.
 		db.session.merge(datum)
 
+	print(str(len(data)) + ' new observations added to histogram')
+
 	db.session.commit()
 
 if __name__ == '__main__':
