@@ -193,7 +193,7 @@ def range_saved():
 
 		return render_template('range_save_button.html', range_saved=range_saved, range_id=int(range_id), rangeStart=int(startGPS), rangeEnd=int(endGPS))
 	else:
-		return '<span>Error: no user logged in</span>'
+		return '<span>Log in to save ranges</span>'
 
 @app.route('/save_range', methods = ['POST'])
 def save_range():
