@@ -90,6 +90,16 @@ function getObservations() {
 		},
 		dataType: "html"
 	});
+
+	$.ajax({
+		type: "POST",
+		url: "/range_saved",
+		data: {'starttime': startUTC, 'endtime': endUTC},
+		success: function(data) {
+			$("#range_save").html(data);
+		},
+		dataType: "html"
+	});
 };
 
 function getDate(datestr) {
@@ -99,4 +109,28 @@ function getDate(datestr) {
 	var hour = datestr.substring(11, 13);
 	var minute = datestr.substring(14, 16);
 	return new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
+};
+
+function saveRange(rangeStart, rangeEnd) {
+	$.ajax({
+		type: "POST",
+		url: "/save_range",
+		data: {'startGPS': rangeStart, 'endGPS': rangeEnd},
+		success: function(data) {
+			$("#range_save").html("<button onclick='removeRange(" + data + ")'>Remove range from saved</button>");
+		},
+		dataType: 'text'
+	});
+};
+
+function removeRange(range_id) {
+	$.ajax({
+		type: "POST",
+		url: "/remove_range",
+		data: {'range_id': range_id},
+		success: function(data) {
+			$("#range_save").html("<button onclick='saveRange(" + data.start + ", " + data.end + ")'>Add range to saved</button>");
+		},
+		dataType: 'json'
+	});
 };

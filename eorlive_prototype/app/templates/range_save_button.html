@@ -1,0 +1,7 @@
+{% block content %}
+	{% if range_saved %}
+		<button onclick="removeRange({{range_id}})">Remove range from saved</button>
+	{% else %}
+		<button onclick="saveRange({{rangeStart}}, {{rangeEnd}})">Add range to saved</button>
+	{% endif %}
+{% endblock %}
