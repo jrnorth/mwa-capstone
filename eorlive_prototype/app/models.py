@@ -1,6 +1,11 @@
 from app.flask_app import db
 from datetime import datetime
 
+user_range = db.Table('user_range',
+	db.Column('user', db.String(32), db.ForeignKey('user.username')),
+	db.Column('range_id', db.Integer, db.ForeignKey('range.id'))
+)
+
 class User(db.Model):
 	username = db.Column(db.String(32), primary_key=True)
 	# SHA-512 returns a 512-bit hash, which is 512 bits / 8 bits per byte * 2 hex digits per byte = 128 hex digits.
@@ -9,6 +14,7 @@ class User(db.Model):
 	email = db.Column(db.String(254), nullable=False)
 	first_name = db.Column(db.String(50), nullable=False)
 	last_name = db.Column(db.String(50), nullable=False)
+	saved_ranges = db.relationship('Range', secondary=user_range)
 
 	def __init__(self, username, password, email, first_name, last_name):
 		self.username = username;
@@ -31,6 +37,11 @@ class User(db.Model):
 
 	def get_id(self):
 		return self.username
+
+class Range(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	start = db.Column(db.Integer)
+	end = db.Column(db.Integer)
 
 class GraphData(db.Model):
 	# AUTO_INCREMENT is automatically set on the first Integer primary key column that is not marked as a foreign key.
