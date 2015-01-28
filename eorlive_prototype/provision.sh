@@ -23,4 +23,5 @@ python3.4 -m app.manage db upgrade
 
 crontab crontab
 
-./run.py
+chmod +x run_app.py
+./run_app.py
