@@ -15,6 +15,7 @@ class User(db.Model):
 	first_name = db.Column(db.String(50), nullable=False)
 	last_name = db.Column(db.String(50), nullable=False)
 	saved_ranges = db.relationship('Range', secondary=user_range)
+	comments = db.relationship('Comment', backref='user', lazy='dynamic')
 
 	def __init__(self, username, password, email, first_name, last_name):
 		self.username = username;
@@ -69,3 +70,10 @@ class GraphData(db.Model):
 class HistogramData(db.Model):
 	obs_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
 	julian_day = db.Column(db.Integer)
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id 
+    text = db.Column(db.String(1000), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    comment_id = db.Column(db.Integer, db.ForeignKey('range.id'))	
