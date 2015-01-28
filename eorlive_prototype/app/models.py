@@ -80,10 +80,6 @@ class GraphData(db.Model):
 			'data_transfer_rate': round(self.data_transfer_rate or 0., 4)
 		}
 
-class HistogramData(db.Model):
-	obs_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
-	julian_day = db.Column(db.Integer)
-
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(1000), nullable=True)
