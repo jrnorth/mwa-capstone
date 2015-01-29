@@ -21,7 +21,5 @@ sudo -u postgres createuser vagrant
 
 python3.4 -m app.manage db upgrade
 
-crontab crontab
-
 chmod +x run_app.py
 ./run_app.py
