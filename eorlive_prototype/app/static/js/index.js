@@ -89,6 +89,8 @@ function getObservations() {
 		},
 		dataType: "html"
 	});
+
+	renderComments(startUTC, endUTC);
 };
 
 function getDate(datestr) {
@@ -119,6 +121,19 @@ function removeRange(range_id) {
 		data: {'range_id': range_id},
 		success: function(data) {
 			$("#range_save").html("<button onclick='saveRange(" + data.start + ", " + data.end + ")'>Add range to saved</button>");
+		},
+		dataType: 'json'
+	});
+};
+
+
+function renderComments(rangeStart, rangeEnd) {
+	$.ajax({
+		type: "POST",
+		url: "/get_comments",
+		data: {'rangeStart': rangeStart, 'rangeEnd': rangeEnd},
+		success: function(data) {
+			$("#comments_div").html(data);
 		},
 		dataType: 'json'
 	});

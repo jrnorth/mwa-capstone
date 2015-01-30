@@ -15,7 +15,6 @@ class User(db.Model):
 	first_name = db.Column(db.String(50), nullable=False)
 	last_name = db.Column(db.String(50), nullable=False)
 	saved_ranges = db.relationship('Range', secondary=user_range)
-	comments = db.relationship('Comment', backref='user', lazy='dynamic')
 
 	def __init__(self, username, password, email, first_name, last_name):
 		self.username = username;
@@ -43,6 +42,7 @@ class Range(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	start = db.Column(db.Integer)
 	end = db.Column(db.Integer)
+	comments = db.relationship('Comment', backref='range', lazy='dynamic')
 
 class GraphData(db.Model):
 	# AUTO_INCREMENT is automatically set on the first Integer primary key column that is not marked as a foreign key.
@@ -73,7 +73,6 @@ class HistogramData(db.Model):
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id 
     text = db.Column(db.String(1000), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    comment_id = db.Column(db.Integer, db.ForeignKey('range.id'))	
+    username = db.Column(db.String(32), db.ForeignKey('user.username'))
+    range_id = db.Column(db.Integer, db.ForeignKey('range.id'))	

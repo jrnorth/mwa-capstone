@@ -326,3 +326,62 @@ def remove_range():
 		return json.dumps({'start': ran.start, 'end': ran.end})
 	else:
 		return make_response('Error: no user logged in', 401)
+
+
+@app.route('/get_comments', methods = ['POST'])
+def get_comments():
+	if (g.user is not None and g.user.is_authenticated()):
+		session = FuturesSession()
+
+		#Do the GPS time conversion
+		baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
+
+		requestURLStart = baseUTCToGPSURL + request.form['rangeStart']
+
+		requestURLEnd = baseUTCToGPSURL + request.form['rangeEnd']
+
+		#Start the first Web service request in the background.
+		future_start = session.get(requestURLStart)
+
+		#The second request is started immediately.
+		future_end = session.get(requestURLEnd)
+
+		#Wait for the first request to complete, if it hasn't already.
+		response_start = future_start.result()
+
+		#Wait for the second request to complete, if it hasn't already.
+		response_end = future_end.result()
+
+		startGPS = int(response_start.content)
+
+		endGPS = int(response_end.content)
+
+		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
+
+		if ran is not None:
+			comments = models.Comment.query.filter_by(models.Comment.range_id == ran.id).all()
+			if comments is not None:
+				return render_template('comments.html', range_id=ran.id, comments=comments)
+		else:
+			return '<span>No range found</span>'
+	else:
+		return make_response('Error: no user logged in', 401)
+
+@app.route('/save_comment', methods = ['POST'])
+def save_comment():
+	if (g.user is not None and g.user.is_authenticated()):
+		if range_id is None:
+			#if the range does not exist, we need to add it before adding the comments
+			#TODO we need to flush this out later, but to add the range we need more than the range_id
+			#we're going to need a way of retrieving the current dates on the page, but whatevs
+			test = 'test' #placeholder
+
+		#now, add the comment
+		com = models.Comment()
+		com.text = request.form['commentText']
+		com.user_id = g.user.username
+		com.range_id = request.form['range_id']
+
+		ran = models.Range.query.get(request.form['range_id'])
+		ran.comments.append(com)
+		db.session.commit()

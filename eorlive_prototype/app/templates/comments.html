@@ -1,0 +1,19 @@
+{% block content %}
+    blah blah blah
+    {% if comments %}
+        {% for comment in comments %}
+            {% if comment %}
+                {{ comment.text }}
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <p>No Comments</p>
+    {% endif %}
+
+    <form action="{{ url_for('save_comment') }}" method='post'>
+        <dl>
+            <dd><input type="text" name="commentText">
+            <dd><input type='submit' name='Save comment'>
+        </dl>
+    </form>
+{% endblock %}
