@@ -7,7 +7,7 @@ import json
 import hashlib
 from requests_futures.sessions import FuturesSession
 from sqlalchemy import and_, func
-from datetime import datetime
+from datetime import datetime, timedelta
 import psycopg2
 import os
 
@@ -104,7 +104,7 @@ def histogram_data():
 	julian_datetime_start = startdatetime
 	#Get the start of the Julian day (12:00 UT) corresponding to the start datetime.
 	if (startdatetime.hour < 12): #If the hour wasn't >= 12, then the start of this Julian day was the previous day at 12:00 UT.
-		julian_datetime_start = julian_datetime_start - datetime.timedelta(hours = 12)
+		julian_datetime_start = julian_datetime_start - timedelta(hours = 12)
 	#No matter whether the hour was >= 12, the start of the Julian day is at 12:00 UT.
 	julian_datetime_start = julian_datetime_start.replace(hour=12, minute=0, second=0, microsecond=0)
 
