@@ -17,6 +17,7 @@ class User(db.Model):
 	owned_sets = db.relationship('Set', backref='user')
 	subscribed_sets = db.relationship('Set', secondary=set_subscriptions)
 
+
 	def __init__(self, username, password, email, first_name, last_name):
 		self.username = username;
 		self.password = password;

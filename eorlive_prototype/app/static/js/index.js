@@ -114,4 +114,3 @@ function saveComment(range_id, comment_text, startGPS, endGPS) {
 		dataType: 'html'
 	});
 };
-
