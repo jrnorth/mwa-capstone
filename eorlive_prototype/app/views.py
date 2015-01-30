@@ -124,6 +124,16 @@ def histogram_data():
 					AND projectid='G0009'
 					ORDER BY starttime ASC'''.format(start_gps, end_gps)).fetchall()
 
+	obscontroller_response = send_query(g.eor_db, '''SELECT ROUND(reference_time) AS reference_time
+							FROM obscontroller_log
+							WHERE reference_time >= {} and reference_time <= {}
+							ORDER BY reference_time ASC'''.format(start_gps, end_gps)).fetchall()
+
+	recvstatuspolice_response = send_query(g.eor_db, '''SELECT ROUND(reference_time) AS reference_time
+							FROM recvstatuspolice_log
+							WHERE reference_time >= {} and reference_time <= {}
+							ORDER BY reference_time ASC'''.format(start_gps, end_gps)).fetchall()
+
 	if len(response) > 0:
 		# The Julian day for January 1, 2000 12:00 UT was 2,451,545 (http://en.wikipedia.org/wiki/Julian_day).
 		jan_1_2000 = datetime(2000, 1, 1, 12)
@@ -140,6 +150,8 @@ def histogram_data():
 
 		observation_counts = [0 for day in range(julian_day_start, julian_day_end + 1)]
 
+		error_counts = list(observation_counts)
+
 		julian_days = [x for x in range(julian_day_start, julian_day_end + 1)]
 		#Wait for this Web request to complete, if it hasn't already.
 		julian_start_gps = int(future_julian_start.result().content)
@@ -154,9 +166,18 @@ def histogram_data():
 				#If we couldn't get an integer from the observation name, we have to calculate the Julian day using the GPS time of the
 				#start datetime and calculating how many days occurred between it and the observation in question.
 				obs_counts_index = int((observation[0] - julian_start_gps) / SECONDS_PER_DAY)
+
 			observation_counts[obs_counts_index] = observation_counts[obs_counts_index] + 1
 
-	return render_template('histogram.html', julian_days=julian_days, observation_counts=observation_counts)
+		for error in obscontroller_response:
+			error_index = int((error[0] - julian_start_gps) / SECONDS_PER_DAY)
+			error_counts[error_index] = error_counts[error_index] + 1
+
+		for error in recvstatuspolice_response:
+			error_index = int((error[0] - julian_start_gps) / SECONDS_PER_DAY)
+			error_counts[error_index] = error_counts[error_index] + 1
+
+	return render_template('histogram.html', julian_days=julian_days, observation_counts=observation_counts, error_counts=error_counts)
 
 @app.before_request
 def before_request():
