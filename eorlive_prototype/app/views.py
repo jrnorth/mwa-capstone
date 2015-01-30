@@ -361,13 +361,15 @@ def get_comments():
 		if ran is not None:
 			comments = models.Comment.query.filter_by(models.Comment.range_id == ran.id).all()
 			if comments is not None:
-				return render_template('comments.html', range_id=ran.id, comments=comments)
+				return render_template('comments.html', comments=comments)
+			else:
+				return render_template('comments.html', range_id=ran.id)
 		else:
-			return '<span>No range found</span>'
+			return render_template('comments.html')
 	else:
 		return make_response('Error: no user logged in', 401)
 
-@app.route('/save_comment', methods = ['POST'])
+@app.route('/save_comment/<range_id>', methods = ['POST'])
 def save_comment():
 	if (g.user is not None and g.user.is_authenticated()):
 		if range_id is None:
@@ -380,8 +382,10 @@ def save_comment():
 		com = models.Comment()
 		com.text = request.form['commentText']
 		com.user_id = g.user.username
-		com.range_id = request.form['range_id']
+		com.range_id = range_id
 
 		ran = models.Range.query.get(request.form['range_id'])
 		ran.comments.append(com)
 		db.session.commit()
+
+		#TODO we need to re-render comments again so the comment appears

@@ -1,5 +1,4 @@
 {% block content %}
-    blah blah blah
     {% if comments %}
         {% for comment in comments %}
             {% if comment %}
@@ -10,7 +9,12 @@
         <p>No Comments</p>
     {% endif %}
 
-    <form action="{{ url_for('save_comment') }}" method='post'>
+    {% set range_id_var = range_id %}
+
+    <!--TODO this isn't right, but i need a way to pass the range id to the method so it knows what range
+    to add the comments to. additionally, we need a way to get and pass the start and end times from the 
+    date picker in case we also need to save this range -->
+    <form action="{{ url_for('save_comment', {{ range_id_var }} ) }}" method='post'>
         <dl>
             <dd><input type="text" name="commentText">
             <dd><input type='submit' name='Save comment'>
