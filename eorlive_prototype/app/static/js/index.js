@@ -64,22 +64,11 @@ function getObservations() {
 		return;
 	}
 
-	$("#observations_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 	$("#observations_summary").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
 	// Make each date into a string of the format "YYYY-mm-ddTHH:MM:SSZ", which is the format used in the local database.
 	var startUTC = startDate.toISOString().slice(0, 19) + "Z";
 	var endUTC = endDate.toISOString().slice(0, 19) + "Z";
-
-	$.ajax({
-		type: "POST",
-		url: "/get_observations",
-		data: {'starttime': startUTC, 'endtime': endUTC},
-		success: function(data) {
-			$("#observations_div").html(data);
-		},
-		dataType: "html"
-	});
 
 	$.ajax({
 		type: "POST",

@@ -23,42 +23,6 @@ def index():
 	# Since we're using GET, we have to access arguments by request.args.get() rather than request.form[]
 	return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
 
-@app.route('/get_observations', methods = ['POST'])
-def get_observations():
-	session = FuturesSession()
-
-	baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
-
-	requestURLStart = baseUTCToGPSURL + request.form['starttime']
-
-	requestURLEnd = baseUTCToGPSURL + request.form['endtime']
-
-	#Start the first Web service request in the background.
-	future_start = session.get(requestURLStart)
-
-	#The second request is started immediately.
-	future_end = session.get(requestURLEnd)
-
-	#Wait for the first request to complete, if it hasn't already.
-	response_start = future_start.result()
-
-	#Wait for the second request to complete, if it hasn't already.
-	response_end = future_end.result()
-
-	startGPS = response_start.content
-
-	endGPS = response_end.content
-
-	requestURL = 'http://ngas01.ivec.org/metadata/find'
-
-	params = {'projectid': 'G0009', 'mintime': startGPS, 'maxtime': endGPS}
-
-	data = requests.get(requestURL, params=params).text
-
-	observations = json.loads(data)
-
-	return render_template('observation_table.html', observations=observations)
-
 @app.route('/data_amount', methods = ['GET'])
 def data_amount():
 	query = models.GraphData.query
