@@ -75,7 +75,7 @@ def data_amount():
 		hours_with_data = data['hours_with_data']
 		hours_with_uvfits = data['hours_with_uvfits']
 
-	return render_template('line_chart.html', hours_scheduled=hours_scheduled, hours_observed=hours_observed,
+	return render_template('data_amount_table.html', hours_scheduled=hours_scheduled, hours_observed=hours_observed,
 		hours_with_data=hours_with_data, hours_with_uvfits=hours_with_uvfits, data_time=data_time)
 
 @app.route('/histogram_data', methods = ['POST'])
