@@ -59,27 +59,24 @@ def get_observations():
 
 	return render_template('observation_table.html', observations=observations)
 
-@app.route('/graph_data', methods = ['POST'])
-def graph_data():
+@app.route('/data_amount', methods = ['GET'])
+def data_amount():
 	query = models.GraphData.query
 
-	# Get graph data for the range specified by the user. The values being compared here are strings representing UTC time; comparing dates like this is fine.
-	query = query.filter(and_(models.GraphData.created_on >= request.form['starttime'], models.GraphData.created_on <= request.form['endtime']))
+	data = query.order_by(models.GraphData.created_on.desc()).first()
 
-	# Order the data by the "created_on" field. This data is going to be used in a chart, so the data needs to be in time-series order.
-	graph_data = [gd.asDict() for gd in query.order_by(models.GraphData.created_on).all()]
+	data_time = hours_scheduled = hours_observed = hours_with_data = hours_with_uvfits = 'N/A'
 
-	# Each data point is paired with its creation time. Highcharts needs the data in this format for the x-axis to work properly.
-	hours_scheduled = [[gd['created_on'], gd['hours_scheduled']] for gd in graph_data]
+	if data is not None:
+		data = data.asDict()
+		data_time = data['created_on']
+		hours_scheduled = data['hours_scheduled']
+		hours_observed = data['hours_observed']
+		hours_with_data = data['hours_with_data']
+		hours_with_uvfits = data['hours_with_uvfits']
 
-	hours_observed = [[gd['created_on'], gd['hours_observed']] for gd in graph_data]
-
-	hours_with_data = [[gd['created_on'], gd['hours_with_data']] for gd in graph_data]
-
-	hours_with_uvfits = [[gd['created_on'], gd['hours_with_uvfits']] for gd in graph_data]
-
-	return render_template('line_chart.html', hours_scheduled = hours_scheduled, hours_observed = hours_observed,
-		hours_with_data = hours_with_data, hours_with_uvfits = hours_with_uvfits)
+	return render_template('line_chart.html', hours_scheduled=hours_scheduled, hours_observed=hours_observed,
+		hours_with_data=hours_with_data, hours_with_uvfits=hours_with_uvfits, data_time=data_time)
 
 @app.route('/histogram_data', methods = ['POST'])
 def histogram_data():

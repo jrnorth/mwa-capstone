@@ -21,6 +21,17 @@ $(function() {
 			endDatePicker.val(nowStr);
 	}
 
+	$("#data_amount_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+	$.ajax({
+		type: "GET",
+		url: "/data_amount",
+		success: function(data) {
+			$("#data_amount_table").html(data);
+		},
+		dataType: "html"
+	});
+
 	getObservations();
 });
 
@@ -54,7 +65,6 @@ function getObservations() {
 	}
 
 	$("#observations_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
-	$("#hours_plot").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 	$("#observations_summary").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
 	// Make each date into a string of the format "YYYY-mm-ddTHH:MM:SSZ", which is the format used in the local database.
@@ -67,16 +77,6 @@ function getObservations() {
 		data: {'starttime': startUTC, 'endtime': endUTC},
 		success: function(data) {
 			$("#observations_div").html(data);
-		},
-		dataType: "html"
-	});
-
-	$.ajax({
-		type: "POST",
-		url: "/graph_data",
-		data: {'starttime': startUTC, 'endtime': endUTC},
-		success: function(data) {
-			$("#hours_plot").html(data);
 		},
 		dataType: "html"
 	});
