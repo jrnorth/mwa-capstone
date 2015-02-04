@@ -1,80 +1,59 @@
 {% block content %}
-{% if observation_counts %}
-	<script>
-		$(function() {
-			// Convert the Python lists passed to this template to JSON objects, so they can be used in JavaScript.
-			var julian_days = {{ julian_days | tojson }};
-			var observation_counts = {{ observation_counts | tojson }};
-			var error_counts = {{ error_counts | tojson }};
+<script>
+	$(function() {
+		// Convert the Python lists passed to this template to JSON objects, so they can be used in JavaScript.
+		var julian_days = {{ julian_days | tojson }};
+		var observation_counts = {{ observation_counts | tojson }};
+		var error_counts = {{ error_counts | tojson }};
 
-			$('#obs_histogram').highcharts({
-				chart: {
-					type: 'column'
-				},
-				colors: [
-					'#7cb5ec',
-					'#FF0000',
-					'#90ed7d',
-					'#f7a35c',
-					'#8085e9',
-					'#f15c80',
-					'#e4d354',
-					'#8085e8',
-					'#8d4653',
-					'#91e8e1'
-				],
-				plotOptions: {
-					column: {
-						// No padding between columns so the graph looks like a histogram.
-						groupPadding: 0.1,
-						pointPadding: 0
-					}
-				},
+		$('#obs_histogram').highcharts({
+			chart: {
+				type: 'column'
+			},
+			colors: [
+				'#7cb5ec',
+				'#FF0000',
+				'#90ed7d',
+				'#f7a35c',
+				'#8085e9',
+				'#f15c80',
+				'#e4d354',
+				'#8085e8',
+				'#8d4653',
+				'#91e8e1'
+			],
+			plotOptions: {
+				column: {
+					// No padding between columns so the graph looks like a histogram.
+					groupPadding: 0.1,
+					pointPadding: 0
+				}
+			},
+			title: {
+				text: 'Observation & Error Count'
+			},
+			xAxis: {
+				categories: julian_days,
 				title: {
-					text: 'Observation & Error Count'
-				},
-				xAxis: {
-					categories: julian_days,
-					title: {
-						text: 'Julian Day'
-					}
-				},
-				yAxis: {
-					title: {
-						text: 'Number of Observations/Errors'
-					},
-					min: 0,
-					allowDecimals: false
-				},
-				series: [{
-					name: 'Observations',
-					data: observation_counts
-				},
-				{
-					name: 'Errors',
-					data: error_counts
-				}]
-			});
-		});
-	</script>
-{% else %}
-	<script>
-		$(function() {
-			// Make a chart with no data, which will be displayed as a chart with a "No data to display" message.
-			$('#obs_histogram').highcharts({
-				chart: {
-					plotBackgroundColor: null,
-					plotBorderWidth: null,
-					plotShadow: false
-				},
+					text: 'Julian Day'
+				}
+			},
+			yAxis: {
 				title: {
-					text: 'Observation Count'
+					text: 'Number of Observations/Errors'
 				},
-				series: [{
-					data: []
-				}]
-			});
+				min: 0,
+				allowDecimals: false
+			},
+			series: [{
+				name: 'Observations',
+				data: observation_counts
+			},
+			{
+				name: 'Errors',
+				data: error_counts
+			}]
 		});
-	</script>
-{% endif %}
+	});
+</script>
 {% endblock %}

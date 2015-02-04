@@ -134,48 +134,47 @@ def histogram_data():
 							WHERE reference_time >= {} and reference_time <= {}
 							ORDER BY reference_time ASC'''.format(start_gps, end_gps)).fetchall()
 
-	if len(response) > 0:
-		# The Julian day for January 1, 2000 12:00 UT was 2,451,545 (http://en.wikipedia.org/wiki/Julian_day).
-		jan_1_2000 = datetime(2000, 1, 1, 12)
+	# The Julian day for January 1, 2000 12:00 UT was 2,451,545 (http://en.wikipedia.org/wiki/Julian_day).
+	jan_1_2000 = datetime(2000, 1, 1, 12)
 
-		jan_1_2000_julian_day = 2451545
+	jan_1_2000_julian_day = 2451545
 
-		delta_start = startdatetime - jan_1_2000
+	delta_start = startdatetime - jan_1_2000
 
-		julian_day_start = delta_start.days + jan_1_2000_julian_day	
+	julian_day_start = delta_start.days + jan_1_2000_julian_day
 
-		delta_end = enddatetime - jan_1_2000
+	delta_end = enddatetime - jan_1_2000
 
-		julian_day_end = delta_end.days + jan_1_2000_julian_day
+	julian_day_end = delta_end.days + jan_1_2000_julian_day
 
-		observation_counts = [0 for day in range(julian_day_start, julian_day_end + 1)]
+	observation_counts = [0 for day in range(julian_day_start, julian_day_end + 1)]
 
-		error_counts = list(observation_counts)
+	error_counts = list(observation_counts)
 
-		julian_days = [x for x in range(julian_day_start, julian_day_end + 1)]
-		#Wait for this Web request to complete, if it hasn't already.
-		julian_start_gps = int(future_julian_start.result().content)
+	julian_days = [x for x in range(julian_day_start, julian_day_end + 1)]
+	#Wait for this Web request to complete, if it hasn't already.
+	julian_start_gps = int(future_julian_start.result().content)
 
-		SECONDS_PER_DAY = 86400
+	SECONDS_PER_DAY = 86400
 
-		for observation in response:
-			obs_counts_index = 0
-			try: #Most of the observation names end with the 7-digit Julian day, so we can just grab it from there.
-				obs_counts_index = int(observation[1][-7:]) - julian_day_start
-			except ValueError as ve:
-				#If we couldn't get an integer from the observation name, we have to calculate the Julian day using the GPS time of the
-				#start datetime and calculating how many days occurred between it and the observation in question.
-				obs_counts_index = int((observation[0] - julian_start_gps) / SECONDS_PER_DAY)
+	for observation in response:
+		obs_counts_index = 0
+		try: #Most of the observation names end with the 7-digit Julian day, so we can just grab it from there.
+			obs_counts_index = int(observation[1][-7:]) - julian_day_start
+		except ValueError as ve:
+			#If we couldn't get an integer from the observation name, we have to calculate the Julian day using the GPS time of the
+			#start datetime and calculating how many days occurred between it and the observation in question.
+			obs_counts_index = int((observation[0] - julian_start_gps) / SECONDS_PER_DAY)
 
-			observation_counts[obs_counts_index] = observation_counts[obs_counts_index] + 1
+		observation_counts[obs_counts_index] = observation_counts[obs_counts_index] + 1
 
-		for error in obscontroller_response:
-			error_index = int((error[0] - julian_start_gps) / SECONDS_PER_DAY)
-			error_counts[error_index] = error_counts[error_index] + 1
+	for error in obscontroller_response:
+		error_index = int((error[0] - julian_start_gps) / SECONDS_PER_DAY)
+		error_counts[error_index] = error_counts[error_index] + 1
 
-		for error in recvstatuspolice_response:
-			error_index = int((error[0] - julian_start_gps) / SECONDS_PER_DAY)
-			error_counts[error_index] = error_counts[error_index] + 1
+	for error in recvstatuspolice_response:
+		error_index = int((error[0] - julian_start_gps) / SECONDS_PER_DAY)
+		error_counts[error_index] = error_counts[error_index] + 1
 
 	return render_template('histogram.html', julian_days=julian_days, observation_counts=observation_counts, error_counts=error_counts)
 
