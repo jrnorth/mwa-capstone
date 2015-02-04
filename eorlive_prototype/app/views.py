@@ -157,6 +157,8 @@ def histogram_data():
 
 	SECONDS_PER_DAY = 86400
 
+	low_count = high_count = error_count = total_count = 0
+
 	for observation in response:
 		obs_counts_index = 0
 		try: #Most of the observation names end with the 7-digit Julian day, so we can just grab it from there.
@@ -168,15 +170,25 @@ def histogram_data():
 
 		observation_counts[obs_counts_index] = observation_counts[obs_counts_index] + 1
 
+		total_count += 1
+
+		if 'low' in observation[1]:
+			low_count += 1
+		elif 'high' in observation[1]:
+			high_count += 1
+
 	for error in obscontroller_response:
 		error_index = int((error[0] - julian_start_gps) / SECONDS_PER_DAY)
 		error_counts[error_index] = error_counts[error_index] + 1
+		error_count += 1
 
 	for error in recvstatuspolice_response:
 		error_index = int((error[0] - julian_start_gps) / SECONDS_PER_DAY)
 		error_counts[error_index] = error_counts[error_index] + 1
+		error_count += 1
 
-	return render_template('histogram.html', julian_days=julian_days, observation_counts=observation_counts, error_counts=error_counts)
+	return render_template('histogram.html', julian_days=julian_days, observation_counts=observation_counts, error_counts=error_counts,
+							total_count=total_count, error_count=error_count, low_count=low_count, high_count=high_count)
 
 @app.before_request
 def before_request():
