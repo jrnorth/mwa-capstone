@@ -359,33 +359,33 @@ def get_comments():
 		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
 
 		if ran is not None:
-			comments = models.Comment.query.filter_by(models.Comment.range_id == ran.id).all()
+			comments = models.Comment.query.filter(models.Comment.range_id == ran.id).all()
 			if comments is not None:
-				return render_template('comments.html', comments=comments)
+				return render_template('comments.html', comments=comments, range_id=ran.id, startGPS=startGPS, endGPS=endGPS)
 			else:
-				return render_template('comments.html', range_id=ran.id)
+				return render_template('comments.html', range_id=ran.id, startGPS=startGPS, endGPS=endGPS)
 		else:
-			return render_template('comments.html')
+			return render_template('comments.html', startGPS=startGPS, endGPS=endGPS)
 	else:
 		return make_response('Error: no user logged in', 401)
 
-@app.route('/save_comment/<range_id>', methods = ['POST'])
+@app.route('/save_comment', methods = ['POST'])
 def save_comment():
 	if (g.user is not None and g.user.is_authenticated()):
-		if range_id is None:
-			#if the range does not exist, we need to add it before adding the comments
-			#TODO we need to flush this out later, but to add the range we need more than the range_id
-			#we're going to need a way of retrieving the current dates on the page, but whatevs
-			test = 'test' #placeholder
+		if request.form['range_id'] is None:
+			return make_response('no range id', 401)
+			save_range(); #HOW DO WE POST THE VALUES TO THIS?
 
 		#now, add the comment
 		com = models.Comment()
 		com.text = request.form['commentText']
-		com.user_id = g.user.username
-		com.range_id = range_id
+		com.username = g.user.username
+		com.range_id = request.form['range_id']
 
-		ran = models.Range.query.get(request.form['range_id'])
+		ran = models.Range.query.get(com.range_id)
 		ran.comments.append(com)
 		db.session.commit()
 
 		#TODO we need to re-render comments again so the comment appears
+
+		return str(com.text)

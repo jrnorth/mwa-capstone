@@ -2,22 +2,22 @@
     {% if comments %}
         {% for comment in comments %}
             {% if comment %}
-                {{ comment.text }}
+                {{ comment.username }} : {{ comment.text }}
+                <br>
             {% endif %}
         {% endfor %}
     {% else %}
         <p>No Comments</p>
     {% endif %}
+    {% set ran_id = range_id %}
 
-    {% set range_id_var = range_id %}
-
-    <!--TODO this isn't right, but i need a way to pass the range id to the method so it knows what range
-    to add the comments to. additionally, we need a way to get and pass the start and end times from the 
-    date picker in case we also need to save this range -->
-    <form action="{{ url_for('save_comment', {{ range_id_var }} ) }}" method='post'>
+    <form action="{{ url_for('save_comment') }}" method='post'>
         <dl>
             <dd><input type="text" name="commentText">
             <dd><input type='submit' name='Save comment'>
+            <dd><input type="hidden" name="range_id" value="{{ ran_id }}">
+            <dd><input type="hidden" name="startGPS" value="{{ startGPS }}">
+            <dd><input type="hidden" name="endGPS" value="{{ endGPS }}">
         </dl>
     </form>
 {% endblock %}
