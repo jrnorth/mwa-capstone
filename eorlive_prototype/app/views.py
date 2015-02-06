@@ -381,5 +381,34 @@ def save_range_helper(startGPS, endGPS):
 		db.session.refresh(ran)
 
 		return redirect(url_for('index'))
+
+def save_range_helper(startGPS, endGPS):
+	if (g.user is not None and g.user.is_authenticated()):
+		user = models.User.query.get(g.user.username)
+
+		for ran in user.saved_ranges:
+			if ran.start == startGPS and ran.end == endGPS:
+				return str(ran.id)
+
+		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
+
+		if ran is not None:
+			user.saved_ranges.append(ran)
+			db.session.merge(user)
+			db.session.commit()
+			return str(ran.id)
+
+		ran = models.Range()
+		ran.start = startGPS
+		ran.end = endGPS
+
+		user.saved_ranges.append(ran)
+
+		db.session.add(ran)
+		db.session.commit()
+
+		db.session.refresh(ran)
+
+		return redirect(url_for('index'))
 	else:
 		return make_response('Error: no user logged in', 401)
