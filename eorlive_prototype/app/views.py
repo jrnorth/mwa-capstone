@@ -85,12 +85,12 @@ def histogram_data():
 					AND projectid='G0009'
 					ORDER BY starttime ASC'''.format(start_gps, end_gps)).fetchall()
 
-	obscontroller_response = send_query(g.eor_db, '''SELECT ROUND(reference_time) AS reference_time
+	obscontroller_response = send_query(g.eor_db, '''SELECT ROUND(reference_time) AS reference_time, observation_number, comment
 							FROM obscontroller_log
 							WHERE reference_time >= {} and reference_time <= {}
 							ORDER BY reference_time ASC'''.format(start_gps, end_gps)).fetchall()
 
-	recvstatuspolice_response = send_query(g.eor_db, '''SELECT ROUND(reference_time) AS reference_time
+	recvstatuspolice_response = send_query(g.eor_db, '''SELECT ROUND(reference_time) AS reference_time, observation_number, comment
 							FROM recvstatuspolice_log
 							WHERE reference_time >= {} and reference_time <= {}
 							ORDER BY reference_time ASC'''.format(start_gps, end_gps)).fetchall()
@@ -111,6 +111,10 @@ def histogram_data():
 	observation_counts = [0 for day in range(julian_day_start, julian_day_end + 1)]
 
 	error_counts = list(observation_counts)
+
+	obscontroller_error_list = [[] for day in range(julian_day_start, julian_day_end + 1)]
+
+	recvstatuspolice_error_list = [[] for day in range(julian_day_start, julian_day_end + 1)]
 
 	julian_days = [x for x in range(julian_day_start, julian_day_end + 1)]
 	#Wait for this Web request to complete, if it hasn't already.
@@ -140,16 +144,28 @@ def histogram_data():
 
 	for error in obscontroller_response:
 		error_index = int((error[0] - julian_start_gps) / SECONDS_PER_DAY)
-		error_counts[error_index] = error_counts[error_index] + 1
+		error_counts[error_index] += 1
 		error_count += 1
+		obscontroller_error_list[error_index].append([error[0], error[1], error[2]])
 
 	for error in recvstatuspolice_response:
 		error_index = int((error[0] - julian_start_gps) / SECONDS_PER_DAY)
-		error_counts[error_index] = error_counts[error_index] + 1
+		error_counts[error_index] += 1
 		error_count += 1
+		recvstatuspolice_error_list[error_index].append([error[0], error[1], error[2]])
 
 	return render_template('histogram.html', julian_days=julian_days, observation_counts=observation_counts, error_counts=error_counts,
-							total_count=total_count, error_count=error_count, low_count=low_count, high_count=high_count)
+							total_count=total_count, error_count=error_count, low_count=low_count, high_count=high_count,
+							obscontroller_error_list=obscontroller_error_list, recvstatuspolice_error_list=recvstatuspolice_error_list)
+
+@app.route('/error_table', methods = ['POST'])
+def error_table():
+	json_object = request.get_json()
+	obscontroller_error_list = json_object['obscontroller_error_list']
+	recvstatuspolice_error_list = json_object['recvstatuspolice_error_list']
+	julian_day = json_object['julian_day']
+	return render_template('error_table.html', obscontroller_error_list=obscontroller_error_list, recvstatuspolice_error_list=recvstatuspolice_error_list,
+							julian_day=julian_day)
 
 @app.before_request
 def before_request():

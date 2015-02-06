@@ -19,13 +19,26 @@
 </table>
 <br>
 <br>
+<button id='backbutton' onclick="backToHistogram()">Back to histogram</button>
+<div id='error_table'></div>
 <div id='observations_histogram'></div>
 <script>
+	var backToHistogram = function() {
+		$('#backbutton').hide();
+		$('#error_table').hide();
+		$('#observations_histogram').show();
+	};
+
 	$(function() {
 		// Convert the Python lists passed to this template to JSON objects, so they can be used in JavaScript.
 		var julian_days = {{ julian_days | tojson }};
 		var observation_counts = {{ observation_counts | tojson }};
 		var error_counts = {{ error_counts | tojson }};
+		var obscontroller_error_list = {{ obscontroller_error_list | tojson }};
+		var recvstatuspolice_error_list = {{ recvstatuspolice_error_list | tojson }};
+
+		$('#backbutton').hide();
+		$('#error_table').hide();
 
 		$('#observations_histogram').highcharts({
 			chart: {
@@ -47,7 +60,28 @@
 				column: {
 					// No padding between columns so the graph looks like a histogram.
 					groupPadding: 0.1,
-					pointPadding: 0
+					pointPadding: 0,
+					events: {
+						click: function(event) {
+							if (this.name === 'Errors') {
+								$.ajax({
+									type: "POST",
+									contentType: "application/json",
+									url: "/error_table",
+									data: JSON.stringify({"obscontroller_error_list": obscontroller_error_list[event.point.index],
+														"recvstatuspolice_error_list": recvstatuspolice_error_list[event.point.index],
+														"julian_day": julian_days[event.point.index]}),
+									success: function(data) {
+										$('#observations_histogram').hide();
+										$('#error_table').html(data);
+										$('#backbutton').show();
+										$('#error_table').show();
+									},
+									dataType: "html"
+								});
+							}
+						}
+					}
 				}
 			},
 			title: {

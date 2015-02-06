@@ -1,8 +1,12 @@
-#observations_div {
-	max-width: 80%;
-	margin: auto;
+#error_table {
+	width: 100%;
 	max-height: 400px;
 	overflow: auto;
+}
+
+#error_table table {
+	float: left;
+	width: 50%;
 }
 
 body            { font-family: sans-serif; background: #eee; }
