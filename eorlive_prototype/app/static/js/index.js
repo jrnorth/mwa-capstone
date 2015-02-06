@@ -65,7 +65,7 @@ function getObservations() {
 	}
 
 	$("#observations_summary").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
-	$("#comments_div").html("<span></span>");
+	$("#comments_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
 	// Make each date into a string of the format "YYYY-mm-ddTHH:MM:SSZ", which is the format used in the local database.
 	var startUTC = startDate.toISOString().slice(0, 19) + "Z";

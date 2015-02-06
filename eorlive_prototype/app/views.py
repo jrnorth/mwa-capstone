@@ -269,39 +269,7 @@ def range_saved():
 
 @app.route('/save_range', methods = ['POST'])
 def save_range():
-	if (g.user is not None and g.user.is_authenticated()):
-		startGPS = request.form['startGPS']
-
-		endGPS = request.form['endGPS']
-
-		user = models.User.query.get(g.user.username)
-
-		for ran in user.saved_ranges:
-			if ran.start == startGPS and ran.end == endGPS:
-				return str(ran.id)
-
-		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
-
-		if ran is not None:
-			user.saved_ranges.append(ran)
-			db.session.merge(user)
-			db.session.commit()
-			return str(ran.id)
-
-		ran = models.Range()
-		ran.start = startGPS
-		ran.end = endGPS
-
-		user.saved_ranges.append(ran)
-
-		db.session.add(ran)
-		db.session.commit()
-
-		db.session.refresh(ran)
-
-		return str(ran.id)
-	else:
-		return make_response('Error: no user logged in', 401)
+	return save_range_helper(request.form['startGPS'], request.form['endGPS'])
 
 @app.route('/remove_range', methods = ['POST'])
 def remove_range():
@@ -372,15 +340,17 @@ def get_comments():
 @app.route('/save_comment', methods = ['POST'])
 def save_comment():
 	if (g.user is not None and g.user.is_authenticated()):
-		if request.form['range_id'] is None:
-			return make_response('no range id', 401)
-			save_range(); #HOW DO WE POST THE VALUES TO THIS?
+		range_id = request.form['range_id']
+		comment_text = request.form['commentText']
+
+		if not range_id:
+			save_range_helper(request.form['startGPS'], request.form['endGPS'])
 
 		#now, add the comment
 		com = models.Comment()
-		com.text = request.form['commentText']
+		com.text = comment_text
 		com.username = g.user.username
-		com.range_id = request.form['range_id']
+		com.range_id = range_id
 
 		ran = models.Range.query.get(com.range_id)
 		ran.comments.append(com)
@@ -388,4 +358,35 @@ def save_comment():
 
 		#TODO we need to re-render comments again so the comment appears
 
-		return str(com.text)
+		return redirect(url_for('index'))
+
+def save_range_helper(startGPS, endGPS):
+	if (g.user is not None and g.user.is_authenticated()):
+		user = models.User.query.get(g.user.username)
+
+		for ran in user.saved_ranges:
+			if ran.start == startGPS and ran.end == endGPS:
+				return str(ran.id)
+
+		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
+
+		if ran is not None:
+			user.saved_ranges.append(ran)
+			db.session.merge(user)
+			db.session.commit()
+			return str(ran.id)
+
+		ran = models.Range()
+		ran.start = startGPS
+		ran.end = endGPS
+
+		user.saved_ranges.append(ran)
+
+		db.session.add(ran)
+		db.session.commit()
+
+		db.session.refresh(ran)
+
+		return redirect(url_for('index'))
+	else:
+		return make_response('Error: no user logged in', 401)
