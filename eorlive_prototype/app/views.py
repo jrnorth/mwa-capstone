@@ -333,7 +333,7 @@ def get_comments():
 			else:
 				return render_template('comments.html', range_id=ran.id, startGPS=startGPS, endGPS=endGPS)
 		else:
-			return render_template('comments.html', startGPS=startGPS, endGPS=endGPS)
+			return render_template('comments.html', range_id=None, startGPS=startGPS, endGPS=endGPS)
 	else:
 		return make_response('Error: no user logged in', 401)
 
@@ -341,10 +341,15 @@ def get_comments():
 def save_comment():
 	if (g.user is not None and g.user.is_authenticated()):
 		range_id = request.form['range_id']
-		comment_text = request.form['commentText']
+		comment_text = request.form['comment_text']
+		startGPS = request.form['startGPS']
+		endGPS = request.form['endGPS']
 
 		if not range_id:
-			save_range_helper(request.form['startGPS'], request.form['endGPS'])
+			save_range_helper(startGPS, endGPS)
+
+		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
+		range_id = ran.id
 
 		#now, add the comment
 		com = models.Comment()
@@ -356,9 +361,8 @@ def save_comment():
 		ran.comments.append(com)
 		db.session.commit()
 
-		#TODO we need to re-render comments again so the comment appears
-
-		return redirect(url_for('index'))
+		comments = models.Comment.query.filter(models.Comment.range_id == range_id).all()
+		return render_template('comments.html', comments=comments, range_id=range_id, startGPS=startGPS, endGPS=endGPS)
 
 def save_range_helper(startGPS, endGPS):
 	if (g.user is not None and g.user.is_authenticated()):

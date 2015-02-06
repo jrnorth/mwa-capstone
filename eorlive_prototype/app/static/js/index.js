@@ -139,3 +139,15 @@ function renderComments(rangeStart, rangeEnd) {
 		dataType: 'html'
 	});
 };
+
+function saveComment(range_id, comment_text, startGPS, endGPS) {
+	$.ajax({
+		type: "POST",
+		url: "/save_comment",
+		data: {'range_id': range_id, 'comment_text': comment_text, 'startGPS': startGPS, 'endGPS':endGPS},
+		success: function(data) {
+			$("#comments_div").html(data);
+		},
+		dataType: 'html'
+	});
+};

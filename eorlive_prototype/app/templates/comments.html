@@ -13,19 +13,26 @@
         {% endfor %}
     {% else %}
         <p>No Comments</p>
-        <br>
-        RangeID: {{ range_id }}
     {% endif %}
 
     <br>
-    <form class="comment_form" action="{{ url_for('save_comment') }}" method='post'>
-        <dl>
-            <dd><input type="text" class="form-control" name="commentText">
-            <br>
-            <dd><input type='submit' class="btn btn-default" name='Save comment'>
-            <dd><input type="hidden" name="range_id" value="{{ range_id }}">
-            <dd><input type="hidden" name="startGPS" value="{{ startGPS }}">
-            <dd><input type="hidden" name="endGPS" value="{{ endGPS }}">
-        </dl>
-    </form>
+    <input type="text" id="comment_text_field" name="comment_text">
+    <br>
+    <button onclick="saveCommentHelper()">Submit</button>
+    
+<script src="../static/js/index.js"></script>
+<script>
+    function saveCommentHelper() {
+        var comment_text = document.getElementById("comment_text_field").value;
+        var range_id_new;
+        if ("{{ range_id }}" == "None") {
+            range_id_new = null;
+        }
+        else {
+            range_id_new = {{ range_id }};
+        }
+        saveComment(range_id_new, comment_text, {{ startGPS }}, {{ endGPS }});
+    }
+</script>
+
 {% endblock %}
