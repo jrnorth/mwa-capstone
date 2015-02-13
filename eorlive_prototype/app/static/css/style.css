@@ -1,16 +1,12 @@
 #error_table {
 	width: 100%;
-	max-width: 100%;
 	max-height: 400px;
 	overflow: auto;
 }
 
 #error_table table {
-	table-layout: fixed;
 	float: left;
 	width: 50%;
-	max-width: 50%;
-	word-wrap: break-word;
 }
 
 body            { font-family: sans-serif; background: #eee; }
@@ -29,6 +25,28 @@ h2              { font-size: 1.2em; }
 
 .loading	{ display:block; margin-left:auto; margin-right:auto; }
 
+#main_content_div
+{
+  width: 100%;
+  display: table;
+}
+
+#main_content_row
+{
+  display: table-row;
+}
+
+#left_content
+{
+  width: 75%;
+  display: table-cell;
+}
+
+#comments_div
+{
+  display: table-cell;
+}
+
 .comments_class
 {
     border: 5px solid white; 
@@ -43,8 +61,8 @@ h2              { font-size: 1.2em; }
             0 0 16px rgba(0,0,0,0.1); 
     padding: 15px;
     background: rgba(255,255,255,0.5);
-    margin-left: auto;
+    margin-left: 10px;
     margin-right: auto;
     text-align: center;
-    display: block;
+    display: table-cell;
 }
