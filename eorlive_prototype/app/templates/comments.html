@@ -12,13 +12,21 @@
             {% endif %}
         {% endfor %}
     {% else %}
-        <p>No Comments</p>
+        {% if logged_out %}
+            <p> Log in to view comments </p>
+        {% else %}
+            <p>No Comments</p>
+        {% endif %}
     {% endif %}
 
-    <br>
-    <input type="text" id="comment_text_field" name="comment_text">
-    <br> <br>
-    <button onclick="saveCommentHelper()">Submit</button>
+    {% if not logged_out %}
+        <br>
+        <input type="text" id="comment_text_field" name="comment_text">
+        <br> <br>
+        <button onclick="saveCommentHelper()">Submit</button>
+    {% else %}
+        <p></p>
+    {% endif %}
     
 <script src="../static/js/index.js"></script>
 <script>

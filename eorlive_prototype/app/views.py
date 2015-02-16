@@ -394,7 +394,7 @@ def get_comments():
 		else:
 			return render_template('comments.html', range_id=None, startGPS=startGPS, endGPS=endGPS)
 	else:
-		return make_response('Error: no user logged in', 401)
+		return render_template('comments.html', logged_out=True)
 
 @app.route('/save_comment', methods = ['POST'])
 def save_comment():
