@@ -1,0 +1,190 @@
+<input id="construction_mode_checkbox" type="checkbox" onclick="clickConstructionModeCheckbox(this)">Enable set construction mode<br>
+<div id='construction_controls'>
+Start:&nbsp;<span id="start_time_label"></span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp;<span id="end_time_label"></span>
+<table id='set_construction_table' class='table table-striped table-bordered'>
+    <thead>
+        <tr>
+            <th colspan="3">Sub-ranges to exclude</th>
+        </tr>
+        <tr>
+            <th>Start</th>
+            <th>End</th>
+            <th>Reinsert into set</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+</div>
+<script>
+    var _chart;
+    var rangesToRemove = [];
+    var obsConstructionSet, errConstructionSet;
+
+    $('#construction_controls').hide();
+
+    var updateRangeForConstruction = function() {
+        var obsAxisExtremes = _chart.xAxis[0].getExtremes(), errAxisExtremes = _chart.xAxis[1].getExtremes();
+        var obsMin = obsAxisExtremes.dataMin, obsMax = obsAxisExtremes.dataMax, errMin = errAxisExtremes.dataMin, errMax =
+            errAxisExtremes.dataMax;
+        var minimum, maximum;
+
+        if (obsMin > 0 && errMin > 0) {
+            minimum = Math.min(obsMin, errMin);
+        } else if (obsMin > 0) {
+            minimum = obsMin;
+        } else if (errMin > 0) {
+            minimum = errMin;
+        } else {
+            minimum = Date.parse("{{ range_start }}");
+        }
+
+        if (obsMax > 0 && errMax > 0) {
+            maximum = Math.max(obsMax, errMax);
+        } else if (obsMax > 0) {
+            maximum = obsMax;
+        } else if (errMax > 0) {
+            maximum = errMax;
+        } else {
+            maximum = Date.parse("{{ range_end }}");
+        }
+
+        var startDate = new Date(minimum), endDate = new Date(maximum);
+        $('#start_time_label').html(startDate.toISOString());
+        $('#end_time_label').html(endDate.toISOString());
+    };
+
+    var getDataIndices = function(startTime, endTime, obsSeries, errSeries) {
+        var obsStartIndex = 0, obsEndIndex = obsSeries.xData.length - 1;
+        var errStartIndex = 0, errEndIndex = errSeries.xData.length - 1;
+
+        for (var i = 0; i < obsSeries.xData.length; ++i) {
+            if (obsSeries.xData[i] >= startTime) {
+                obsStartIndex = i;
+                break;
+            }
+        }
+
+        for (var i = obsStartIndex; i < obsSeries.xData.length; ++i) {
+            if (obsSeries.xData[i] >= endTime) {
+                obsEndIndex = i - 1;
+                break;
+            }
+        }
+
+        for (var i = 0; i < errSeries.xData.length; ++i) {
+            if (errSeries.xData[i] >= startTime) {
+                errStartIndex = i;
+                break;
+            }
+        }
+
+        for (var i = errStartIndex; i < errSeries.xData.length; ++i) {
+            if (errSeries.xData[i] >= endTime) {
+                errEndIndex = i - 1;
+                break;
+            }
+        }
+
+        return {
+            obsStartIndex: obsStartIndex,
+            obsEndIndex: obsEndIndex,
+            errStartIndex: errStartIndex,
+            errEndIndex: errEndIndex
+        };
+    };
+
+    var removeRangeFromSet = function(event, series) {
+        var columnRange = getColumnRangeLimits(event, series);
+
+        var obsSeries = _chart.series[0], errSeries = _chart.series[1];
+
+        var dataIndices = getDataIndices(columnRange.startTime, columnRange.endTime, obsSeries, errSeries);
+
+        var removedObs = obsConstructionSet.splice(dataIndices.obsStartIndex, dataIndices.obsEndIndex - dataIndices.obsStartIndex + 1);
+
+        var removedErr = errConstructionSet.splice(dataIndices.errStartIndex, dataIndices.errEndIndex - dataIndices.errStartIndex + 1);
+
+        obsSeries.setData(obsConstructionSet, false); // Don't redraw chart.
+        errSeries.setData(errConstructionSet);        // Redraw chart.
+
+        rangesToRemove.push({
+            startTime: columnRange.startTime,
+            endTime: columnRange.endTime,
+            removedObs: removedObs.splice(0),
+            removedErr: removedErr.splice(0)
+        });
+
+        updateRangeForConstruction();
+        updateSetConstructionTable();
+    };
+
+    var updateSetConstructionTable = function() {
+        var tableHtml = "";
+
+        for (var i = 0; i < rangesToRemove.length; ++i) {
+            var range = rangesToRemove[i];
+            tableHtml += '<tr><td>' + new Date(range.startTime).toISOString() + '</td><td>' + new Date(range.endTime).toISOString() + '</td><td><button onclick="reinsertRange(' + range.startTime + ',' + range.endTime + ')">Reinsert into set</button></td></tr>';
+        }
+
+        $('#set_construction_table > tbody').html(tableHtml);
+    };
+
+    var reinsertRange = function(startTime, endTime) {
+        var removedObs, removedErr;
+
+        for (var i = 0; i < rangesToRemove.length; ++i) {
+            if (rangesToRemove[i].startTime === startTime && rangesToRemove[i].endTime === endTime) {
+                obsConstructionSet = obsConstructionSet.concat(rangesToRemove[i].removedObs);
+                errConstructionSet = errConstructionSet.concat(rangesToRemove[i].removedErr);
+                rangesToRemove.splice(i, 1);
+                break;
+            }
+        }
+
+        var comparator = function(a, b) {
+            return a[0] > b[0] ? 1 : -1;
+        };
+
+        obsConstructionSet.sort(comparator);
+        errConstructionSet.sort(comparator);
+
+        _chart.series[0].setData(obsConstructionSet, false); // Don't redraw chart.
+        _chart.series[1].setData(errConstructionSet);        // Redraw chart.
+
+        updateRangeForConstruction();
+        updateSetConstructionTable();
+    };
+
+    var clickConstructionModeCheckbox = function(checkbox) {
+        if (checkbox.checked) {
+            $('#construction_controls').show();
+        } else {
+            $('#construction_controls').hide();
+        }
+    };
+
+    var getColumnRangeLimits = function(event, series) {
+        var absoluteIndex = event.point.index, relativeIndex = 0;
+
+        for (var i = 0; i < series.points.length; ++i) {
+            if (series.points[i].index === absoluteIndex) {
+                relativeIndex = i;
+                break;
+            }
+        }
+
+        var startTime = series.processedXData[relativeIndex], endTime = 0;
+
+        if (series.closestPointRange !== undefined) {
+            endTime = startTime + series.closestPointRange;
+        } else if (series.processedXData.length > relativeIndex + 1) {
+            endTime = series.processedXData[relativeIndex + 1];
+        } else if (series.xData.length > absoluteIndex + 1) {
+            endTime = series.xData[absoluteIndex + 1];
+        } else {
+            endTime = Date.parse("{{ range_end }}");
+        }
+
+        return { startTime: startTime, endTime: endTime };
+    };
+</script>

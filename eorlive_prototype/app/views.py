@@ -185,7 +185,7 @@ def histogram_data():
 
 	return render_template('histogram.html', julian_days=julian_days, observation_counts=observation_counts, error_counts=error_counts,
 							total_count=total_count, error_count=error_count, low_count=low_count, high_count=high_count,
-							range_end=request.form['endtime'])
+							range_start=request.form['starttime'], range_end=request.form['endtime'])
 
 @app.route('/error_table', methods = ['POST'])
 def error_table():
