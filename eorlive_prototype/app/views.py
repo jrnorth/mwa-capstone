@@ -120,7 +120,9 @@ def histogram_data():
 
 	GPS_UTC_DELTA = (jan_6_1980 - jan_1_1970).total_seconds()
 
-	observation_counts = []
+	high_counts = []
+
+	low_counts = []
 
 	error_counts = []
 
@@ -132,7 +134,7 @@ def histogram_data():
 
 	low_count = high_count = error_count = total_count = 0
 
-	prev_time = 0
+	prev_high_time = prev_low_time = 0
 
 	for observation in response:
 		obs_counts_index = 0
@@ -146,18 +148,22 @@ def histogram_data():
 						# Actual UTC time of the observation (for the graph)
 		utc_millis = (observation[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000
 
-		if utc_millis == prev_time:
-			observation_counts[-1][1] += 1
-		else:
-			observation_counts.append([utc_millis, 1])
-			prev_time = utc_millis
-
 		total_count += 1
 
 		if 'low' in observation[1]:
 			low_count += 1
+			if utc_millis == prev_low_time:
+				low_counts[-1][1] += 1
+			else:
+				low_counts.append([utc_millis, 1])
+				prev_low_time = utc_millis
 		elif 'high' in observation[1]:
 			high_count += 1
+			if utc_millis == prev_high_time:
+				high_counts[-1][1] += 1
+			else:
+				high_counts.append([utc_millis, 1])
+				prev_high_time = utc_millis
 
 	prev_time = 0
 
@@ -183,9 +189,9 @@ def histogram_data():
 
 	error_counts.sort(key=lambda error: error[0])
 
-	return render_template('histogram.html', julian_days=julian_days, observation_counts=observation_counts, error_counts=error_counts,
-							total_count=total_count, error_count=error_count, low_count=low_count, high_count=high_count,
-							range_start=request.form['starttime'], range_end=request.form['endtime'])
+	return render_template('histogram.html', julian_days=julian_days, high_counts=high_counts, low_counts=low_counts,
+							error_counts=error_counts, total_count=total_count, error_count=error_count, low_count=low_count,
+							high_count=high_count, range_start=request.form['starttime'], range_end=request.form['endtime'])
 
 @app.route('/error_table', methods = ['POST'])
 def error_table():
@@ -252,7 +258,7 @@ def login():
 	if request.method == 'POST':
 		username = request.form['username'].strip()
 		password = request.form['password'].strip()
-		
+
 		u = models.User.query.get(username)
 		password = password.encode('UTF-8')
 		if not u:

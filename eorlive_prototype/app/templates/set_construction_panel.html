@@ -1,4 +1,9 @@
-<input id="construction_mode_checkbox" type="checkbox" onclick="clickConstructionModeCheckbox(this)">Enable set construction mode<br>
+<input id="construction_mode_checkbox" type="checkbox" onclick="clickConstructionModeCheckbox(this)">Enable set construction mode
+<select id="low_high_dropdown" style="float:right;" onchange="setLowOrHighData(this)">
+    <option value="high">High</option>
+    <option value="low">Low</option>
+</select>
+<span style="float:right;">Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
 <div id='construction_controls'>
 Start:&nbsp;<span id="start_time_label"></span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp;<span id="end_time_label"></span>
 <table id='set_construction_table' class='table table-striped table-bordered'>
@@ -17,15 +22,56 @@ Start:&nbsp;<span id="start_time_label"></span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp
 </div>
 <script>
     var _chart;
-    var rangesToRemove = [];
-    var obsConstructionSet, errConstructionSet;
+    var inConstructionMode = false;
+    var rangesToRemove = [], lowRangesToRemove = [], highRangesToRemove = [];
+    var obsConstructionSet = [], lowObsConstructionSet = [], highObsConstructionSet = [];
+    var errConstructionSet = [], lowErrConstructionSet = [], highErrConstructionSet = [];
+    var currentData = 'high';
 
     $('#construction_controls').hide();
 
+    var setLowOrHighData = function(select) {
+        currentData = select.value;
+
+        // Set the current construction set to the appropriate low/high data.
+        obsConstructionSet = currentData === 'low' ? lowObsConstructionSet : highObsConstructionSet;
+        // Also set the current error set.
+        errConstructionSet = currentData === 'low' ? lowErrConstructionSet : highErrConstructionSet;
+        // Set the correct removed ranges.
+        rangesToRemove = currentData === 'low' ? lowRangesToRemove : highRangesToRemove;
+
+        if (!inConstructionMode) {
+            // Not in construction mode, set observations to the full range of low or high data.
+            _chart.series[0].setData(currentData === 'low' ? low_counts : high_counts, false); // Don't redraw.
+            // Also set errors to the full range.
+            _chart.series[1].setData(error_counts); // Redraw.
+        } else {
+            // Update the graph.
+            _chart.series[0].setData(obsConstructionSet, false); // Don't redraw.
+            _chart.series[1].setData(errConstructionSet);        // Redraw.
+
+            // Update the information in the panel.
+            updateRangeForConstruction();
+            updateSetConstructionTable();
+        }
+    };
+
+    var clearSetConstructionData = function() {
+        rangesToRemove = [];
+        lowRangesToRemove = [];
+        highRangesToRemove = [];
+        obsConstructionSet = [];
+        lowObsConstructionSet = [];
+        highObsConstructionSet = [];
+        errConstructionSet = [];
+        lowErrConstructionSet = [];
+        highErrConstructionSet = [];
+    };
+
     var updateRangeForConstruction = function() {
         var obsAxisExtremes = _chart.xAxis[0].getExtremes(), errAxisExtremes = _chart.xAxis[1].getExtremes();
-        var obsMin = obsAxisExtremes.dataMin, obsMax = obsAxisExtremes.dataMax, errMin = errAxisExtremes.dataMin, errMax =
-            errAxisExtremes.dataMax;
+        var obsMin = obsAxisExtremes.dataMin, obsMax = obsAxisExtremes.dataMax, errMin = errAxisExtremes.dataMin,
+            errMax = errAxisExtremes.dataMax;
         var minimum, maximum;
 
         if (obsMin > 0 && errMin > 0) {
@@ -130,12 +176,10 @@ Start:&nbsp;<span id="start_time_label"></span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp
     };
 
     var reinsertRange = function(startTime, endTime) {
-        var removedObs, removedErr;
-
         for (var i = 0; i < rangesToRemove.length; ++i) {
             if (rangesToRemove[i].startTime === startTime && rangesToRemove[i].endTime === endTime) {
-                obsConstructionSet = obsConstructionSet.concat(rangesToRemove[i].removedObs);
-                errConstructionSet = errConstructionSet.concat(rangesToRemove[i].removedErr);
+                $.merge(obsConstructionSet, rangesToRemove[i].removedObs);
+                $.merge(errConstructionSet, rangesToRemove[i].removedErr);
                 rangesToRemove.splice(i, 1);
                 break;
             }
@@ -156,10 +200,23 @@ Start:&nbsp;<span id="start_time_label"></span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp
     };
 
     var clickConstructionModeCheckbox = function(checkbox) {
-        if (checkbox.checked) {
-            $('#construction_controls').show();
-        } else {
-            $('#construction_controls').hide();
+        inConstructionMode = checkbox.checked;
+        if (inConstructionMode) { // Entering construction mode.
+            $('#construction_controls').show(); // Show set construction controls.
+            // Reset the observations to the selected set.
+            _chart.series[0].setData(obsConstructionSet, false); // Don't redraw chart.
+            // Reset the errors to the selected set.
+            _chart.series[1].setData(errConstructionSet);		 // Redraw chart.
+
+            // Update the information in the panel.
+            updateRangeForConstruction();
+            updateSetConstructionTable();
+        } else { // Exiting construction mode.
+            $('#construction_controls').hide(); // Hide set construction controls.
+            // Reset the observations to the full range of data.
+            _chart.series[0].setData(currentData === 'low' ? low_counts : high_counts, false); // Don't redraw chart.
+            // Reset the errors to the full range of data.
+            _chart.series[1].setData(error_counts); // Redraw chart.
         }
     };
 
