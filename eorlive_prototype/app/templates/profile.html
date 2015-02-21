@@ -5,28 +5,4 @@
 	Name: {{user.first_name}} {{user.last_name}}
 	<br>
 	Email: {{user.email}}
-	<br>
-	<br>
-	{% if user.saved_ranges %}
-	Saved ranges
-	<br>
-	<table class='table table-striped table-bordered'>
-		<thead>
-			<tr>
-				<th>Range Start</th>
-				<th>Range End</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for range in user.saved_ranges %}
-				<tr>
-					<td>{{range.start}}</td>
-					<td>{{range.end}}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-	{% else %}
-	No saved ranges.
-	{% endif %}
 {% endblock %}
