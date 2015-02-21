@@ -1,9 +1,9 @@
 from app.flask_app import db
 from datetime import datetime
 
-user_range = db.Table('user_range',
-	db.Column('user', db.String(32), db.ForeignKey('user.username')),
-	db.Column('range_id', db.Integer, db.ForeignKey('range.id'))
+set_subscriptions = db.Table('set_subscriptions',
+	db.Column('username', db.String(32), db.ForeignKey('user.username')),
+	db.Column('set_id', db.Integer, db.ForeignKey('set.id'))
 )
 
 class User(db.Model):
@@ -14,7 +14,8 @@ class User(db.Model):
 	email = db.Column(db.String(254), nullable=False)
 	first_name = db.Column(db.String(50), nullable=False)
 	last_name = db.Column(db.String(50), nullable=False)
-	saved_ranges = db.relationship('Range', secondary=user_range)
+	owned_sets = db.relationship('Set', backref='user')
+	subscribed_sets = db.relationship('Set', secondary=set_subscriptions)
 
 	def __init__(self, username, password, email, first_name, last_name):
 		self.username = username;
@@ -38,10 +39,22 @@ class User(db.Model):
 	def get_id(self):
 		return self.username
 
-class Range(db.Model):
+class Set(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
+	username = db.Column(db.String(32), db.ForeignKey('user.username'))
+	name = db.Column(db.String(50))
 	start = db.Column(db.Integer)
 	end = db.Column(db.Integer)
+
+class FlaggedSubset(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	set_id = db.Column(db.Integer, db.ForeignKey('set.id'))
+	start = db.Column(db.Integer)
+	end = db.Column(db.Integer)
+
+class FlaggedObsIds(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	flagged_subset_id = db.Column(db.Integer, db.ForeignKey('flagged_subset.id'))
 
 class GraphData(db.Model):
 	# AUTO_INCREMENT is automatically set on the first Integer primary key column that is not marked as a foreign key.
@@ -65,7 +78,3 @@ class GraphData(db.Model):
 			'hours_with_uvfits': round(self.hours_with_uvfits or 0., 4),
 			'data_transfer_rate': round(self.data_transfer_rate or 0., 4)
 		}
-
-class HistogramData(db.Model):
-	obs_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
-	julian_day = db.Column(db.Integer)
