@@ -9,27 +9,29 @@
 </select>
 <span style="float:right;">Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
 <div id='construction_controls'>
-Start:&nbsp;<span id="start_time_label"></span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp;<span id="end_time_label"></span>
-&nbsp;&nbsp;&nbsp;&nbsp;Click + drag:&nbsp;&nbsp;
-<select id="click_drag_dropdown" onchange="setClickDragMode(this)">
-    <option value="zoom">Zooms</option>
-    <option value="flag">Flags</option>
-</select>
-<table id='set_construction_table' class='table table-striped table-bordered'>
-    <thead>
-        <tr>
-            <th colspan="5">Flagged sub-ranges</th>
-        </tr>
-        <tr>
-            <th>Start</th>
-            <th>End</th>
-            <th>Observations</th>
-            <th>Errors</th>
-            <th>Unflag</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+    Start:&nbsp;<span id="start_time_label"></span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp;<span id="end_time_label"></span>
+    &nbsp;&nbsp;&nbsp;&nbsp;Click + drag:&nbsp;&nbsp;
+    <select id="click_drag_dropdown" onchange="setClickDragMode(this)">
+        <option value="zoom">Zooms</option>
+        <option value="flag">Flags</option>
+    </select>
+    <div id='set_construction_div'>
+        <table id='set_construction_table' class='table table-striped table-bordered table-responsive'>
+            <thead>
+                <tr>
+                    <th colspan="5">Flagged sub-ranges</th>
+                </tr>
+                <tr>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Observations</th>
+                    <th>Errors</th>
+                    <th>Unflag</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </div>
 <script>
     var _chart;
