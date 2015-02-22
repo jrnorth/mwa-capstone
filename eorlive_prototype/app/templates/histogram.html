@@ -69,9 +69,10 @@
 			plotOptions: {
 				column: {
 					dataGrouping: {
-						groupPixelWidth: 500,
+						groupPixelWidth: 200,
 						forced: true
 					},
+					pointPlacement: "between",
 					// No padding between columns so the graph looks like a histogram.
 					groupPadding: 0.1,
 					pointPadding: 0,
@@ -104,7 +105,7 @@
 								});
 							} else if ($('#construction_mode_checkbox').is(':checked')) {
 								var series = this.name === 'Observations' ? this.xAxis.series[0] : this.xAxis.series[1];
-								removeRangeFromSet(event, series);
+								flagRangeInSet(event, series);
 							}
 						}
 					}
@@ -161,6 +162,9 @@
 			title: {
 				text: 'Observation & Error Count'
 			},
+			xAxis: {
+				ordinal: false
+			},
 			yAxis: {
 				title: {
 					text: 'Number of Observations/Errors'
@@ -180,11 +184,7 @@
 			}]
 		}, function (chart) {
 			_chart = chart;
-			obsConstructionSet = highObsConstructionSet = high_counts.slice(0);
-			lowObsConstructionSet = low_counts.slice(0);
-			errConstructionSet = highErrConstructionSet = error_counts.slice(0);
-			lowErrConstructionSet = error_counts.slice(0);
-			rangesToRemove = highRangesToRemove;
+			flaggedRanges = highFlaggedRanges;
 			$('#set_construction_panel').show();
 			updateRangeForConstruction();
 		});
