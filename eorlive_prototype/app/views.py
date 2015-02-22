@@ -85,7 +85,7 @@ def histogram_data():
 
 	GPS_LEAP_SECONDS_OFFSET = leap_seconds - 19
 
-	response = send_query(g.eor_db, '''SELECT starttime, obsname
+	response = send_query(g.eor_db, '''SELECT starttime, obsname, ra_phase_center
 					FROM mwa_setting
 					WHERE starttime >= {} AND starttime <= {}
 					AND projectid='G0009'
@@ -120,9 +120,13 @@ def histogram_data():
 
 	GPS_UTC_DELTA = (jan_6_1980 - jan_1_1970).total_seconds()
 
-	high_counts = []
+	low_eor0_counts = []
 
-	low_counts = []
+	high_eor0_counts = []
+
+	low_eor1_counts = []
+
+	high_eor1_counts = []
 
 	error_counts = []
 
@@ -132,9 +136,9 @@ def histogram_data():
 
 	SECONDS_PER_DAY = 86400
 
-	low_count = high_count = error_count = total_count = 0
+	low_eor0_count = high_eor0_count = low_eor1_count = high_eor1_count = error_count = 0
 
-	prev_high_time = prev_low_time = 0
+	prev_low_eor0_time = prev_high_eor0_time = prev_low_eor1_time = prev_high_eor1_time = 0
 
 	for observation in response:
 		obs_counts_index = 0
@@ -148,22 +152,43 @@ def histogram_data():
 						# Actual UTC time of the observation (for the graph)
 		utc_millis = (observation[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000
 
-		total_count += 1
+		obs_name = observation[1]
 
-		if 'low' in observation[1]:
-			low_count += 1
-			if utc_millis == prev_low_time:
-				low_counts[-1][1] += 1
-			else:
-				low_counts.append([utc_millis, 1])
-				prev_low_time = utc_millis
-		elif 'high' in observation[1]:
-			high_count += 1
-			if utc_millis == prev_high_time:
-				high_counts[-1][1] += 1
-			else:
-				high_counts.append([utc_millis, 1])
-				prev_high_time = utc_millis
+		try:
+			ra_phase_center = int(observation[2])
+		except TypeError as te:
+			ra_phase_center = -1
+
+		if 'low' in obs_name:
+			if ra_phase_center == 0: # EOR0
+				if utc_millis == prev_low_eor0_time:
+					low_eor0_counts[-1][1] += 1
+				else:
+					low_eor0_counts.append([utc_millis, 1])
+					prev_low_eor0_time = utc_millis
+				low_eor0_count += 1
+			elif ra_phase_center == 60: # EOR1
+				if utc_millis == prev_low_eor1_time:
+					low_eor1_counts[-1][1] += 1
+				else:
+					low_eor1_counts.append([utc_millis, 1])
+					prev_low_eor1_time = utc_millis
+				low_eor1_count += 1
+		elif 'high' in obs_name:
+			if ra_phase_center == 0: # EOR0
+				if utc_millis == prev_high_eor0_time:
+					high_eor0_counts[-1][1] += 1
+				else:
+					high_eor0_counts.append([utc_millis, 1])
+					prev_high_eor0_time = utc_millis
+				high_eor0_count += 1
+			elif ra_phase_center == 60: # EOR1
+				if utc_millis == prev_high_eor1_time:
+					high_eor1_counts[-1][1] += 1
+				else:
+					high_eor1_counts.append([utc_millis, 1])
+					prev_high_eor1_time = utc_millis
+				high_eor1_count += 1
 
 	prev_time = 0
 
@@ -189,9 +214,13 @@ def histogram_data():
 
 	error_counts.sort(key=lambda error: error[0])
 
-	return render_template('histogram.html', julian_days=julian_days, high_counts=high_counts, low_counts=low_counts,
-							error_counts=error_counts, total_count=total_count, error_count=error_count, low_count=low_count,
-							high_count=high_count, range_start=request.form['starttime'], range_end=request.form['endtime'])
+	return render_template('histogram.html', julian_days=julian_days,
+        low_eor0_counts=low_eor0_counts, high_eor0_counts=high_eor0_counts,
+        low_eor1_counts=low_eor1_counts, high_eor1_counts=high_eor1_counts,
+        error_counts=error_counts, error_count=error_count,
+        low_eor0_count=low_eor0_count, high_eor0_count=high_eor0_count,
+        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count,
+        range_start=request.form['starttime'], range_end=request.form['endtime'])
 
 @app.route('/error_table', methods = ['POST'])
 def error_table():
