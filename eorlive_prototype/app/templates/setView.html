@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block body %}
+<div id="main_content_div">
+    <div id="main_content_row">
+        <div id="left_content">
+            <h1>{{ setName }}</h1>
+            Actual content will go here
+        </div>
+        <div id="comments_div">
+            {% if comments %}
+                {% for comment in comments %}
+                    {% if comment %}
+                        <div id="comment_text_div" class="row">
+                            {{ comment.username }} : {{ comment.text }} : {{ comment.created_on }}
+                        </div>
+                        <br>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                {% if logged_out %}
+                    <p> Log in to view comments </p>
+                {% else %}
+                    <p>No Comments</p>
+                {% endif %}
+            {% endif %}
+
+            {% if not logged_out %}
+                <br>
+                <input type="text" id="comment_text_field" name="comment_text">
+                <br> <br>
+                <button onclick="saveCommentHelper()">Submit</button>
+            {% else %}
+                <p></p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="../static/js/index.js"></script>
+<script>
+    function saveCommentHelper() {
+        var comment_text = document.getElementById("comment_text_field").value;
+        saveComment({{set_id}}, comment_text);
+    }
+</script>
+
+{% endblock %}

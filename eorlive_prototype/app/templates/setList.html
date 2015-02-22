@@ -6,7 +6,7 @@
         {% for set in sets %}
             {% if set %}
                 <div id="set_name_div" class="row">
-                    {{ set.name }}
+                    <a href="set/{{ set.name }}">{{ set.name }}</a>
                 </div>
                 <br>
             {% endif %}

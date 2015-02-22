@@ -93,18 +93,6 @@ function getDate(datestr) {
 	return new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
 };
 
-function renderComments(rangeStart, rangeEnd) {
-	$.ajax({
-		type: "POST",
-		url: "/get_comments",
-		data: {'rangeStart': rangeStart, 'rangeEnd': rangeEnd},
-		success: function(data) {
-			$("#comments_div").html(data);
-		},
-		dataType: 'html'
-	});
-};
-
 function renderSets() {
 	$.ajax({
 		type: "POST",
@@ -117,13 +105,13 @@ function renderSets() {
 	});
 };
 
-function saveComment(range_id, comment_text, startGPS, endGPS) {
+function saveComment(set_id, comment_text) {
 	$.ajax({
 		type: "POST",
 		url: "/save_comment",
-		data: {'range_id': range_id, 'comment_text': comment_text, 'startGPS': startGPS, 'endGPS':endGPS},
+		data: {'set_id': set_id, 'comment_text': comment_text},
 		success: function(data) {
-			$("#comments_div").html(data);
+			document.write(data);
 		},
 		dataType: 'html'
 	});

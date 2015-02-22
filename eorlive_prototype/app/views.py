@@ -18,13 +18,30 @@ def send_query(db, query):
 
 @app.route('/')
 @app.route('/index')
-@app.route('/index/set')
 @app.route('/index/set/<setName>')
+@app.route('/set/<setName>')
 def index(setName = None):
 	#TODO -- adjust this to, dependent on setName, return a different template
 	# GET is the default request method.
 	# Since we're using GET, we have to access arguments by request.args.get() rather than request.form[]
-	return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
+
+	if setName is not None:
+		session = FuturesSession()
+
+		theSet = models.Set.query.filter(and_(models.Set.name == setName)).first()
+
+		if (g.user is not None and g.user.is_authenticated()):
+			if theSet is not None:
+				if theSet.comments is not None:
+					return render_template('setView.html', comments=theSet.comments, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end)
+				else: #set with no comments
+					return render_template('setView.html', set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end)
+			else: #no set, just show index
+				return render_template('index.html')
+		else: #logged out view
+			return render_template('setView.html', set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end, logged_out=True)
+	else: #original case in index
+		return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
 
 @app.route('/data_amount', methods = ['GET'])
 def data_amount():
@@ -298,103 +315,23 @@ def get_sets():
 			return render_template('setList.html')
 
 	else:
-		return render_template('setList.html', logged_out=True)	
-
-@app.route('/get_comments', methods = ['POST'])
-def get_comments():
-	if (g.user is not None and g.user.is_authenticated()):
-		session = FuturesSession()
-
-		#Do the GPS time conversion
-		baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
-
-		requestURLStart = baseUTCToGPSURL + request.form['rangeStart']
-
-		requestURLEnd = baseUTCToGPSURL + request.form['rangeEnd']
-
-		#Start the first Web service request in the background.
-		future_start = session.get(requestURLStart)
-
-		#The second request is started immediately.
-		future_end = session.get(requestURLEnd)
-
-		#Wait for the first request to complete, if it hasn't already.
-		response_start = future_start.result()
-
-		#Wait for the second request to complete, if it hasn't already.
-		response_end = future_end.result()
-
-		startGPS = int(response_start.content)
-
-		endGPS = int(response_end.content)
-
-		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
-
-		if ran is not None:
-			comments = models.Comment.query.filter(models.Comment.range_id == ran.id).all()
-			if comments is not None:
-				return render_template('comments.html', comments=comments, range_id=ran.id, startGPS=startGPS, endGPS=endGPS)
-			else:
-				return render_template('comments.html', range_id=ran.id, startGPS=startGPS, endGPS=endGPS)
-		else:
-			return render_template('comments.html', range_id=None, startGPS=startGPS, endGPS=endGPS)
-	else:
-		return render_template('comments.html', logged_out=True)
+		return render_template('setList.html', logged_out=True)
 
 @app.route('/save_comment', methods = ['POST'])
 def save_comment():
 	if (g.user is not None and g.user.is_authenticated()):
-		range_id = request.form['range_id']
+		set_id = request.form['set_id']
 		comment_text = request.form['comment_text']
-		startGPS = request.form['startGPS']
-		endGPS = request.form['endGPS']
 
-		if not range_id:
-			save_range_helper(startGPS, endGPS)
-
-		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
-		range_id = ran.id
+		theSet = models.Set.query.get(set_id)
 
 		#now, add the comment
 		com = models.Comment()
 		com.text = comment_text
 		com.username = g.user.username
-		com.range_id = range_id
+		com.set_id = set_id
 
-		ran = models.Range.query.get(com.range_id)
-		ran.comments.append(com)
+		theSet.comments.append(com)
 		db.session.commit()
 
-		comments = models.Comment.query.filter(models.Comment.range_id == range_id).all()
-		return render_template('comments.html', comments=comments, range_id=range_id, startGPS=startGPS, endGPS=endGPS)
-
-def save_range_helper(startGPS, endGPS):
-	if (g.user is not None and g.user.is_authenticated()):
-		user = models.User.query.get(g.user.username)
-
-		for ran in user.saved_ranges:
-			if ran.start == startGPS and ran.end == endGPS:
-				return str(ran.id)
-
-		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
-
-		if ran is not None:
-			user.saved_ranges.append(ran)
-			db.session.merge(user)
-			db.session.commit()
-			return str(ran.id)
-
-		ran = models.Range()
-		ran.start = startGPS
-		ran.end = endGPS
-
-		user.saved_ranges.append(ran)
-
-		db.session.add(ran)
-		db.session.commit()
-
-		db.session.refresh(ran)
-
-		return redirect(url_for('index'))
-	else:
-		return make_response('Error: no user logged in', 401)
+		return render_template('setView.html', comments=theSet.comments, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end)
