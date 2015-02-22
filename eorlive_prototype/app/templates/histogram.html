@@ -61,7 +61,15 @@
 				enabled: false,
 			},
 			chart: {
-				zoomType: "x"
+				zoomType: "x",
+				events: {
+					selection: function(event) {
+						if (clickDragMode === 'flag') {
+							event.preventDefault();
+							flagClickAndDraggedRange(event);
+						}
+					}
+				}
 			},
 			legend: {
 				enabled: true
@@ -105,7 +113,7 @@
 								});
 							} else if ($('#construction_mode_checkbox').is(':checked')) {
 								var series = this.name === 'Observations' ? this.xAxis.series[0] : this.xAxis.series[1];
-								flagRangeInSet(event, series);
+								flagClickedRange(event, series);
 							}
 						}
 					}
