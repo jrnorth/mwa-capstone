@@ -18,7 +18,10 @@ def send_query(db, query):
 
 @app.route('/')
 @app.route('/index')
-def index():
+@app.route('/index/set')
+@app.route('/index/set/<setName>')
+def index(setName = None):
+	#TODO -- adjust this to, dependent on setName, return a different template
 	# GET is the default request method.
 	# Since we're using GET, we have to access arguments by request.args.get() rather than request.form[]
 	return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
@@ -285,6 +288,18 @@ def profile():
 	else:
 		return redirect(url_for('login'))
 
+@app.route('/get_sets', methods = ['POST'])
+def get_sets():
+	if (g.user is not None and g.user.is_authenticated()):
+		setList = models.Set.query.all()
+		if setList is not None:
+			return render_template('setList.html', sets=setList)
+		else:
+			return render_template('setList.html')
+
+	else:
+		return render_template('setList.html', logged_out=True)	
+
 @app.route('/get_comments', methods = ['POST'])
 def get_comments():
 	if (g.user is not None and g.user.is_authenticated()):
@@ -352,35 +367,6 @@ def save_comment():
 
 		comments = models.Comment.query.filter(models.Comment.range_id == range_id).all()
 		return render_template('comments.html', comments=comments, range_id=range_id, startGPS=startGPS, endGPS=endGPS)
-
-def save_range_helper(startGPS, endGPS):
-	if (g.user is not None and g.user.is_authenticated()):
-		user = models.User.query.get(g.user.username)
-
-		for ran in user.saved_ranges:
-			if ran.start == startGPS and ran.end == endGPS:
-				return str(ran.id)
-
-		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
-
-		if ran is not None:
-			user.saved_ranges.append(ran)
-			db.session.merge(user)
-			db.session.commit()
-			return str(ran.id)
-
-		ran = models.Range()
-		ran.start = startGPS
-		ran.end = endGPS
-
-		user.saved_ranges.append(ran)
-
-		db.session.add(ran)
-		db.session.commit()
-
-		db.session.refresh(ran)
-
-		return redirect(url_for('index'))
 
 def save_range_helper(startGPS, endGPS):
 	if (g.user is not None and g.user.is_authenticated()):

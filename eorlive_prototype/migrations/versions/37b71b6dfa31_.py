@@ -45,6 +45,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['flagged_subset_id'], ['flagged_subset.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.drop_table('comment')
     op.drop_table('user_range')
     op.drop_table('range')
     op.drop_table('histogram_data')

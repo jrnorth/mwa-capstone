@@ -80,6 +80,8 @@ function getObservations() {
 		},
 		dataType: "html"
 	});
+
+	renderSets();
 };
 
 function getDate(datestr) {
@@ -98,6 +100,18 @@ function renderComments(rangeStart, rangeEnd) {
 		data: {'rangeStart': rangeStart, 'rangeEnd': rangeEnd},
 		success: function(data) {
 			$("#comments_div").html(data);
+		},
+		dataType: 'html'
+	});
+};
+
+function renderSets() {
+	$.ajax({
+		type: "POST",
+		url: "/get_sets",
+		data: {}, //TODO -- restrict to sets which are in the current range
+		success: function(data) {
+			$("#set_list_div").html(data);
 		},
 		dataType: 'html'
 	});

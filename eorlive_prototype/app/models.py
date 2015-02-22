@@ -85,5 +85,5 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(1000), nullable=True)
     username = db.Column(db.String(32), db.ForeignKey('user.username'))
-    range_id = db.Column(db.Integer, db.ForeignKey('range.id'))	
+    set_id = db.Column(db.Integer, db.ForeignKey('set.id'))	
     created_on = db.Column(db.String(20), default=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'))
