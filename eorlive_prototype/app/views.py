@@ -32,14 +32,15 @@ def index(setName = None):
 
 		if (g.user is not None and g.user.is_authenticated()):
 			if theSet is not None:
-				if theSet.comments is not None:
-					return render_template('setView.html', comments=theSet.comments, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end)
+				comments = theSet.comments
+				if comments is not None:
+					return render_template('setView.html', setName=theSet.name, comments=comments, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end)
 				else: #set with no comments
-					return render_template('setView.html', set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end)
+					return render_template('setView.html', setName=theSet.name, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end)
 			else: #no set, just show index
 				return render_template('index.html')
 		else: #logged out view
-			return render_template('setView.html', set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end, logged_out=True)
+			return render_template('setView.html', setName=theSet.name, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end, logged_out=True)
 	else: #original case in index
 		return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
 
@@ -331,23 +332,6 @@ def get_sets():
 			#Wait for the second request to complete, if it hasn't already.
 			end_gps = int(future_end.result().content)
 			setList = models.Set.query.filter(and_(models.Set.start >= start_gps, models.Set.end <= end_gps)).all()
-
-		elif filter_type == "filter_overlap_cur":
-			startUTC = request.form['starttime']
-			endUTC = request.form['endtime']
-			baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
-			requestURLStart = baseUTCToGPSURL + startUTC
-			requestURLEnd = baseUTCToGPSURL + endUTC
-			session = FuturesSession()
-			#Start the first Web service request in the background.
-			future_start = session.get(requestURLStart)
-			#The second request is started immediately.
-			future_end = session.get(requestURLEnd)
-			#Wait for the first request to complete, if it hasn't already.
-			start_gps = int(future_start.result().content)
-			#Wait for the second request to complete, if it hasn't already.
-			end_gps = int(future_end.result().content)
-			setList = models.Set.query.filter(or_(models.Set.start >= start_gps, models.Set.end <= end_gps)).all()
 
 		else:
 			setList = models.Set.query.all()
