@@ -13,7 +13,7 @@
             {% if comments %}
                 {% for comment in comments %}
                     {% if comment %}
-                        <div id="comment_text_div">
+                        <div id="comment_text_div" style="word-wrap: break-word;">
                             {{ comment.username }} : {{ comment.text }} : {{ comment.created_on }}
                             {% set printed=True %}
                         </div>
@@ -44,7 +44,12 @@
 <script>
     function saveCommentHelper() {
         var comment_text = document.getElementById("comment_text_field").value;
-        saveComment({{set_id}}, comment_text);
+        if (comment_text.length > 1000) {
+            alert("Please enter a string under 1000 characters. Your comment is " + (comment_text.length - 1000) + " characters too long.");
+        }
+        else {
+            saveComment({{set_id}}, comment_text);
+        }
     }
 
     function handle(e) {
