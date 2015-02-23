@@ -19,16 +19,48 @@
 		<button onclick="getObservations()">Get observations</button>
 	</div>
 </div>
+
 <div id="main_content_div">
-	<div id="main_content_row">
-		<div id="left_content">
+	<div id="left_content_div">
+		<div id='observations_summary'></div>
+		<br>
+		<br>
+		<div id='data_amount_table'></div>
+	</div>
+
+	<div id="right_content_div">
+		<div id="filter_dropdown_div">
+			Filter sets:
+			<select id="filter_dropdown" style="float:right;" onchange="filterDropdownChanged(this)">
+			    <option value="all" selected>All</option>
+			    <option value="none">None</option>
+			    <option value="filter_to_cur">Current date range</option>
+			</select>
 			<br>
-			<div id='observations_summary'></div>
 			<br>
-			<br>
-			<div id='data_amount_table'></div>
 		</div>
-		<div class='comments_class' id='set_list_div'></div>
+		<br>
+		<div id='set_list_div'></div>
 	</div>
 </div>
+
+<script>
+    var filterDropdownChanged = function(select) {
+        currentData = select.value;
+        var start = $("#datepicker_start").val();
+		var end = $("#datepicker_end").val();
+		re = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/;
+
+		var startDate, endDate;
+
+		startDate = getDate(start);
+		endDate = getDate(end);
+		
+		// Make each date into a string of the format "YYYY-mm-ddTHH:MM:SSZ", which is the format used in the local database.
+		var startUTC = startDate.toISOString().slice(0, 19) + "Z";
+		var endUTC = endDate.toISOString().slice(0, 19) + "Z";
+
+        renderSets(currentData, startUTC, endUTC);
+    };
+</script>
 {% endblock %}

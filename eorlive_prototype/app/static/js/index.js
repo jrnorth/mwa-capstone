@@ -81,7 +81,9 @@ function getObservations() {
 		dataType: "html"
 	});
 
-	renderSets();
+	var e = document.getElementById('filter_dropdown');
+	var eVal = e.options[e.selectedIndex].value;
+	renderSets(eVal, startUTC, endUTC);
 };
 
 function getDate(datestr) {
@@ -93,11 +95,13 @@ function getDate(datestr) {
 	return new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
 };
 
-function renderSets() {
+function renderSets(filterType, startUTC, endUTC) {
+	$("#set_list_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
 	$.ajax({
 		type: "POST",
 		url: "/get_sets",
-		data: {}, //TODO -- restrict to sets which are in the current range
+		data: {'filter_type': filterType, 'starttime': startUTC, 'endtime': endUTC},
 		success: function(data) {
 			$("#set_list_div").html(data);
 		},

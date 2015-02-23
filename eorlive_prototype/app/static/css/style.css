@@ -15,7 +15,7 @@ h1, h2          { font-family: 'Georgia', serif; margin: 0; }
 h1              { border-bottom: 2px solid #eee; }
 h2              { font-size: 1.2em; }
 
-.page           { margin: 2em auto; width: 80%; border: 5px solid #ccc;
+.page           { margin: 2em auto; width: 100%; height: 100%; border: 5px solid #ccc;
                   padding: 0.8em; background: white; }
 .metanav        { text-align: right; font-size:1em; padding: 0.3em;
                   margin-bottom: 1em; background: #fafafa; }
@@ -25,26 +25,8 @@ h2              { font-size: 1.2em; }
 
 .loading	{ display:block; margin-left:auto; margin-right:auto; }
 
-#main_content_div
-{
-  width: 100%;
-  display: table;
-}
-
-#main_content_row
-{
-  display: table-row;
-}
-
-#left_content
-{
-  width: 75%;
-  display: table-cell;
-}
-
-#comments_div
-{
-  display: table-cell;
+div#right_content_div {
+  width: 30%;
 }
 
 .comments_class

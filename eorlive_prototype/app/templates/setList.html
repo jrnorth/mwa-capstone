@@ -1,11 +1,10 @@
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-
 {% block content %}
     {% if sets %}
         {% for set in sets %}
             {% if set %}
-                <div id="set_name_div" class="row">
+                <div id="set_name_div">
                     <a href="set/{{ set.name }}">{{ set.name }}</a>
                 </div>
                 <br>
@@ -19,3 +18,4 @@
         {% endif %}
     {% endif %}
 {% endblock %}
+</script>

@@ -5,8 +5,9 @@
         <div id="left_content">
             <h1>{{ setName }}</h1>
             Actual content will go here
+            <br><br><br>
         </div>
-        <div id="comments_div">
+        <div id="comments_div" class="comments_class">
             {% if comments %}
                 {% for comment in comments %}
                     {% if comment %}

@@ -307,13 +307,38 @@ def profile():
 
 @app.route('/get_sets', methods = ['POST'])
 def get_sets():
+	filter_type = request.form['filter_type']
 	if (g.user is not None and g.user.is_authenticated()):
-		setList = models.Set.query.all()
+		if filter_type == 'all':
+			setList = models.Set.query.all()
+
+		elif filter_type == 'none':
+			setList = None
+
+		elif filter_type == 'filter_to_cur':
+			startUTC = request.form['starttime']
+			endUTC = request.form['endtime']
+			baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
+			requestURLStart = baseUTCToGPSURL + startUTC
+			requestURLEnd = baseUTCToGPSURL + endUTC
+			session = FuturesSession()
+			#Start the first Web service request in the background.
+			future_start = session.get(requestURLStart)
+			#The second request is started immediately.
+			future_end = session.get(requestURLEnd)
+			#Wait for the first request to complete, if it hasn't already.
+			start_gps = int(future_start.result().content)
+			#Wait for the second request to complete, if it hasn't already.
+			end_gps = int(future_end.result().content)
+			setList = models.Set.query.filter(and_(models.Set.start >= start_gps, models.Set.end <= end_gps)).all()
+
+		else:
+			setList = models.Set.query.all()
+		
 		if setList is not None:
 			return render_template('setList.html', sets=setList)
 		else:
 			return render_template('setList.html')
-
 	else:
 		return render_template('setList.html', logged_out=True)
 
