@@ -20,6 +20,27 @@ $(function() {
 		if (!isEndDate)
 			endDatePicker.val(nowStr);
 	}
+	
+	$.xhrPool = [];
+	$.xhrPool.abortAll = function() {
+		$(this).each(function(idx, jqXHR) {
+			jqXHR.abort();
+			$.xhrPool.splice(i, 1);
+		});
+		$.xhrPool = [];
+	};
+
+	$.ajaxSetup({
+		beforeSend: function(jqXHR) {
+			$.xhrPool.push(jqXHR);
+		},
+		complete: function(jqXHR) {
+			var index = $.xhrPool.indexOf(jqXHR);
+			if (index > -1) {
+				$.xhrPool.splice(index, 1);
+			}
+		}
+	});
 
 	$("#data_amount_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
