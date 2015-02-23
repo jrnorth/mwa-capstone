@@ -21,7 +21,6 @@ def send_query(db, query):
 @app.route('/index/set/<setName>')
 @app.route('/set/<setName>')
 def index(setName = None):
-	#TODO -- adjust this to, dependent on setName, return a different template
 	# GET is the default request method.
 	# Since we're using GET, we have to access arguments by request.args.get() rather than request.form[]
 
