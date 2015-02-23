@@ -6,7 +6,7 @@ import requests
 import json
 import hashlib
 from requests_futures.sessions import FuturesSession
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, or_
 from datetime import datetime, timedelta
 import psycopg2
 import os
@@ -315,7 +315,7 @@ def get_sets():
 		elif filter_type == 'none':
 			setList = None
 
-		elif filter_type == 'filter_to_cur':
+		elif filter_type == 'filter_within_cur':
 			startUTC = request.form['starttime']
 			endUTC = request.form['endtime']
 			baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
@@ -331,6 +331,23 @@ def get_sets():
 			#Wait for the second request to complete, if it hasn't already.
 			end_gps = int(future_end.result().content)
 			setList = models.Set.query.filter(and_(models.Set.start >= start_gps, models.Set.end <= end_gps)).all()
+
+		elif filter_type == "filter_overlap_cur":
+			startUTC = request.form['starttime']
+			endUTC = request.form['endtime']
+			baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
+			requestURLStart = baseUTCToGPSURL + startUTC
+			requestURLEnd = baseUTCToGPSURL + endUTC
+			session = FuturesSession()
+			#Start the first Web service request in the background.
+			future_start = session.get(requestURLStart)
+			#The second request is started immediately.
+			future_end = session.get(requestURLEnd)
+			#Wait for the first request to complete, if it hasn't already.
+			start_gps = int(future_start.result().content)
+			#Wait for the second request to complete, if it hasn't already.
+			end_gps = int(future_end.result().content)
+			setList = models.Set.query.filter(or_(models.Set.start >= start_gps, models.Set.end <= end_gps)).all()
 
 		else:
 			setList = models.Set.query.all()
