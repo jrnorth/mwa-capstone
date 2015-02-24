@@ -5,4 +5,19 @@
 	Name: {{user.first_name}} {{user.last_name}}
 	<br>
 	Email: {{user.email}}
+    <br>
+    <br>
+    <h3>Your Sets</h3>
+    {% if sets %}
+        {% for set in sets %}
+            {% if set %}
+                <div id="set_name_div">
+                    <a href="set/{{ set.name }}">{{ set.name }}</a>
+                </div>
+                <br>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <p>No Sets</p>
+    {% endif %}
 {% endblock %}

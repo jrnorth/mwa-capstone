@@ -301,7 +301,8 @@ def logout():
 def profile():
 	if (g.user is not None and g.user.is_authenticated()):
 		user = models.User.query.get(g.user.username)
-		return render_template('profile.html', user=user)
+		setList = models.Set.query.filter(and_(models.Set.username == g.user.username))
+		return render_template('profile.html', user=user, sets=setList)
 	else:
 		return redirect(url_for('login'))
 
