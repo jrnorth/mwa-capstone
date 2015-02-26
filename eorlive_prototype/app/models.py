@@ -54,6 +54,7 @@ class FlaggedSubset(db.Model):
 
 class FlaggedObsIds(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
+	obs_id = db.Column(db.Integer)
 	flagged_subset_id = db.Column(db.Integer, db.ForeignKey('flagged_subset.id'))
 
 class GraphData(db.Model):

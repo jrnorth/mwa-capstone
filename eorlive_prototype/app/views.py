@@ -140,6 +140,11 @@ def histogram_data():
 
 	prev_low_eor0_time = prev_high_eor0_time = prev_low_eor1_time = prev_high_eor1_time = 0
 
+	utc_obsid_map_l0 = []
+	utc_obsid_map_l1 = []
+	utc_obsid_map_h0 = []
+	utc_obsid_map_h1 = []
+
 	for observation in response:
 		obs_counts_index = 0
 		try: #Most of the observation names end with the 7-digit Julian day, so we can just grab it from there.
@@ -150,7 +155,7 @@ def histogram_data():
 			obs_counts_index = int((observation[0] - julian_start_gps) / SECONDS_PER_DAY)
 
 						# Actual UTC time of the observation (for the graph)
-		utc_millis = (observation[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000
+		utc_millis = int((observation[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
 
 		obs_name = observation[1]
 
@@ -167,6 +172,7 @@ def histogram_data():
 					low_eor0_counts.append([utc_millis, 1])
 					prev_low_eor0_time = utc_millis
 				low_eor0_count += 1
+				utc_obsid_map_l0.append([utc_millis, int(observation[0])])
 			elif ra_phase_center == 60: # EOR1
 				if utc_millis == prev_low_eor1_time:
 					low_eor1_counts[-1][1] += 1
@@ -174,6 +180,7 @@ def histogram_data():
 					low_eor1_counts.append([utc_millis, 1])
 					prev_low_eor1_time = utc_millis
 				low_eor1_count += 1
+				utc_obsid_map_l1.append([utc_millis, int(observation[0])])
 		elif 'high' in obs_name:
 			if ra_phase_center == 0: # EOR0
 				if utc_millis == prev_high_eor0_time:
@@ -182,6 +189,7 @@ def histogram_data():
 					high_eor0_counts.append([utc_millis, 1])
 					prev_high_eor0_time = utc_millis
 				high_eor0_count += 1
+				utc_obsid_map_h0.append([utc_millis, int(observation[0])])
 			elif ra_phase_center == 60: # EOR1
 				if utc_millis == prev_high_eor1_time:
 					high_eor1_counts[-1][1] += 1
@@ -189,11 +197,12 @@ def histogram_data():
 					high_eor1_counts.append([utc_millis, 1])
 					prev_high_eor1_time = utc_millis
 				high_eor1_count += 1
+				utc_obsid_map_h1.append([utc_millis, int(observation[0])])
 
 	prev_time = 0
 
 	for error in obscontroller_response:
-		utc_millis = (error[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000
+		utc_millis = int((error[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
 		if utc_millis == prev_time:
 			error_counts[-1][1] += 1
 		else:
@@ -204,7 +213,7 @@ def histogram_data():
 	prev_time = 0
 
 	for error in recvstatuspolice_response:
-		utc_millis = (error[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000
+		utc_millis = int((error[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
 		if utc_millis == prev_time:
 			error_counts[-1][1] += 1
 		else:
@@ -220,6 +229,8 @@ def histogram_data():
         error_counts=error_counts, error_count=error_count,
         low_eor0_count=low_eor0_count, high_eor0_count=high_eor0_count,
         low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count,
+        utc_obsid_map_l0=utc_obsid_map_l0, utc_obsid_map_l1=utc_obsid_map_l1,
+        utc_obsid_map_h0=utc_obsid_map_h0, utc_obsid_map_h1=utc_obsid_map_h1,
         range_start=request.form['starttime'], range_end=request.form['endtime'])
 
 @app.route('/error_table', methods = ['POST'])

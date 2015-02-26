@@ -15,6 +15,9 @@
         <option value="zoom">Zooms</option>
         <option value="flag">Flags</option>
     </select>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <input type="text" id="set_name_textbox" placeholder="Enter set name...">
+    <button type="button" onclick="saveSet()" id="save_set_button">Save set</button>
     <div id='set_construction_div'>
         <table id='set_construction_table' class='table table-striped table-bordered table-responsive'>
             <thead>
@@ -39,10 +42,105 @@
     var inConstructionMode = false;
     var flaggedRanges = [], lowEOR0FlaggedRanges = [], highEOR0FlaggedRanges = [];
     var lowEOR1FlaggedRanges = [], highEOR1FlaggedRanges = [];
-    var currentData = ['high', 0];
+    var currentData = ['high', '0'];
     var clickDragMode = 'zoom';
 
     $('#construction_controls').hide();
+
+    var saveSet = function() {
+        var setSaveButton = function(text, disabled) {
+            $('#save_set_button').html(text);
+            $('#save_set_button').prop('disabled', disabled);
+        };
+
+        var currentObsIdSet = getCurrentObsIdSet();
+
+        if (currentObsIdSet.length === 0) {
+            alert("There aren't any obs ids in this set!");
+            return;
+        } else if ($('#set_name_textbox').val().length === 0) {
+            alert("The set must have a name!");
+            return;
+        }
+
+        setSaveButton("Working...", true);
+
+        var startUtcMillis = Date.parse($("#start_time_label").text());
+        var endUtcMillis = Date.parse($("#end_time_label").text());
+
+        var getFlaggedObsIds = function(start, end) {
+            var utc_obsid_map = getCurrentObsIdSet();
+
+            var startObsIdIndex = -1;
+            var endObsIdIndex = utc_obsid_map.length - 1;
+
+            for (var i = 0; i < utc_obsid_map.length; ++i) {
+                if (utc_obsid_map[i][0] >= start) {
+                    startObsIdIndex = i;
+                    break;
+                }
+            }
+
+            if (startObsIdIndex > -1) {
+                for (var i = startObsIdIndex; i < utc_obsid_map.length; ++i) {
+                    if (utc_obsid_map[i][0] >= end) {
+                        endObsIdIndex = i - 1;
+                        break;
+                    }
+                }
+            } else {
+                return {
+                    startObsId: -1,
+                    endObsId: -1
+                };
+            }
+
+            return {
+                startObsId: utc_obsid_map[startObsIdIndex][1],
+                endObsId: utc_obsid_map[endObsIdIndex][1],
+                startObsIdIndex: startObsIdIndex,
+                endObsIdIndex: endObsIdIndex
+            };
+        };
+
+        var fullRange = getFlaggedObsIds(startUtcMillis, endUtcMillis);
+        var rangesOfObsIds = [];
+
+        for (var i = 0; i < flaggedRanges.length; ++i) {
+            if (flaggedRanges[i].obs_count > 0) { // There are observations in this range!
+                var range = getFlaggedObsIds(flaggedRanges[i].from, flaggedRanges[i].to);
+                rangesOfObsIds.push(currentObsIdSet.slice(range.startObsIdIndex, range.endObsIdIndex + 1));
+            }
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/save_new_set",
+            data: JSON.stringify({
+                name: $('#set_name_textbox').val(),
+                startObsId: fullRange.startObsId,
+                endObsId: fullRange.endObsId,
+                flaggedRanges: rangesOfObsIds
+            }),
+            success: function(data) {
+                if (data.duplicate_name) {
+                    alert("Your set name must be unique.");
+                } else if (data.other_error) {
+                    alert("An error occurred. Please try again.");
+                } else {
+                    alert("Set saved successfully!");
+                }
+
+                setSaveButton("Save set", false);
+            },
+            error: function(xhr, status, error) {
+                alert("An error occured: " + status);
+                setSaveButton("Save set", false);
+            },
+            contentType: 'application/json',
+            dataType: 'json'
+        });
+    }
 
     var getCurrentDataSeries = function() {
         if (currentData[0] === 'low' && currentData[1] === '0')
@@ -64,6 +162,17 @@
             return highEOR0FlaggedRanges;
         else
             return highEOR1FlaggedRanges;
+    };
+
+    var getCurrentObsIdSet = function() {
+        if (currentData[0] === 'low' && currentData[1] === '0')
+            return utc_obsid_map_l0;
+        else if (currentData[0] === 'low')
+            return utc_obsid_map_l1;
+        else if (currentData[0] === 'high' && currentData[1] === '0')
+            return utc_obsid_map_h0;
+        else
+            return utc_obsid_map_h1;
     };
 
     var dataSetChanged = function() {
