@@ -14,10 +14,24 @@
                 <div id="set_name_div">
                     <a href="set/{{ set.name }}">{{ set.name }}</a>
                 </div>
+                <div id = "set_delete_div">
+                    <button onclick="deleteSetHelper('{{ set.name }}')">Delete set</button>
+                </div>
                 <br>
             {% endif %}
         {% endfor %}
     {% else %}
         <p>No Sets</p>
     {% endif %}
+<script src="../static/js/index.js"></script>
+<script>
+    function deleteSetHelper(setName) {
+        if (confirm('Are you sure you want to delete ' + setName + '?')) {
+            deleteSet(setName);
+        }
+        else {
+            // Do nothing
+        }
+    }
+</script>
 {% endblock %}

@@ -141,3 +141,15 @@ function saveComment(set_id, comment_text) {
 		dataType: 'html'
 	});
 };
+
+function deleteSet(setName) {
+	$.ajax({
+		type: "POST",
+		url: "/delete_set",
+		data: {'set_name': setName},
+		success: function(data) {
+			document.write(data);
+		},
+		dataType: 'html'
+	});
+};
