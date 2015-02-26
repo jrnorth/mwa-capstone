@@ -17,7 +17,6 @@ class User(db.Model):
 	owned_sets = db.relationship('Set', backref='user')
 	subscribed_sets = db.relationship('Set', secondary=set_subscriptions)
 
-
 	def __init__(self, username, password, email, first_name, last_name):
 		self.username = username;
 		self.password = password;
@@ -56,6 +55,17 @@ class FlaggedSubset(db.Model):
 
 class FlaggedObsIds(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
+	flagged_subset_id = db.Column(db.Integer, db.ForeignKey('flagged_subset.id'))
+
+class FlaggedSubset(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	set_id = db.Column(db.Integer, db.ForeignKey('set.id'))
+	start = db.Column(db.Integer)
+	end = db.Column(db.Integer)
+
+class FlaggedObsIds(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	obs_id = db.Column(db.Integer)
 	flagged_subset_id = db.Column(db.Integer, db.ForeignKey('flagged_subset.id'))
 
 class GraphData(db.Model):

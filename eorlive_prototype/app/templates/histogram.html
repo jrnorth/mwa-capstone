@@ -2,18 +2,32 @@
 <table class='table table-striped table-bordered'>
 	<thead>
 		<tr>
-			<th>Total Observations</th>
+			<th></th>
 			<th>Low</th>
 			<th>High</th>
+			<th>Total</th>
 			<th>Errors</th>
 		</tr>
 	</thead>
 	<tbody>
 		<tr>
-			<td>{{ total_count }}</td>
-			<td>{{ low_count }}</td>
-			<td>{{ high_count }}</td>
-			<td>{{ error_count }}</td>
+			<th>EOR0</th>
+			<td>{{ low_eor0_count }}</td>
+			<td>{{ high_eor0_count }}</td>
+			<td>{{ low_eor0_count + high_eor0_count }}</td>
+			<td rowspan="3" style="color:red;text-align:center;vertical-align:middle;font-size:20px;">{{ error_count }}</td>
+		</tr>
+		<tr>
+			<th>EOR1</th>
+			<td>{{ low_eor1_count }}</td>
+			<td>{{ high_eor1_count }}</td>
+			<td>{{ low_eor1_count + high_eor1_count }}</td>
+		</tr>
+		<tr>
+			<th>Total</th>
+			<td>{{ low_eor0_count + low_eor1_count }}</td>
+			<td>{{ high_eor0_count + high_eor1_count }}</td>
+			<td>{{ low_eor0_count + high_eor0_count + low_eor1_count + high_eor1_count }}</td>
 		</tr>
 	</tbody>
 </table>
@@ -35,9 +49,15 @@
 
 	// Convert the Python lists passed to this template to JSON objects, so they can be used in JavaScript.
 	var julian_days = {{ julian_days | tojson }};
-	var high_counts = {{ high_counts | tojson }};
-	var low_counts = {{ low_counts | tojson }};
+	var low_eor0_counts = {{ low_eor0_counts | tojson }};
+	var high_eor0_counts = {{ high_eor0_counts | tojson }};
+	var low_eor1_counts = {{ low_eor1_counts | tojson }};
+	var high_eor1_counts = {{ high_eor1_counts | tojson }};
 	var error_counts = {{ error_counts | tojson }};
+	var utc_obsid_map_l0 = {{ utc_obsid_map_l0 | tojson }};
+	var utc_obsid_map_l1 = {{ utc_obsid_map_l1 | tojson }};
+	var utc_obsid_map_h0 = {{ utc_obsid_map_h0 | tojson }};
+	var utc_obsid_map_h1 = {{ utc_obsid_map_h1 | tojson }};
 
 	$(function() {
 		$('#backbutton').hide();
@@ -183,7 +203,7 @@
 			series: [{
 				type: 'column',
 				name: 'Observations',
-				data: high_counts
+				data: high_eor0_counts
 			},
 			{
 				type: 'column',
@@ -192,7 +212,7 @@
 			}]
 		}, function (chart) {
 			_chart = chart;
-			flaggedRanges = highFlaggedRanges;
+			flaggedRanges = highEOR0FlaggedRanges;
 			$('#set_construction_panel').show();
 			updateRangeForConstruction();
 		});
