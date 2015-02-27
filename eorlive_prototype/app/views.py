@@ -402,7 +402,7 @@ def save_comment():
 		theSet.comments.append(com)
 		db.session.commit()
 
-		return render_template('setView.html', comments=theSet.comments, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end)
+		return render_template('comments.html', comments=theSet.comments, set_id=theSet.id)
 
 @app.route('/delete_set', methods = ['POST'])
 def delete_set():
@@ -419,3 +419,8 @@ def delete_set():
 		return render_template('profile.html', user=user, sets=setList)
 	else:
 		return redirect(url_for('login'))
+
+@app.route('/get_comments', methods = ['POST'])
+def get_comments():
+	theSet = models.Set.query.filter(and_(models.Set.name == request.form['set_name'])).first()
+	return render_template('comments.html', comments=theSet.comments)

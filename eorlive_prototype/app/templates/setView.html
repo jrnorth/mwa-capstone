@@ -7,47 +7,29 @@
             Actual content will go here, like graphs and stuff
             <br><br><br>
         </div>
-        <div id="comments_div" class="comments_class">
-            <h3>Comments</h3>
-            <hr>
-            {% if comments %}
-                {% for comment in comments %}
-                    {% if comment %}
-                        <div id="comment_text_div" style="word-wrap: break-word;">
-                            {{ comment.username }} : {{ comment.text }} : {{ comment.created_on }}
-                            {% set printed=True %}
-                        </div>
-                        <br>
-                    {% endif %}
-                {% endfor %}
-            {% else %}
-                {% if logged_out %}
-                    <p> Log in to view comments </p>
-                {% else %}
-                    <p>No Comments</p>
-                {% endif %}
-            {% endif %}
-
-            {% if not logged_out %}
-                <br>
-                <input type="text" id="comment_text_field" onkeypress="handle(event)" name="comment_text">
-                <br> <br>
-                <button onclick="saveCommentHelper()">Submit</button>
-            {% else %}
-                <p></p>
-            {% endif %}
-        </div>
+        <div id="comments_div" class="comments_class"></div>
     </div>
 </div>
-
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 <script src="../static/js/setsAndComments.js"></script>
+<script>
+    $(function() {
+        renderComments('{{ setName }}');
+    });
+</script>
 <script>
     function saveCommentHelper() {
         var comment_text = document.getElementById("comment_text_field").value;
         if (comment_text.length > 1000) {
             alert("Please enter a string under 1000 characters. Your comment is " + (comment_text.length - 1000) + " characters too long.");
         }
+        else if (!(comment_text)) //if it's empty, do nothing
+        {
+            //do nothing
+        }
         else {
+            document.getElementById('comment_text_field').value = ""; //empty the box
             saveComment({{set_id}}, comment_text);
         }
     }

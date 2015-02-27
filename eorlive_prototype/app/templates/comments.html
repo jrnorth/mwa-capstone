@@ -1,45 +1,29 @@
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-
-{% block content %}
-    {% if comments %}
-        {% for comment in comments %}
-            {% if comment %}
-                <div id="comment_text_div" class="row">
+{% block body %}
+<h3>Comments</h3>
+<hr>
+{% if comments %}
+    {% for comment in comments %}
+        {% if comment %}
+            <div id="comment_text_div" style="word-wrap: break-word;">
                 {{ comment.username }} : {{ comment.text }} : {{ comment.created_on }}
-                </div>
-                <br>
-            {% endif %}
-        {% endfor %}
-    {% else %}
-        {% if logged_out %}
-            <p> Log in to view comments </p>
-        {% else %}
-            <p>No Comments</p>
+            </div>
+            <br>
         {% endif %}
-    {% endif %}
-
-    {% if not logged_out %}
-        <br>
-        <input type="text" id="comment_text_field" name="comment_text">
-        <br> <br>
-        <button onclick="saveCommentHelper()">Submit</button>
+    {% endfor %}
+{% else %}
+    {% if logged_out %}
+        <p> Log in to view comments </p>
     {% else %}
-        <p></p>
+        <p>No Comments</p>
     {% endif %}
-    
-<script src="../static/js/index.js"></script>
-<script>
-    function saveCommentHelper() {
-        var comment_text = document.getElementById("comment_text_field").value;
-        var range_id_new;
-        if ("{{ range_id }}" == "None") {
-            range_id_new = null;
-        }
-        else {
-            range_id_new = {{ range_id }};
-        }
-        saveComment(range_id_new, comment_text, {{ startGPS }}, {{ endGPS }});
-    }
-</script>
+{% endif %}
+
+{% if not logged_out %}
+    <br>
+    <input type="text" id="comment_text_field" onkeypress="handle(event)" name="comment_text">
+    <br> <br>
+    <button onclick="saveCommentHelper()" id="comment_save_button">Submit</button>
+{% else %}
+    <p></p>
+{% endif %}
 {% endblock %}
