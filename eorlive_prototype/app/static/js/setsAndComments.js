@@ -1,7 +1,7 @@
 function renderSets(filterType, startUTC, endUTC) {
     $("#set_list_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
-    $.ajax({
+    window.commentRequest = $.ajax({
         type: "POST",
         url: "/get_sets",
         data: {'filter_type': filterType, 'starttime': startUTC, 'endtime': endUTC},

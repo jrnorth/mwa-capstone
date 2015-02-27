@@ -20,31 +20,15 @@ $(function() {
 		if (!isEndDate)
 			endDatePicker.val(nowStr);
 	}
-	
-	$.xhrPool = [];
-	$.xhrPool.abortAll = function() {
-		$(this).each(function(idx, jqXHR) {
-			jqXHR.abort();
-			$.xhrPool.splice(i, 1);
-		});
-		$.xhrPool = [];
-	};
 
-	$.ajaxSetup({
-		beforeSend: function(jqXHR) {
-			$.xhrPool.push(jqXHR);
-		},
-		complete: function(jqXHR) {
-			var index = $.xhrPool.indexOf(jqXHR);
-			if (index > -1) {
-				$.xhrPool.splice(index, 1);
-			}
-		}
-	});
+	//global ajax vars
+	window.commentRequest = null;
+	window.histogramRequest = null;
+	window.dataAmountRequest = null;
 
 	$("#data_amount_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
-	$.ajax({
+	window.dataAmountRequest = $.ajax({
 		type: "GET",
 		url: "/data_amount",
 		success: function(data) {
@@ -65,6 +49,21 @@ function getDateTimeString(now) {
 };
 
 function getObservations() {
+	if (window.commentRequest)
+	{
+		window.commentRequest.abort();
+		window.commentRequest = null;
+	}
+	if (window.histogramRequest)
+	{
+		window.histogramRequest.abort();
+		window.histogramRequest = null;
+	}
+	if (window.dataAmountRequest)
+	{
+		window.dataAmountRequest.abort();
+		window.dataAmountRequest = null;
+	}
 	var start = $("#datepicker_start").val();
 	var end = $("#datepicker_end").val();
 	re = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/;
@@ -92,7 +91,7 @@ function getObservations() {
 	var startUTC = startDate.toISOString().slice(0, 19) + "Z";
 	var endUTC = endDate.toISOString().slice(0, 19) + "Z";
 
-	$.ajax({
+	window.histogramRequest = $.ajax({
 		type: "POST",
 		url: "/histogram_data",
 		data: {'starttime': startUTC, 'endtime': endUTC},
