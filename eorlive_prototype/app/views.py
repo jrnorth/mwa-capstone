@@ -355,9 +355,6 @@ def get_sets():
 		if filter_type == 'all':
 			setList = models.Set.query.all()
 
-		elif filter_type == 'none':
-			setList = None
-
 		elif filter_type == 'yours':
 			setList = models.Set.query.filter(models.Set.username == g.user.username).all()
 
