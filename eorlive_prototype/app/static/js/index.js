@@ -22,7 +22,7 @@ $(function() {
 	}
 
 	//global ajax vars
-	window.commentRequest = null;
+	window.setRequest = null;
 	window.histogramRequest = null;
 	window.dataAmountRequest = null;
 
@@ -49,10 +49,10 @@ function getDateTimeString(now) {
 };
 
 function getObservations() {
-	if (window.commentRequest)
+	if (window.setRequest)
 	{
-		window.commentRequest.abort();
-		window.commentRequest = null;
+		window.setRequest.abort();
+		window.setRequest = null;
 	}
 	if (window.histogramRequest)
 	{
