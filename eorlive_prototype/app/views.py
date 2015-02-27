@@ -6,7 +6,7 @@ import requests
 import json
 import hashlib
 from requests_futures.sessions import FuturesSession
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, or_
 from datetime import datetime, timedelta
 import psycopg2
 import os
@@ -18,10 +18,30 @@ def send_query(db, query):
 
 @app.route('/')
 @app.route('/index')
-def index():
+@app.route('/index/set/<setName>')
+@app.route('/set/<setName>')
+def index(setName = None):
 	# GET is the default request method.
 	# Since we're using GET, we have to access arguments by request.args.get() rather than request.form[]
-	return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
+
+	if setName is not None:
+		session = FuturesSession()
+
+		theSet = models.Set.query.filter(and_(models.Set.name == setName)).first()
+
+		if (g.user is not None and g.user.is_authenticated()):
+			if theSet is not None:
+				comments = theSet.comments
+				if comments is not None:
+					return render_template('setView.html', setName=theSet.name, comments=comments, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end)
+				else: #set with no comments
+					return render_template('setView.html', setName=theSet.name, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end)
+			else: #no set, just show index
+				return render_template('index.html')
+		else: #logged out view
+			return render_template('setView.html', setName=theSet.name, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end, logged_out=True)
+	else: #original case in index
+		return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
 
 @app.route('/data_amount', methods = ['GET'])
 def data_amount():
@@ -85,7 +105,7 @@ def histogram_data():
 
 	GPS_LEAP_SECONDS_OFFSET = leap_seconds - 19
 
-	response = send_query(g.eor_db, '''SELECT starttime, obsname
+	response = send_query(g.eor_db, '''SELECT starttime, obsname, ra_phase_center
 					FROM mwa_setting
 					WHERE starttime >= {} AND starttime <= {}
 					AND projectid='G0009'
@@ -120,7 +140,13 @@ def histogram_data():
 
 	GPS_UTC_DELTA = (jan_6_1980 - jan_1_1970).total_seconds()
 
-	observation_counts = []
+	low_eor0_counts = []
+
+	high_eor0_counts = []
+
+	low_eor1_counts = []
+
+	high_eor1_counts = []
 
 	error_counts = []
 
@@ -130,9 +156,16 @@ def histogram_data():
 
 	SECONDS_PER_DAY = 86400
 
-	low_count = high_count = error_count = total_count = 0
+	low_eor0_count = high_eor0_count = low_eor1_count = high_eor1_count = error_count = 0
 
-	prev_time = 0
+	prev_low_eor0_time = prev_high_eor0_time = prev_low_eor1_time = prev_high_eor1_time = 0
+
+	utc_obsid_map_l0 = []
+	utc_obsid_map_l1 = []
+	utc_obsid_map_h0 = []
+	utc_obsid_map_h1 = []
+
+	prev_high_time = prev_low_time = 0
 
 	for observation in response:
 		obs_counts_index = 0
@@ -144,25 +177,54 @@ def histogram_data():
 			obs_counts_index = int((observation[0] - julian_start_gps) / SECONDS_PER_DAY)
 
 						# Actual UTC time of the observation (for the graph)
-		utc_millis = (observation[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000
+		utc_millis = int((observation[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
 
-		if utc_millis == prev_time:
-			observation_counts[-1][1] += 1
-		else:
-			observation_counts.append([utc_millis, 1])
-			prev_time = utc_millis
+		obs_name = observation[1]
 
-		total_count += 1
+		try:
+			ra_phase_center = int(observation[2])
+		except TypeError as te:
+			ra_phase_center = -1
 
-		if 'low' in observation[1]:
-			low_count += 1
-		elif 'high' in observation[1]:
-			high_count += 1
+		if 'low' in obs_name:
+			if ra_phase_center == 0: # EOR0
+				if utc_millis == prev_low_eor0_time:
+					low_eor0_counts[-1][1] += 1
+				else:
+					low_eor0_counts.append([utc_millis, 1])
+					prev_low_eor0_time = utc_millis
+				low_eor0_count += 1
+				utc_obsid_map_l0.append([utc_millis, int(observation[0])])
+			elif ra_phase_center == 60: # EOR1
+				if utc_millis == prev_low_eor1_time:
+					low_eor1_counts[-1][1] += 1
+				else:
+					low_eor1_counts.append([utc_millis, 1])
+					prev_low_eor1_time = utc_millis
+				low_eor1_count += 1
+				utc_obsid_map_l1.append([utc_millis, int(observation[0])])
+		elif 'high' in obs_name:
+			if ra_phase_center == 0: # EOR0
+				if utc_millis == prev_high_eor0_time:
+					high_eor0_counts[-1][1] += 1
+				else:
+					high_eor0_counts.append([utc_millis, 1])
+					prev_high_eor0_time = utc_millis
+				high_eor0_count += 1
+				utc_obsid_map_h0.append([utc_millis, int(observation[0])])
+			elif ra_phase_center == 60: # EOR1
+				if utc_millis == prev_high_eor1_time:
+					high_eor1_counts[-1][1] += 1
+				else:
+					high_eor1_counts.append([utc_millis, 1])
+					prev_high_eor1_time = utc_millis
+				high_eor1_count += 1
+				utc_obsid_map_h1.append([utc_millis, int(observation[0])])
 
 	prev_time = 0
 
 	for error in obscontroller_response:
-		utc_millis = (error[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000
+		utc_millis = int((error[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
 		if utc_millis == prev_time:
 			error_counts[-1][1] += 1
 		else:
@@ -173,7 +235,7 @@ def histogram_data():
 	prev_time = 0
 
 	for error in recvstatuspolice_response:
-		utc_millis = (error[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000
+		utc_millis = int((error[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
 		if utc_millis == prev_time:
 			error_counts[-1][1] += 1
 		else:
@@ -183,9 +245,15 @@ def histogram_data():
 
 	error_counts.sort(key=lambda error: error[0])
 
-	return render_template('histogram.html', julian_days=julian_days, observation_counts=observation_counts, error_counts=error_counts,
-							total_count=total_count, error_count=error_count, low_count=low_count, high_count=high_count,
-							range_end=request.form['endtime'])
+	return render_template('histogram.html', julian_days=julian_days,
+        low_eor0_counts=low_eor0_counts, high_eor0_counts=high_eor0_counts,
+        low_eor1_counts=low_eor1_counts, high_eor1_counts=high_eor1_counts,
+        error_counts=error_counts, error_count=error_count,
+        low_eor0_count=low_eor0_count, high_eor0_count=high_eor0_count,
+        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count,
+        utc_obsid_map_l0=utc_obsid_map_l0, utc_obsid_map_l1=utc_obsid_map_l1,
+        utc_obsid_map_h0=utc_obsid_map_h0, utc_obsid_map_h1=utc_obsid_map_h1,
+        range_start=request.form['starttime'], range_end=request.form['endtime'])
 
 @app.route('/error_table', methods = ['POST'])
 def error_table():
@@ -252,7 +320,7 @@ def login():
 	if request.method == 'POST':
 		username = request.form['username'].strip()
 		password = request.form['password'].strip()
-		
+
 		u = models.User.query.get(username)
 		password = password.encode('UTF-8')
 		if not u:
@@ -275,113 +343,84 @@ def logout():
 def profile():
 	if (g.user is not None and g.user.is_authenticated()):
 		user = models.User.query.get(g.user.username)
-		return render_template('profile.html', user=user)
+		setList = models.Set.query.filter(and_(models.Set.username == g.user.username))
+		return render_template('profile.html', user=user, sets=setList)
 	else:
 		return redirect(url_for('login'))
 
-@app.route('/range_saved', methods = ['POST'])
-def range_saved():
+@app.route('/get_sets', methods = ['POST'])
+def get_sets():
+	filter_type = request.form['filter_type']
 	if (g.user is not None and g.user.is_authenticated()):
-		start = request.form['starttime']
+		if filter_type == 'all':
+			setList = models.Set.query.all()
 
-		end = request.form['endtime']
+		elif filter_type == 'yours':
+			setList = models.Set.query.filter(models.Set.username == g.user.username).all()
 
-		session = FuturesSession()
+		elif filter_type == 'filter_within_cur':
+			startUTC = request.form['starttime']
+			endUTC = request.form['endtime']
+			baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
+			requestURLStart = baseUTCToGPSURL + startUTC
+			requestURLEnd = baseUTCToGPSURL + endUTC
+			session = FuturesSession()
+			#Start the first Web service request in the background.
+			future_start = session.get(requestURLStart)
+			#The second request is started immediately.
+			future_end = session.get(requestURLEnd)
+			#Wait for the first request to complete, if it hasn't already.
+			start_gps = int(future_start.result().content)
+			#Wait for the second request to complete, if it hasn't already.
+			end_gps = int(future_end.result().content)
+			setList = models.Set.query.filter(and_(models.Set.start >= start_gps, models.Set.end <= end_gps)).all()
 
-		baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
-
-		requestURLStart = baseUTCToGPSURL + request.form['starttime']
-
-		requestURLEnd = baseUTCToGPSURL + request.form['endtime']
-
-		#Start the first Web service request in the background.
-		future_start = session.get(requestURLStart)
-
-		#The second request is started immediately.
-		future_end = session.get(requestURLEnd)
-
-		#Wait for the first request to complete, if it hasn't already.
-		response_start = future_start.result()
-
-		#Wait for the second request to complete, if it hasn't already.
-		response_end = future_end.result()
-
-		startGPS = int(response_start.content)
-
-		endGPS = int(response_end.content)
-
-		range_saved = False
-
-		range_id = -1
-
-		user = models.User.query.get(g.user.username)
-
-		for ran in user.saved_ranges:
-			if ran.start == startGPS and ran.end == endGPS:
-				range_saved = True
-				range_id = ran.id
-				break
-
-		return render_template('range_save_button.html', range_saved=range_saved, range_id=int(range_id), rangeStart=int(startGPS), rangeEnd=int(endGPS))
+		else:
+			setList = models.Set.query.all()
+		
+		if setList is not None:
+			return render_template('setList.html', sets=setList)
+		else:
+			return render_template('setList.html')
 	else:
-		return '<span>Log in to save ranges</span>'
+		return render_template('setList.html', logged_out=True)
 
-@app.route('/save_range', methods = ['POST'])
-def save_range():
+@app.route('/save_comment', methods = ['POST'])
+def save_comment():
 	if (g.user is not None and g.user.is_authenticated()):
-		startGPS = request.form['startGPS']
+		set_id = request.form['set_id']
+		comment_text = request.form['comment_text']
 
-		endGPS = request.form['endGPS']
+		theSet = models.Set.query.get(set_id)
 
-		user = models.User.query.get(g.user.username)
+		#now, add the comment
+		com = models.Comment()
+		com.text = comment_text
+		com.username = g.user.username
+		com.set_id = set_id
 
-		for ran in user.saved_ranges:
-			if ran.start == startGPS and ran.end == endGPS:
-				return str(ran.id)
-
-		ran = models.Range.query.filter(and_(models.Range.start == startGPS, models.Range.end == endGPS)).first()
-
-		if ran is not None:
-			user.saved_ranges.append(ran)
-			db.session.merge(user)
-			db.session.commit()
-			return str(ran.id)
-
-		ran = models.Range()
-		ran.start = startGPS
-		ran.end = endGPS
-
-		user.saved_ranges.append(ran)
-
-		db.session.add(ran)
+		theSet.comments.append(com)
 		db.session.commit()
 
-		db.session.refresh(ran)
+		return render_template('comments.html', comments=theSet.comments, set_id=theSet.id)
 
-		return str(ran.id)
-	else:
-		return make_response('Error: no user logged in', 401)
-
-@app.route('/remove_range', methods = ['POST'])
-def remove_range():
+@app.route('/delete_set', methods = ['POST'])
+def delete_set():
 	if (g.user is not None and g.user.is_authenticated()):
-		range_id = int(request.form['range_id'])
-
+		set_name = request.form['set_name']
 		user = models.User.query.get(g.user.username)
 
-		ran = None
+		theSet = models.Set.query.filter(and_(models.Set.name == set_name)).first()
 
-		for ran_iter in user.saved_ranges:
-			if ran_iter.id == range_id:
-				ran = ran_iter
-				break
-
-		if ran is None:
-			return make_response('Error: user doesn\'t have that range', 500)
-
-		user.saved_ranges.remove(ran)
+		db.session.delete(theSet)
 		db.session.commit()
 
-		return json.dumps({'start': ran.start, 'end': ran.end})
+		setList = models.Set.query.filter(and_(models.Set.username == g.user.username))
+		return render_template('profile.html', user=user, sets=setList)
 	else:
-		return make_response('Error: no user logged in', 401)
+		return redirect(url_for('login'))
+
+@app.route('/get_comments', methods = ['POST'])
+def get_comments():
+	theSet = models.Set.query.filter(and_(models.Set.name == request.form['set_name'])).first()
+	return render_template('comments.html', comments=theSet.comments)

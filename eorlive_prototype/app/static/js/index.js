@@ -21,9 +21,14 @@ $(function() {
 			endDatePicker.val(nowStr);
 	}
 
+	//global ajax vars
+	window.setRequest = null;
+	window.histogramRequest = null;
+	window.dataAmountRequest = null;
+
 	$("#data_amount_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
-	$.ajax({
+	window.dataAmountRequest = $.ajax({
 		type: "GET",
 		url: "/data_amount",
 		success: function(data) {
@@ -44,6 +49,21 @@ function getDateTimeString(now) {
 };
 
 function getObservations() {
+	if (window.setRequest)
+	{
+		window.setRequest.abort();
+		window.setRequest = null;
+	}
+	if (window.histogramRequest)
+	{
+		window.histogramRequest.abort();
+		window.histogramRequest = null;
+	}
+	if (window.dataAmountRequest)
+	{
+		window.dataAmountRequest.abort();
+		window.dataAmountRequest = null;
+	}
 	var start = $("#datepicker_start").val();
 	var end = $("#datepicker_end").val();
 	re = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/;
@@ -65,12 +85,13 @@ function getObservations() {
 	}
 
 	$("#observations_summary").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+	$("#comments_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
 	// Make each date into a string of the format "YYYY-mm-ddTHH:MM:SSZ", which is the format used in the local database.
 	var startUTC = startDate.toISOString().slice(0, 19) + "Z";
 	var endUTC = endDate.toISOString().slice(0, 19) + "Z";
 
-	$.ajax({
+	window.histogramRequest = $.ajax({
 		type: "POST",
 		url: "/histogram_data",
 		data: {'starttime': startUTC, 'endtime': endUTC},
@@ -80,15 +101,9 @@ function getObservations() {
 		dataType: "html"
 	});
 
-	$.ajax({
-		type: "POST",
-		url: "/range_saved",
-		data: {'starttime': startUTC, 'endtime': endUTC},
-		success: function(data) {
-			$("#range_save").html(data);
-		},
-		dataType: "html"
-	});
+	var e = document.getElementById('filter_dropdown');
+	var eVal = e.options[e.selectedIndex].value;
+	renderSets(eVal, startUTC, endUTC);
 };
 
 function getDate(datestr) {
@@ -98,28 +113,4 @@ function getDate(datestr) {
 	var hour = datestr.substring(11, 13);
 	var minute = datestr.substring(14, 16);
 	return new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
-};
-
-function saveRange(rangeStart, rangeEnd) {
-	$.ajax({
-		type: "POST",
-		url: "/save_range",
-		data: {'startGPS': rangeStart, 'endGPS': rangeEnd},
-		success: function(data) {
-			$("#range_save").html("<button onclick='removeRange(" + data + ")'>Remove range from saved</button>");
-		},
-		dataType: 'text'
-	});
-};
-
-function removeRange(range_id) {
-	$.ajax({
-		type: "POST",
-		url: "/remove_range",
-		data: {'range_id': range_id},
-		success: function(data) {
-			$("#range_save").html("<button onclick='saveRange(" + data.start + ", " + data.end + ")'>Add range to saved</button>");
-		},
-		dataType: 'json'
-	});
 };

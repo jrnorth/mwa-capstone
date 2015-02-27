@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block body %}
+<div id="main_content_div">
+    <div id="main_content_row">
+        <div id="left_content">
+            <h1>{{ setName }}</h1>
+            Actual content will go here, like graphs and stuff
+            <br><br><br>
+        </div>
+        <div id="comments_div" class="comments_class"></div>
+    </div>
+</div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+<script src="../static/js/setsAndComments.js"></script>
+<script>
+    $(function() {
+        renderComments('{{ setName }}');
+    });
+</script>
+<script>
+    function saveCommentHelper() {
+        var comment_text = document.getElementById("comment_text_field").value;
+        if (comment_text.length > 1000) {
+            alert("Please enter a string under 1000 characters. Your comment is " + (comment_text.length - 1000) + " characters too long.");
+        }
+        else if (!(comment_text)) //if it's empty, do nothing
+        {
+            //do nothing
+        }
+        else {
+            document.getElementById('comment_text_field').value = ""; //empty the box
+            saveComment({{set_id}}, comment_text);
+        }
+    }
+
+    function handle(e) {
+        if (e.keyCode === 13) {
+            saveCommentHelper();
+        }
+    }
+</script>
+{% endblock %}
