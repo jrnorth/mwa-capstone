@@ -358,6 +358,9 @@ def get_sets():
 		elif filter_type == 'none':
 			setList = None
 
+		elif filter_type == 'yours':
+			setList = models.Set.query.filter(models.Set.username == g.user.username).all()
+
 		elif filter_type == 'filter_within_cur':
 			startUTC = request.form['starttime']
 			endUTC = request.form['endtime']

@@ -42,6 +42,7 @@
 						Filter sets:
 						<select id="filter_dropdown" onchange="filterDropdownChanged(this)">
 						    <option value="all" selected>All</option>
+						    <option value="yours">Your Sets</option>
 						    <option value="none">None</option>
 						    <option value="filter_within_cur">Contained within current range</option>
 						</select>
@@ -58,7 +59,7 @@
 
 <script>
     var filterDropdownChanged = function(select) {
-        currentData = select.value;
+        var currentData = select.value;
         var start = $("#datepicker_start").val();
 		var end = $("#datepicker_end").val();
 		re = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/;
