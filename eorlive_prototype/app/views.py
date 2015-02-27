@@ -6,7 +6,8 @@ import requests
 import json
 import hashlib
 from requests_futures.sessions import FuturesSession
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, create_engine
+from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 import psycopg2
 import os
@@ -48,8 +49,13 @@ def histogram_data():
 
 	enddatetime = datetime.strptime(request.form['endtime'], '%Y-%m-%dT%H:%M:%SZ')
 
-	session = FuturesSession()
+	# create database session
+	Database = sessionmaker()
+	engine = create_engine('postgres:///postgres');
+	Database.configure(bind=engine)
+	db = Database();
 
+	session = FuturesSession()
 	baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
 
 	requestURLStart = baseUTCToGPSURL + request.form['starttime']
@@ -101,6 +107,28 @@ def histogram_data():
 							WHERE reference_time >= {} AND reference_time <= {}
 							ORDER BY reference_time ASC'''.format(start_gps, end_gps)).fetchall()
 
+	#get list of all json ids
+	obs_id_list=[]
+	for observation in response:
+		obs_id_list.append(observation[1]);
+	#get all flags that exist within list
+	#TODO: Finish Query
+	flags_response = []
+	if obs_id_list:
+		flags_response = models.Set.query.\
+						with_entities(models.FlaggedObsIds.flagged_subset_id,models.Set.username).\
+						join(models.FlaggedSubset).\
+						join(models.FlaggedObsIds).\
+						filter(\
+							models.FlaggedObsIds.flagged_subset_id.in_(obs_id_list)).\
+						all()
+	#flag_query = db.query(Set).join(flagged_subset).join(FlaggedObsIds, FlaggedSubset.id).filter(FlaggedObsIds.in_(obs_id_list)).order_by(asc(FlaggedObsIds.id)).fetchAll()
+	#flags_response = send_query(mwa.capstone,'''SELECT `set`.username, FlaggedObsIds.id 
+	#						FROM `set` 
+	#							INNER JOIN flagged_subset as fs on fs.set_id = `set`.id 
+	#						INNER JOIN FlaggedObsIds as fo on fo.flagged_subset_id = Flagged_subset.id
+	#						WHERE fo.id in {}
+	#						GROUP BY `set`.username'''.format(obs_id_list)).fetchall()
 	# The Julian day for January 1, 2000 12:00 UT was 2,451,545 (http://en.wikipedia.org/wiki/Julian_day).
 	jan_1_2000 = datetime(2000, 1, 1, 12)
 
@@ -214,13 +242,29 @@ def histogram_data():
 
 	error_counts.sort(key=lambda error: error[0])
 
+	#Todo: Debug
+	#list of lists containing [time, count, names, of, observers]
+	flag_counts = []
+	current_flag = 0
+	for flag in flags_response:
+		utc_millis = (flag[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000
+		if utc_millis == prev_time:
+			#if flag for obs exists add name and count
+			flag_counts[-1][1]+=1
+			flag_counts[-1].append(flag[1])
+		else:
+			#add new flag entry with count of one and name
+			flag_counts.append([utc_millis,1,flag[1]])
+		
+
 	return render_template('histogram.html', julian_days=julian_days,
         low_eor0_counts=low_eor0_counts, high_eor0_counts=high_eor0_counts,
         low_eor1_counts=low_eor1_counts, high_eor1_counts=high_eor1_counts,
         error_counts=error_counts, error_count=error_count,
         low_eor0_count=low_eor0_count, high_eor0_count=high_eor0_count,
-        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count,
-        range_start=request.form['starttime'], range_end=request.form['endtime'])
+        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count, 
+        flag_counts=flag_counts, range_start=request.form['starttime'], 
+        range_end=request.form['endtime'])
 
 @app.route('/error_table', methods = ['POST'])
 def error_table():

@@ -36,6 +36,9 @@
 <button id='backbutton' onclick="backToHistogram()">Back to histogram</button>
 <div id='error_table'></div>
 <div id='observations_histogram'></div>
+<div id='Error_messages'></div>
+<div class="spacer"></div>
+<div id='flags_histogram'></div>
 <div id='set_construction_panel'>
 	{% include 'set_construction_panel.html' %}
 </div>
@@ -54,164 +57,190 @@
 	var low_eor1_counts = {{ low_eor1_counts | tojson }};
 	var high_eor1_counts = {{ high_eor1_counts | tojson }};
 	var error_counts = {{ error_counts | tojson }};
+	var flag_counts = {{ flag_counts | tojson }};
 
 	$(function() {
 		$('#backbutton').hide();
 		$('#error_table').hide();
 		$('#set_construction_panel').hide();
 
-		$('#observations_histogram').highcharts('StockChart', {
-			colors: [
-				'#7cb5ec',
-				'#FF0000',
-				'#90ed7d',
-				'#f7a35c',
-				'#8085e9',
-				'#f15c80',
-				'#e4d354',
-				'#8085e8',
-				'#8d4653',
-				'#91e8e1'
-			],
-			credits: {
-				enabled: false,
-			},
-			chart: {
-				zoomType: "x",
-				events: {
-					selection: function(event) {
-						if (clickDragMode === 'flag') {
-							event.preventDefault();
-							flagClickAndDraggedRange(event);
-						}
-					}
-				}
-			},
-			legend: {
-				enabled: true
-			},
-			plotOptions: {
-				column: {
-					dataGrouping: {
-						groupPixelWidth: 200,
-						forced: true
-					},
-					pointPlacement: "between",
-					// No padding between columns so the graph looks like a histogram.
-					groupPadding: 0.1,
-					pointPadding: 0,
-					events: {
-						click: function(event) {
-							if (this.name === 'Errors' && !$('#construction_mode_checkbox').is(':checked')) {
-								var columnLimits = getColumnRangeLimits(event, this.xAxis.series[1]);
-								var startTime = columnLimits.startTime, endTime = columnLimits.endTime;
+		 // create the chart
+    $('#observations_histogram').highcharts('StockChart', {
+        colors: [
+            '#7cb5ec',
+            '#FF0000',
+            '#90ed7d',
+            '#f7a35c',
+            '#8085e9',
+            '#f15c80',
+            '#e4d354',
+            '#8085e8',
+            '#8d4653',
+            '#91e8e1'],
+        chart: {
+            zoomType: "x"
+        },
+        plotOptions: {
+            column: {
+                dataGrouping: {
+                    groupPixelWidth: 500,
+                    forced: true
+                },
+                // No padding between columns so the graph looks like a histogram.
+                groupPadding: 0.1,
+                pointPadding: 0,
+                units: [[
+	'hour',
+	[1, 6, 8, 12]]
+, [
+	'day',
+	[1]
+], [
+	'week',
+	[1]
+], [
+	'month',
+	[1, 3, 6]
+]]
+                events: {
+                    click: function (event) {
+                        if (this.name === 'Errors') {
+                            var absoluteIndex = event.point.index,
+                                relativeIndex = 0;
+                            var errorSeries = this.chart.series[1];
+                            for (var i = 0; i < errorSeries.points.length; ++i) {
+                                if (errorSeries.points[i].index === absoluteIndex) {
+                                    relativeIndex = i;
+                                    break;
+                                }
+                            }
+                            var startTime = errorSeries.processedXData[relativeIndex],
+                                endTime = 0;
+                            if (errorSeries.closestPointRange !== undefined) {
+                                endTime = startTime + errorSeries.closestPointRange;
+                            } else if (errorSeries.processedXData.length > relativeIndex + 1) {
+                                endTime = errorSeries.processedXData[relativeIndex + 1];
+                            } else if (errorSeries.xData.length > absoluteIndex + 1) {
+                                endTime = errorSeries.xData[absoluteIndex + 1];
+                            } else {
+                                endTime = Date.parse("{{ range_end }}");
+                            }
+                            $('#observations_histogram').hide();
+                            $('#error_table').html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+                            $('#error_table').show();
+                            $.ajax({
+                                type: "POST",
+                                url: "/error_table",
+                                data: {
+                                    'starttime': startTime,
+                                        'endtime': endTime
+                                },
+                                success: function (data) {
+                                    $('#error_table').html(data);
+                                    $('#backbutton').show();
+                                },
+                                error: function (xhr, ajaxOptions, thrownError) {
+                                    backToHistogram();
+                                },
+                                dataType: "html"
+                            });
+                        }
+                    }
+                }
+            }
+        },
+        rangeSelector: {
+            buttons: [{
+                type: 'second',
+                count: 1,
+                text: '1s'
+            }, {
+                type: 'minute',
+                count: 1,
+                text: '1min'
+            }, {
+                type: 'minute',
+                count: 60,
+                text: '1hr'
+            }, {
+                type: 'day',
+                count: 1,
+                text: '1d'
+            }, {
+                type: 'week',
+                count: 1,
+                text: '1w'
+            }, {
+                type: 'month',
+                count: 1,
+                text: '1mo'
+            }, {
+                type: 'month',
+                count: 3,
+                text: '3mo'
+            }, {
+                type: 'month',
+                count: 6,
+                text: '6mo'
+            }, {
+                type: 'ytd',
+                count: 1,
+                text: 'YTD'
+            }, {
+                type: 'year',
+                count: 1,
+                text: '1y'
+            }, {
+                type: 'all',
+                count: 1,
+                text: 'all'
+            }],
+            selected: 10
+        },
 
-								$('#observations_histogram').hide();
-								$('#set_construction_panel').hide();
-								$('#error_table').html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
-								$('#error_table').show();
+        title: {
+            text: 'EOR Data'
+        },
 
-								$.ajax({
-									type: "POST",
-									url: "/error_table",
-									data: {
-										'starttime': startTime,
-										'endtime': endTime
-									},
-									success: function(data) {
-										$('#error_table').html(data);
-										$('#backbutton').show();
-									},
-									error: function(xhr, ajaxOptions, thrownError) {
-										backToHistogram();
-									},
-									dataType: "html"
-								});
-							} else if ($('#construction_mode_checkbox').is(':checked')) {
-								var series = this.name === 'Observations' ? this.xAxis.series[0] : this.xAxis.series[1];
-								flagClickedRange(event, series);
-							}
-						}
-					}
-				}
-			},
-			rangeSelector: {
-				buttons: [{
-					type: 'second',
-					count: 1,
-					text: '1s'
-				}, {
-					type: 'minute',
-					count: 1,
-					text: '1min'
-				}, {
-					type: 'minute',
-					count: 60,
-					text: '1hr'
-				}, {
-					type: 'day',
-					count: 1,
-					text: '1d'
-				}, {
-					type: 'week',
-					count: 1,
-					text: '1w'
-				}, {
-					type: 'month',
-					count: 1,
-					text: '1mo'
-				}, {
-					type: 'month',
-					count: 3,
-					text: '3mo'
-				}, {
-					type: 'month',
-					count: 6,
-					text: '6mo'
-				}, {
-					type: 'ytd',
-					count: 1,
-					text: 'YTD'
-				}, {
-					type: 'year',
-					count: 1,
-					text: '1y'
-				}, {
-					type: 'all',
-					count: 1,
-					text: 'all'
-				}],
-				selected: 10
-			},
-			title: {
-				text: 'Observation & Error Count'
-			},
-			xAxis: {
-				ordinal: false
-			},
-			yAxis: {
-				title: {
-					text: 'Number of Observations/Errors'
-				},
-				min: 0,
-				allowDecimals: false
-			},
-			series: [{
-				type: 'column',
-				name: 'Observations',
-				data: high_eor0_counts
-			},
-			{
-				type: 'column',
-				name: 'Errors',
-				data: error_counts
-			}]
-		}, function (chart) {
-			_chart = chart;
-			flaggedRanges = highEOR0FlaggedRanges;
-			$('#set_construction_panel').show();
-			updateRangeForConstruction();
-		});
+        yAxis: [{
+            title: {
+                text: 'Observations/Errors'
+            },
+            height: '60%',
+            min: 0,
+            allowDecimals: false
+        }, {
+            title: {
+                text: 'Flags'
+            },
+            top: '65%',
+            height: '35%',
+            min: 0,
+            offset: 0,
+            allowDecimals: false
+        }],
+
+        series: [{
+            type: 'column',
+            name: 'Observations',
+            data: high_eor0_counts
+        }, {
+            type: 'column',
+            name: 'Errors',
+            data: error_counts
+        }
+        /*, {
+            type: 'column',
+            name: 'Flags',
+            yAxis: 1,
+            data: [
+            (153, 1), [156, 2],
+                [167, 3],
+                [169, 4]
+            ] //high_eor0_counts
+        }*/
+        ]
+    });
 	});
 </script>
 {% endblock %}
