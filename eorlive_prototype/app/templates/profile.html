@@ -6,6 +6,10 @@
 	<br>
 	Email: {{user.email}}
     <br>
+    <h3>Upload Set From Text File</h3>
+    <input type="file" id="upload_set_file">
+    <input type="text" id="upload_set_name" placeholder="Enter set name...">
+    <input type="submit" id="upload_set_button" value="Upload set" onclick="uploadSet()">
     <br>
     <h3>Your Sets</h3>
     {% if sets %}
@@ -30,6 +34,56 @@
         if (confirm('Are you sure you want to delete ' + setName + '?')) {
             deleteSet(setName);
         }
-    }
+    };
+
+    function uploadSet() {
+        var setName = $("#upload_set_name").val();
+
+        if (setName.length === 0) {
+            alert("Your set must have a name!");
+            return;
+        }
+
+        var files = $("#upload_set_file")[0].files;
+
+        if (files.length === 0) {
+            alert("You must specify a file to upload!");
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('file', files[0]);
+        formData.append('set_name', setName);
+
+        var setUploadButton = function(text, disabled) {
+            $("#upload_set_button").html(text);
+            $("#upload_set_button").prop('disabled', disabled);
+        };
+
+        setUploadButton("Working...", true);
+
+        $.ajax({
+            type: "POST",
+            url: "/upload_set",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.duplicate_name) {
+                    alert("Your set name must be unique!");
+                    setUploadButton("Upload set", false);
+                } else if (data.data_error) {
+                    alert(data.data_error);
+                    setUploadButton("Upload set", false);
+                } else { // The set upload was successful.
+                    location.reload(true); // Don't get cached copy.
+                }
+            },
+            error: function(xhr, status, error) {
+                alert("An error occurred: " + status);
+                setUploadButton("Upload set", false);
+            }
+        });
+    };
 </script>
 {% endblock %}
