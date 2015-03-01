@@ -6,6 +6,7 @@
             <h1>{{ setName }}</h1>
             Actual content will go here, like graphs and stuff
             <br><br><br>
+            <button type="button" onclick="downloadSet()">Download set</button>
         </div>
         <div id="comments_div" class="comments_class"></div>
     </div>
@@ -39,5 +40,9 @@
             saveCommentHelper();
         }
     }
+
+    function downloadSet() {
+        window.open("/download_set?set_id={{set_id}}", '_blank');
+    };
 </script>
 {% endblock %}

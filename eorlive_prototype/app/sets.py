@@ -104,3 +104,38 @@ def upload_set():
         return "OK"
     else:
         return make_response("You need to be logged in to upload a set.", 401)
+
+@app.route('/download_set')
+def download_set():
+    set_id = request.args['set_id']
+
+    the_set = models.Set.query.filter(models.Set.id == set_id).first()
+
+    if the_set is not None:
+        flagged_subsets = models.FlaggedSubset.query.filter(models.FlaggedSubset.set_id == the_set.id).all()
+
+        all_obs_ids_tuples = views.send_query(g.eor_db, '''SELECT starttime
+                            FROM mwa_setting
+                            WHERE starttime >= {} AND starttime <= {}
+                            ORDER BY starttime ASC'''.format(the_set.start,
+                            the_set.end)).fetchall()
+
+        all_obs_ids = [tup[0] for tup in all_obs_ids_tuples]
+
+        good_obs_ids_text_file = ""
+
+        for obs_id in all_obs_ids:
+            good = True # assume obs_id is good
+            for flagged_subset in flagged_subsets:
+                if obs_id >= flagged_subset.start and obs_id <= flagged_subset.end: # obs_id is flagged, so it's not good
+                    good = False
+                    break
+            if good:
+                good_obs_ids_text_file += str(obs_id) + '\n'
+
+        response = make_response(good_obs_ids_text_file)
+        filename = the_set.name.replace(' ', '_') + ".txt"
+        response.headers["Content-Disposition"] = "attachment; filename=" + filename
+        return response
+    else:
+        return make_response("That set wasn't found.", 500)
