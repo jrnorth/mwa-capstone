@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>EoRLiveP</title>
-	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css"/>
-	<link rel="stylesheet" href="../static/css/jquery.datetimepicker.css"/>
-	<link rel="stylesheet" href="../static/css/style.css"/>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css"/>
+    <title>EoRLiveP</title>
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css"/>
+    <link rel="stylesheet" href="../static/css/jquery.datetimepicker.css"/>
+    <link rel="stylesheet" href="../static/css/style.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css"/>
 </head>
 <body>
-	<div class='page'>
-		<h1>EoRLiveP</h1>
-		<div class='metanav'>
-			<a href="{{ url_for('index') }}">home</a> | 
-			{% if not g.user.is_authenticated() %}
-			<a href="{{ url_for('login') }}">log in</a>
-			{% else %}
-			<span>logged in as {{ g.user.username }} | </span>
-			<span><a href="{{ url_for('profile') }}">profile</a> | </span>
-			<a href="{{ url_for('logout') }}">log out</a>
-			{% endif %}
-		</div>
-		{% for message in get_flashed_messages() %}
-			<div class='flash'>{{ message }}</div>
-		{% endfor %}
-		{% block body %}{% endblock %}
-	</div>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-	<script src="../static/js/setsAndComments.js"></script>
-	{% if request.path == '/index' or request.path == '/' %}
-	<script src="../static/js/jquery.datetimepicker.js"></script>
-	<script src="../static/js/index.js"></script>
-	<script src="../static/js/highcharts.js"></script>
-	{% endif %}
+    <div class='page'>
+        <h1>EoRLiveP</h1>
+        <div class='metanav'>
+            <a href="{{ url_for('index') }}">home</a> |
+            {% if not g.user.is_authenticated() %}
+            <a href="{{ url_for('login') }}">log in</a>
+            {% else %}
+            <span>logged in as {{ g.user.username }} | </span>
+            <span><a href="{{ url_for('profile') }}">profile</a> | </span>
+            <a href="{{ url_for('logout') }}">log out</a>
+            {% endif %}
+        </div>
+        {% for message in get_flashed_messages() %}
+            <div class='flash'>{{ message }}</div>
+        {% endfor %}
+        {% block body %}{% endblock %}
+    </div>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+    <script src="../static/js/setsAndComments.js"></script>
+    {% if request.path == '/index' or request.path == '/' %}
+    <script src="../static/js/jquery.datetimepicker.js"></script>
+    <script src="../static/js/index.js"></script>
+    <script src="../static/js/highcharts.js"></script>
+    {% endif %}
 </body>
 </html>

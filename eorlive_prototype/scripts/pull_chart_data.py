@@ -50,39 +50,39 @@ def update():
 
     # Total Scheduled
     total_sch_hours = float (send_eor_query('''
-						SELECT SUM(stoptime - starttime) FROM mwa_setting
-						WHERE projectid=\'G0009\'
-						''').fetchone()[0]) / 3600.
+                        SELECT SUM(stoptime - starttime) FROM mwa_setting
+                        WHERE projectid=\'G0009\'
+                        ''').fetchone()[0]) / 3600.
 
     write_to_log("total_sch_hours query ran in %f seconds" % profile())
 
     # Total Observed
     total_obs_hours = float (send_eor_query('''
-					    	SELECT SUM(stoptime - starttime) FROM mwa_setting
-					   	WHERE projectid = \'G0009\' AND stoptime < %d
-					  	''' % gps_now).fetchone()[0] ) / 3600.
+                            SELECT SUM(stoptime - starttime) FROM mwa_setting
+                        WHERE projectid = \'G0009\' AND stoptime < %d
+                        ''' % gps_now).fetchone()[0] ) / 3600.
 
     write_to_log("total_obs_hours query ran in %f seconds" % profile())
 
     # Total that has data
     mwa_setting_rows = send_eor_query('''
-					SELECT subq.starttime, subq.stoptime, subq.files
-					FROM
-						(SELECT starttime, stoptime, COUNT(data_files.id) as files
-						FROM mwa_setting
-						LEFT OUTER JOIN data_files ON mwa_setting.starttime = data_files.observation_num
-						WHERE projectid=\'G0009\'
-						GROUP BY starttime, stoptime) as subq
-					WHERE subq.files > 0
-					ORDER BY subq.starttime ASC
-					''')
+                    SELECT subq.starttime, subq.stoptime, subq.files
+                    FROM
+                        (SELECT starttime, stoptime, COUNT(data_files.id) as files
+                        FROM mwa_setting
+                        LEFT OUTER JOIN data_files ON mwa_setting.starttime = data_files.observation_num
+                        WHERE projectid=\'G0009\'
+                        GROUP BY starttime, stoptime) as subq
+                    WHERE subq.files > 0
+                    ORDER BY subq.starttime ASC
+                    ''')
 
     write_to_log("mwa_setting_rows query ran in %f seconds" % profile())
 
     ngas_files_rows = send_ngas_query('''
-					SELECT DISTINCT file_id FROM ngas_files
-					ORDER BY file_id ASC
-					''')
+                    SELECT DISTINCT file_id FROM ngas_files
+                    ORDER BY file_id ASC
+                    ''')
 
     write_to_log("ngas_files_rows query ran in %f seconds" % profile())
 
@@ -149,19 +149,19 @@ def update():
 
     # UVFITS hours
     total_uvfits_hours = float (send_mwa_query('''
-						SELECT COUNT(*) FROM uvfits_location WHERE version = 4 AND subversion = 1
-						''').fetchone()[0]) * 112. / 3600.
+                        SELECT COUNT(*) FROM uvfits_location WHERE version = 4 AND subversion = 1
+                        ''').fetchone()[0]) * 112. / 3600.
 
     write_to_log("total_uvfits_hours query ran in %f seconds" % profile())
 
     # Data transfer rate
     data_transfer_rate = send_ngas_query("""
-					select sum(uncompressed_file_size) / date_part('epoch', to_timestamp('%(now)s','YYYY-MM-DD"T"HH24:MI:SS.MS') -
-						to_timestamp(min(ingestion_date), 'YYYY-MM-DD"T"HH24:MI:SS.MS')) / (1024^2) as "data_transfer_rate"
-					from ngas_files
-					where ingestion_date between to_char(to_timestamp('%(now)s','YYYY-MM-DD"T"HH24:MI:SS.MS') -
-						interval '24 hours','YYYY-MM-DD"T"HH24:MI:SS.MS') and '%(now)s';
-					""" % {"now": datetime.now().strftime('%Y-%m-%dT%H:%M:%S.000')}).fetchone()[0] or 0
+                    select sum(uncompressed_file_size) / date_part('epoch', to_timestamp('%(now)s','YYYY-MM-DD"T"HH24:MI:SS.MS') -
+                        to_timestamp(min(ingestion_date), 'YYYY-MM-DD"T"HH24:MI:SS.MS')) / (1024^2) as "data_transfer_rate"
+                    from ngas_files
+                    where ingestion_date between to_char(to_timestamp('%(now)s','YYYY-MM-DD"T"HH24:MI:SS.MS') -
+                        interval '24 hours','YYYY-MM-DD"T"HH24:MI:SS.MS') and '%(now)s';
+                    """ % {"now": datetime.now().strftime('%Y-%m-%dT%H:%M:%S.000')}).fetchone()[0] or 0
     data_transfer_rate = float(data_transfer_rate)
 
     write_to_log("data_transfer_rate query ran in %f seconds" % profile())
@@ -174,7 +174,7 @@ def update():
     write_to_log("Data transfer rate = %.6f" % data_transfer_rate)
 
     graph_datum = models.GraphData(hours_scheduled = total_sch_hours, hours_observed = total_obs_hours, hours_with_data = total_data_hours,
-	hours_with_uvfits = total_uvfits_hours, data_transfer_rate = data_transfer_rate)
+    hours_with_uvfits = total_uvfits_hours, data_transfer_rate = data_transfer_rate)
 
     db.session.add(graph_datum)
     db.session.commit()

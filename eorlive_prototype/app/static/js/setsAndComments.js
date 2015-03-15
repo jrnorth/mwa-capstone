@@ -38,7 +38,7 @@ function deleteSet(setName) {
 
 function renderComments(setName) {
     $("#comments_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
-    
+
     $.ajax({
         type: "POST",
         url: "/get_comments",
