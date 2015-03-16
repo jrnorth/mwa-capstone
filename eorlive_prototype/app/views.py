@@ -82,17 +82,6 @@ def histogram_data():
     #The second request is started immediately.
     future_end = session.get(requestURLEnd)
 
-    julian_datetime_start = startdatetime
-    #Get the start of the Julian day (12:00 UT) corresponding to the start datetime.
-    if (startdatetime.hour < 12): #If the hour wasn't >= 12, then the start of this Julian day was the previous day at 12:00 UT.
-        julian_datetime_start = julian_datetime_start - timedelta(hours = 12)
-    #No matter whether the hour was >= 12, the start of the Julian day is at 12:00 UT.
-    julian_datetime_start = julian_datetime_start.replace(hour=12, minute=0, second=0, microsecond=0)
-
-    requestURLJulianStart = baseUTCToGPSURL + julian_datetime_start.strftime('%Y-%m-%dT%H:%M:%SZ')
-    #Start a Web request for the GPS time corresponding to the exact start of the start datetime's Julian day in the background.
-    future_julian_start = session.get(requestURLJulianStart)
-
     #Wait for the first request to complete, if it hasn't already.
     start_gps = int(future_start.result().content)
 
@@ -121,19 +110,6 @@ def histogram_data():
                             WHERE reference_time >= {} AND reference_time <= {}
                             ORDER BY reference_time ASC'''.format(start_gps, end_gps)).fetchall()
 
-    # The Julian day for January 1, 2000 12:00 UT was 2,451,545 (http://en.wikipedia.org/wiki/Julian_day).
-    jan_1_2000 = datetime(2000, 1, 1, 12)
-
-    jan_1_2000_julian_day = 2451545
-
-    delta_start = startdatetime - jan_1_2000
-
-    julian_day_start = delta_start.days + jan_1_2000_julian_day
-
-    delta_end = enddatetime - jan_1_2000
-
-    julian_day_end = delta_end.days + jan_1_2000_julian_day
-
     jan_1_1970 = datetime(1970, 1, 1)
 
     jan_6_1980 = datetime(1980, 1, 6)
@@ -150,12 +126,6 @@ def histogram_data():
 
     error_counts = []
 
-    julian_days = [x for x in range(julian_day_start, julian_day_end + 1)]
-    #Wait for this Web request to complete, if it hasn't already.
-    julian_start_gps = int(future_julian_start.result().content)
-
-    SECONDS_PER_DAY = 86400
-
     low_eor0_count = high_eor0_count = low_eor1_count = high_eor1_count = error_count = 0
 
     prev_low_eor0_time = prev_high_eor0_time = prev_low_eor1_time = prev_high_eor1_time = 0
@@ -168,14 +138,6 @@ def histogram_data():
     prev_high_time = prev_low_time = 0
 
     for observation in response:
-        obs_counts_index = 0
-        try: #Most of the observation names end with the 7-digit Julian day, so we can just grab it from there.
-            obs_counts_index = int(observation[1][-7:]) - julian_day_start
-        except ValueError as ve:
-            #If we couldn't get an integer from the observation name, we have to calculate the Julian day using the GPS time of the
-            #start datetime and calculating how many days occurred between it and the observation in question.
-            obs_counts_index = int((observation[0] - julian_start_gps) / SECONDS_PER_DAY)
-
                         # Actual UTC time of the observation (for the graph)
         utc_millis = int((observation[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
 
@@ -245,7 +207,7 @@ def histogram_data():
 
     error_counts.sort(key=lambda error: error[0])
 
-    return render_template('histogram.html', julian_days=julian_days,
+    return render_template('histogram.html',
         low_eor0_counts=low_eor0_counts, high_eor0_counts=high_eor0_counts,
         low_eor1_counts=low_eor1_counts, high_eor1_counts=high_eor1_counts,
         error_counts=error_counts, error_count=error_count,
