@@ -1,4 +1,4 @@
-from app import views, models
+from app import db_utils, models
 from app.flask_app import app, db
 from flask import request, g, make_response, jsonify
 
@@ -80,7 +80,7 @@ def upload_set():
 
         good_obs_ids.sort()
 
-        all_obs_ids_tuples = views.send_query(g.eor_db, '''SELECT starttime
+        all_obs_ids_tuples = db_utils.send_query(g.eor_db, '''SELECT starttime
                             FROM mwa_setting
                             WHERE starttime >= {} AND starttime <= {}
                             ORDER BY starttime ASC'''.format(good_obs_ids[0],
@@ -114,7 +114,7 @@ def download_set():
     if the_set is not None:
         flagged_subsets = models.FlaggedSubset.query.filter(models.FlaggedSubset.set_id == the_set.id).all()
 
-        all_obs_ids_tuples = views.send_query(g.eor_db, '''SELECT starttime
+        all_obs_ids_tuples = db_utils.send_query(g.eor_db, '''SELECT starttime
                             FROM mwa_setting
                             WHERE starttime >= {} AND starttime <= {}
                             ORDER BY starttime ASC'''.format(the_set.start,
