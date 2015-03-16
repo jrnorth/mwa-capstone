@@ -128,14 +128,10 @@ def histogram_data():
 
     low_eor0_count = high_eor0_count = low_eor1_count = high_eor1_count = error_count = 0
 
-    prev_low_eor0_time = prev_high_eor0_time = prev_low_eor1_time = prev_high_eor1_time = 0
-
     utc_obsid_map_l0 = []
     utc_obsid_map_l1 = []
     utc_obsid_map_h0 = []
     utc_obsid_map_h1 = []
-
-    prev_high_time = prev_low_time = 0
 
     for observation in response:
                         # Actual UTC time of the observation (for the graph)
@@ -150,36 +146,20 @@ def histogram_data():
 
         if 'low' in obs_name:
             if ra_phase_center == 0: # EOR0
-                if utc_millis == prev_low_eor0_time:
-                    low_eor0_counts[-1][1] += 1
-                else:
-                    low_eor0_counts.append([utc_millis, 1])
-                    prev_low_eor0_time = utc_millis
+                low_eor0_counts.append([utc_millis, 1])
                 low_eor0_count += 1
                 utc_obsid_map_l0.append([utc_millis, int(observation[0])])
             elif ra_phase_center == 60: # EOR1
-                if utc_millis == prev_low_eor1_time:
-                    low_eor1_counts[-1][1] += 1
-                else:
-                    low_eor1_counts.append([utc_millis, 1])
-                    prev_low_eor1_time = utc_millis
+                low_eor1_counts.append([utc_millis, 1])
                 low_eor1_count += 1
                 utc_obsid_map_l1.append([utc_millis, int(observation[0])])
         elif 'high' in obs_name:
             if ra_phase_center == 0: # EOR0
-                if utc_millis == prev_high_eor0_time:
-                    high_eor0_counts[-1][1] += 1
-                else:
-                    high_eor0_counts.append([utc_millis, 1])
-                    prev_high_eor0_time = utc_millis
+                high_eor0_counts.append([utc_millis, 1])
                 high_eor0_count += 1
                 utc_obsid_map_h0.append([utc_millis, int(observation[0])])
             elif ra_phase_center == 60: # EOR1
-                if utc_millis == prev_high_eor1_time:
-                    high_eor1_counts[-1][1] += 1
-                else:
-                    high_eor1_counts.append([utc_millis, 1])
-                    prev_high_eor1_time = utc_millis
+                high_eor1_counts.append([utc_millis, 1])
                 high_eor1_count += 1
                 utc_obsid_map_h1.append([utc_millis, int(observation[0])])
 
