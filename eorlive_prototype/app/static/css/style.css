@@ -1,4 +1,4 @@
-#error_table, #set_construction_div {
+#error_table, #set_construction_div, #comments_div {
     width: 100%;
     max-width: 100%;
     max-height: 400px;
@@ -56,4 +56,90 @@ h2              { font-size: 1.2em; }
     padding: 10px;
     border-style: solid;
     border-width: 2px;
+}
+
+.arrow-r {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 5px solid #444;
+    margin-bottom: 4px;
+    margin-right: 7px;
+    margin-left: 3px;
+    display: inline-block;
+}
+
+.arrow-d {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #444;
+    margin-bottom: 6px;
+    margin-right: 5px;
+    display: inline-block;
+}
+
+.collapse-container>:nth-child(odd) {
+    padding: 5px;
+    background-color: gray;
+    background-image: linear-gradient(bottom, gray 14%, #969696 70%);
+    background-image: -o-linear-gradient(bottom, gray 14%, #969696 70%);
+    background-image: -moz-linear-gradient(bottom, gray 14%, #969696 70%);
+    background-image: -webkit-linear-gradient(bottom, gray 14%, #969696 70%);
+    background-image: -ms-linear-gradient(bottom, gray 14%, #969696 70%);
+    border: 1px solid black;
+    margin: auto;
+}
+.collapse-container>:nth-child(even) {
+    background-color: white;
+    display: none;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    border: 1px solid black;
+}
+.collapse-container>:nth-child(even) p {
+    padding: 0px 5px;
+}
+
+.collapse-container>:nth-child(odd):hover {
+    cursor: pointer;
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit browsers */
+}
+
+.collapse-container>:first-child {
+    border-radius: 4px 4px 0px 0px;
+}
+
+.collapse-container>:nth-last-child(2) {
+    border-radius: 0px 0px 3px 3px;
+}
+
+.collapse-container h1, .collapse-container h2, .collapse-container h3 {
+    color: #f9f9f9;
+}
+
+.replyButton {
+    background-color:#44c767;
+    border:1px solid #18ab29;
+    display:inline-block;
+    border-radius: 4px;
+    cursor:pointer;
+    color:#ffffff;
+    font-family:arial;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #2f6627;
+    float: right;
+}
+
+.replyButton:hover {
+    background-color:#5cbf2a;
+}
+
+.replyButton:active {
+    position:relative;
+    top:1px;
 }

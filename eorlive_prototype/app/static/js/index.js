@@ -38,6 +38,7 @@ $(function() {
     });
 
     getObservations();
+    getComments();
 });
 
 function getDateTimeString(now) {
@@ -80,7 +81,6 @@ function getObservations() {
     }
 
     $("#observations_summary").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
-    $("#comments_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
     // Make each date into a string of the format "YYYY-mm-ddTHH:MM:SSZ", which is the format used in the local database.
     var startUTC = startDate.toISOString().slice(0, 19) + "Z";
@@ -99,6 +99,22 @@ function getObservations() {
     var e = document.getElementById('filter_dropdown');
     var eVal = e.options[e.selectedIndex].value;
     renderSets(eVal, startUTC, endUTC);
+};
+
+function getComments() {
+    $("#comments_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+    $.ajax({
+        type: "GET",
+        url: "/get_all_comments",
+        success: function(data) {
+            $("#comments_div").html(data);
+            $("#comments_list").collapsible({
+                animate: false
+            });
+        },
+        dataType: "html"
+    });
 };
 
 function getDate(datestr) {

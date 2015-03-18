@@ -32,16 +32,13 @@ def index(setName = None):
         plot_bands = histogram_utils.get_plot_bands(theSet)
 
         if (g.user is not None and g.user.is_authenticated()):
-            comments = theSet.comments
-            if comments is not None:
-                return render_template('setView.html', setName=theSet.name, comments=comments, set_id=theSet.id,setStart=theSet.start, setEnd=theSet.end, observation_counts=observation_counts,
+            return render_template('setView.html', setName=theSet.name, set_id=theSet.id,
+                setStart=theSet.start, setEnd=theSet.end, observation_counts=observation_counts,
                 error_counts=error_counts, plot_bands=plot_bands, range_end=theSet.end)
-            else: #set with no comments
-                return render_template('setView.html', setName=theSet.name, set_id=theSet.id, setStart=theSet.start,setEnd=theSet.end, observation_counts=observation_counts, error_counts=error_counts,
-                plot_bands=plot_bands, range_end=theSet.end)
         else: #logged out view
-            return render_template('setView.html', setName=theSet.name, set_id=theSet.id, setStart=theSet.start, setEnd=theSet.end, logged_out=True, observation_counts=observation_counts, error_counts=error_counts,
-            plot_bands=plot_bands, range_end=theSet.end)
+            return render_template('setView.html', setName=theSet.name, set_id=theSet.id, setStart=theSet.start,
+                setEnd=theSet.end, logged_out=True, observation_counts=observation_counts, error_counts=error_counts,
+                plot_bands=plot_bands, range_end=theSet.end)
     else: #original case in index
         return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
 
@@ -343,25 +340,6 @@ def get_sets():
     else:
         return render_template('setList.html', logged_out=True)
 
-@app.route('/save_comment', methods = ['POST'])
-def save_comment():
-    if (g.user is not None and g.user.is_authenticated()):
-        set_id = request.form['set_id']
-        comment_text = request.form['comment_text']
-
-        theSet = models.Set.query.get(set_id)
-
-        #now, add the comment
-        com = models.Comment()
-        com.text = comment_text
-        com.username = g.user.username
-        com.set_id = set_id
-
-        theSet.comments.append(com)
-        db.session.commit()
-
-        return render_template('comments.html', comments=theSet.comments, set_id=theSet.id)
-
 @app.route('/delete_set', methods = ['POST'])
 def delete_set():
     if (g.user is not None and g.user.is_authenticated()):
@@ -377,8 +355,3 @@ def delete_set():
         return render_template('profile.html', user=user, sets=setList)
     else:
         return redirect(url_for('login'))
-
-@app.route('/get_comments', methods = ['POST'])
-def get_comments():
-    theSet = models.Set.query.filter(and_(models.Set.name == request.form['set_name'])).first()
-    return render_template('comments.html', comments=theSet.comments)

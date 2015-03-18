@@ -9,7 +9,6 @@
             <div id="set_histogram"></div>
             <button type="button" onclick="downloadSet()">Download set</button>
         </div>
-        <div id="comments_div" class="comments_class"></div>
     </div>
 </div>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -19,10 +18,6 @@
     {% include "js/histogram_utils.js" %} <!-- Because there are functions that depend on Python variables -->
 </script>
 <script>
-    $(function() {
-        renderComments('{{ setName }}');
-    });
-
     var observation_counts = {{ observation_counts | tojson }};
     var error_counts = {{ error_counts | tojson }};
     var plot_bands = {{ plot_bands | tojson }};
@@ -174,27 +169,6 @@
             }]
         });
     });
-
-    function saveCommentHelper() {
-        var comment_text = document.getElementById("comment_text_field").value;
-        if (comment_text.length > 1000) {
-            alert("Please enter a string under 1000 characters. Your comment is " + (comment_text.length - 1000) + " characters too long.");
-        }
-        else if (!(comment_text)) //if it's empty, do nothing
-        {
-            //do nothing
-        }
-        else {
-            document.getElementById('comment_text_field').value = ""; //empty the box
-            saveComment({{set_id}}, comment_text);
-        }
-    }
-
-    function handle(e) {
-        if (e.keyCode === 13) {
-            saveCommentHelper();
-        }
-    }
 
     function downloadSet() {
         window.open("/download_set?set_id={{set_id}}", '_blank');
