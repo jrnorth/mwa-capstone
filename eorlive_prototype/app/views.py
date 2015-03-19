@@ -6,7 +6,7 @@ import requests
 import json
 import hashlib
 from requests_futures.sessions import FuturesSession
-from sqlalchemy import and_, func, or_
+from sqlalchemy import and_
 from datetime import datetime, timedelta
 import psycopg2
 import os
@@ -298,7 +298,7 @@ def logout():
 def profile():
     if (g.user is not None and g.user.is_authenticated()):
         user = models.User.query.get(g.user.username)
-        setList = models.Set.query.filter(and_(models.Set.username == g.user.username))
+        setList = models.Set.query.filter(models.Set.username == g.user.username)
         return render_template('profile.html', user=user, sets=setList)
     else:
         return redirect(url_for('login'))
@@ -346,12 +346,12 @@ def delete_set():
         set_name = request.form['set_name']
         user = models.User.query.get(g.user.username)
 
-        theSet = models.Set.query.filter(and_(models.Set.name == set_name)).first()
+        theSet = models.Set.query.filter(models.Set.name == set_name).first()
 
         db.session.delete(theSet)
         db.session.commit()
 
-        setList = models.Set.query.filter(and_(models.Set.username == g.user.username))
+        setList = models.Set.query.filter(models.Set.username == g.user.username)
         return render_template('profile.html', user=user, sets=setList)
     else:
         return redirect(url_for('login'))
