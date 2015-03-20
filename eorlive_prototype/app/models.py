@@ -45,7 +45,6 @@ class Set(db.Model):
     name = db.Column(db.String(50))
     start = db.Column(db.Integer)
     end = db.Column(db.Integer)
-    comments = db.relationship('Comment', backref='range', lazy='dynamic')
 
 class FlaggedSubset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -63,7 +62,7 @@ class GraphData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     # Store a 'created_on' string field for the current time that is automatically inserted with a new entry into the database.
     # We're using UTC time, so that's why there is a Z at the end of the string.
-    created_on = db.Column(db.String(20), default=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'))
+    created_on = db.Column(db.DateTime, default=datetime.utcnow)
     hours_scheduled = db.Column(db.Float)
     hours_observed = db.Column(db.Float)
     hours_with_data = db.Column(db.Float)
@@ -81,9 +80,15 @@ class GraphData(db.Model):
             'data_transfer_rate': round(self.data_transfer_rate or 0., 4)
         }
 
+class Thread(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    username = db.Column(db.String(32), db.ForeignKey('user.username'))
+    created_on = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(1000), nullable=True)
+    thread_id = db.Column(db.Integer, db.ForeignKey('thread.id'))
+    text = db.Column(db.String(1000), nullable=False)
     username = db.Column(db.String(32), db.ForeignKey('user.username'))
-    set_id = db.Column(db.Integer, db.ForeignKey('set.id'))
-    created_on = db.Column(db.String(20), default=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'))
+    created_on = db.Column(db.DateTime, default=datetime.utcnow)

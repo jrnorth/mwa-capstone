@@ -29,6 +29,12 @@
                     <br>
                     <div id='observations_summary'></div>
                     <br>
+                    <span style="font-size:30px;">Comments</span>
+                    {% if g.user and g.user.is_authenticated() %}
+                    <button type="button" onclick="newThread()" class="replyButton" style="margin-top:12px;">New thread</button>
+                    {% endif %}
+                    <div id='comments_div'></div>
+                    {% include 'comment_reply.html' %}
                     <br>
                     <div id='data_amount_table'></div>
                 </td>
@@ -75,4 +81,10 @@
         renderSets(currentData, startUTC, endUTC);
     };
 </script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="../static/js/setsAndComments.js"></script>
+<script src="../static/js/jquery.datetimepicker.js"></script>
+<script src="../static/js/collapsible.min.js"></script>
+<script src="../static/js/index.js"></script>
+<script src="../static/js/highcharts.js"></script>
 {% endblock %}

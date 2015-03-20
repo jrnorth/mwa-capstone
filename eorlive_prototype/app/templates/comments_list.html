@@ -1,0 +1,41 @@
+<div id="comments_list" class="collapse-container">
+    {% if threads | length > 0 %}
+        {% for thread in threads %}
+            <h3>
+                <span class="arrow-r"></span>
+                {{ thread.title }} by {{ thread.username }} at {{ thread.created_on }}
+                {% if g.user and g.user.is_authenticated() %}
+                <button type="button" class="replyButton" onclick="reply(event, '{{thread.id}}', '{{thread.title}}')">
+                    Reply
+                </button>
+                {% endif %}
+            </h3>
+            <div>
+                {% for comment in thread.comments %}
+                    <h4>
+                        {{ comment.username }} @ {{ comment.created_on }}
+                    </h4>
+                    <p>{{ comment.text }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% else %}
+        No comments
+    {% endif %}
+</div>
+<script>
+    var reply = function(event, thread_id, thread_name) {
+        // Stop the collapsible list from handling the click.
+        event.stopPropagation();
+
+        $("#replying_thread_id").val(thread_id);
+        $("#replying_thread_name").text(thread_name);
+        $("#new_thread").hide();
+        $("#comment_reply").show();
+    };
+
+    var newThread = function(event) {
+        $("#comment_reply").hide();
+        $("#new_thread").show();
+    };
+</script>
