@@ -105,7 +105,7 @@ Attendees: Joseph North, Connor Alfheim, David Ganey, Ryan Dougherty, Dylan Lusi
 Flag Plot
   <ul>
   <li>Description: A plot on the main page that, when in browsing mode, shows which observations have been flagged by users and who those users are.</li>
-  <li>Discussion: Needs to be integrated into the main graph.</li>
+  <li>Discussion: Needs to be integrated into the main graph. This will allow users to get a quick, high-level overview of what data is bad.</li>
   <li>Assigned: Connor and Ryan</li>
   <li>Due: 3/27/2015</li>
   </ul>
@@ -114,6 +114,7 @@ Flag Plot
 Data Investigation
     <ul>
     <li>Description: Browse through the new database and try integrating interesting data sets into the histogram with different graph types to get a feel for how a user might want to use the site.</li>
+    <li>Discussion: Exploring the database ourselves and seeing what types of data are available will help us understand what graph types are most meaningful. This investigation task will also help us to figure out how to make our chart configuration API as flexible and extensible as possible, which is extremely important since it is one of the primary goals of our project.</li>
     <li>Assigned: Everyone</li>
     <li>Due: 3/27/2015</li>
     </ul>
@@ -122,6 +123,7 @@ Data Investigation
 New plots
     <ul>
     <li>Description: Add a tabbed view to the current plot and show new plots. Show hours of observation data in the chart and QS data in the plot.</li>
+    <li>Discussion: The idea is that each tab in the view will correspond to a table in the database. Each tab contains a plot, and the different data series (with corresponding legend entries) in the plot correspond to the columns of that database table. In each of these plots (as with our existing plots), the user can select which data sets they want to see or hide by clicking on their legend entries. This data-focused plot creation mechanism will allow the user to explore the data in ways that are meaningful to them.</li>
     <li>Assigned: David, Dylan, Joe</li>
     <li>Due: 3/27/2015</li>
     </ul>
@@ -130,6 +132,7 @@ New plots
 UI updates
     <ul>
     <li>Description: Add some new UI elements to the set list (e.g. sparklines)</li>
+    <li>Discussion: On the primary page, there is a list of data sets that the user can browse. However, the only information presented is the set name and the username of the user who created the set. This isn't very meaningful to a user browsing through the sets. Our goal is to add enough information so that a user can get an idea of what the set is about without having to visit its page. We will investigate adding a sparkline to each set in the list so the user can have a better idea of what's in the set. We will also add some data labels for each set in the list (e.g. how many hours of data are in the set).</li>
     <li>Assigned: Ben</li>
     <li>Due: 3/27/2015</li>
     </ul>
@@ -138,6 +141,7 @@ UI updates
 NGAS link
     <ul>
     <li>Description: Research integrating with the NGAS site via links from sets</li>
+    <li>Discussion: There is an existing site that contains information about the files generated from the telescope's observations. Users of the site will be interested in seeing this file data in the context of the observation data sets they create. Therefore, we will look into creating a link on each observation data set page that opens up the corresponding file data page on the existing site in a new browser tab.</li>
     <li>Assigned: Joe</li>
     <li>Due: 3/27/2015</li>
     </ul>
@@ -145,7 +149,8 @@ NGAS link
 <li>
 API Documentation
     <ul>
-    <li>Description: Create a document showing how to set up and work with the code produced in this project
+    <li>Description: Create a document showing how to set up and work with the code produced in this project</li>
+    <li>Discussion: Others will continue to work on this project after we graduate, so we need to provide ample documentation explaining the structure of the project, how to install it, etc. Most importantly, the scientists using this site will want to add their own functionality, so the APIs we create need to be well-documented for their sake.</li>
     <li>Assigned: Ryan</li>
     <li>Due: 3/27/2015</li>
     </ul>
