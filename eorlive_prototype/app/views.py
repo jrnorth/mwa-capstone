@@ -93,19 +93,6 @@ def histogram_data():
                     AND projectid='G0009'
                     ORDER BY starttime ASC'''.format(start_gps, end_gps)).fetchall()
 
-    # The Julian day for January 1, 2000 12:00 UT was 2,451,545 (http://en.wikipedia.org/wiki/Julian_day).
-    jan_1_2000 = datetime(2000, 1, 1, 12)
-
-    jan_1_2000_julian_day = 2451545
-
-    delta_start = startdatetime - jan_1_2000
-
-    julian_day_start = delta_start.days + jan_1_2000_julian_day
-
-    delta_end = enddatetime - jan_1_2000
-
-    julian_day_end = delta_end.days + jan_1_2000_julian_day
-
     low_eor0_counts = []
 
     high_eor0_counts = []
@@ -115,12 +102,6 @@ def histogram_data():
     high_eor1_counts = []
 
     error_counts, error_count = histogram_utils.get_error_counts(start_gps, end_gps)
-
-    julian_days = [x for x in range(julian_day_start, julian_day_end + 1)]
-    #Wait for this Web request to complete, if it hasn't already.
-    julian_start_gps = int(future_julian_start.result().content)
-
-    SECONDS_PER_DAY = 86400
 
     low_eor0_count = high_eor0_count = low_eor1_count = high_eor1_count = 0
 
@@ -163,7 +144,7 @@ def histogram_data():
                 high_eor1_count += 1
                 utc_obsid_map_h1.append([utc_millis, int(observation[0])])
 
-    return render_template('histogram.html', julian_days=julian_days,
+    return render_template('histogram.html',
         low_eor0_counts=low_eor0_counts, high_eor0_counts=high_eor0_counts,
         low_eor1_counts=low_eor1_counts, high_eor1_counts=high_eor1_counts,
         error_counts=error_counts, error_count=error_count,
