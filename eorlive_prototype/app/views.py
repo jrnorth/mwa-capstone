@@ -87,7 +87,7 @@ def histogram_data():
     #Wait for the second request to complete, if it hasn't already.
     end_gps = int(future_end.result().content)
 
-    response = db_utils.send_query(g.eor_db, '''SELECT starttime, obsname, ra_phase_center
+    response = db_utils.send_query(g.eor_db, '''SELECT starttime, stoptime, obsname, ra_phase_center
                     FROM mwa_setting
                     WHERE starttime >= {} AND starttime <= {}
                     AND projectid='G0009'
@@ -104,6 +104,7 @@ def histogram_data():
     error_counts, error_count = histogram_utils.get_error_counts(start_gps, end_gps)
 
     low_eor0_count = high_eor0_count = low_eor1_count = high_eor1_count = 0
+    low_eor0_hours = high_eor0_hours = low_eor1_hours = high_eor1_hours = 0
 
     utc_obsid_map_l0 = []
     utc_obsid_map_l1 = []
@@ -118,10 +119,10 @@ def histogram_data():
                         # Actual UTC time of the observation (for the graph)
         utc_millis = int((observation[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
 
-        obs_name = observation[1]
+        obs_name = observation[2]
 
         try:
-            ra_phase_center = int(observation[2])
+            ra_phase_center = int(observation[3])
         except TypeError as te:
             ra_phase_center = -1
 
@@ -129,19 +130,23 @@ def histogram_data():
             if ra_phase_center == 0: # EOR0
                 low_eor0_counts.append([utc_millis, 1])
                 low_eor0_count += 1
+                low_eor0_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_l0.append([utc_millis, int(observation[0])])
             elif ra_phase_center == 60: # EOR1
                 low_eor1_counts.append([utc_millis, 1])
                 low_eor1_count += 1
+                low_eor1_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_l1.append([utc_millis, int(observation[0])])
         elif 'high' in obs_name:
             if ra_phase_center == 0: # EOR0
                 high_eor0_counts.append([utc_millis, 1])
                 high_eor0_count += 1
+                high_eor0_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_h0.append([utc_millis, int(observation[0])])
             elif ra_phase_center == 60: # EOR1
                 high_eor1_counts.append([utc_millis, 1])
                 high_eor1_count += 1
+                high_eor1_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_h1.append([utc_millis, int(observation[0])])
 
     histogram = render_template('histogram.html',
@@ -154,7 +159,9 @@ def histogram_data():
 
     summary_table = render_template('summary_table.html', error_count=error_count,
         low_eor0_count=low_eor0_count, high_eor0_count=high_eor0_count,
-        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count)
+        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count,
+        low_eor0_hours=low_eor0_hours, high_eor0_hours=high_eor0_hours,
+        low_eor1_hours=low_eor1_hours, high_eor1_hours=high_eor1_hours)
 
     return json.dumps({'histogram': histogram, 'summary_table': summary_table})
 
