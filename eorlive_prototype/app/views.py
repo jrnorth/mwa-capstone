@@ -144,15 +144,19 @@ def histogram_data():
                 high_eor1_count += 1
                 utc_obsid_map_h1.append([utc_millis, int(observation[0])])
 
-    return render_template('histogram.html',
+    histogram = render_template('histogram.html',
         low_eor0_counts=low_eor0_counts, high_eor0_counts=high_eor0_counts,
         low_eor1_counts=low_eor1_counts, high_eor1_counts=high_eor1_counts,
-        error_counts=error_counts, error_count=error_count,
+        error_counts=error_counts, utc_obsid_map_l0=utc_obsid_map_l0,
+        utc_obsid_map_l1=utc_obsid_map_l1, utc_obsid_map_h0=utc_obsid_map_h0,
+        utc_obsid_map_h1=utc_obsid_map_h1, range_start=request.form['starttime'],
+        range_end=request.form['endtime'])
+
+    summary_table = render_template('summary_table.html', error_count=error_count,
         low_eor0_count=low_eor0_count, high_eor0_count=high_eor0_count,
-        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count,
-        utc_obsid_map_l0=utc_obsid_map_l0, utc_obsid_map_l1=utc_obsid_map_l1,
-        utc_obsid_map_h0=utc_obsid_map_h0, utc_obsid_map_h1=utc_obsid_map_h1,
-        range_start=request.form['starttime'], range_end=request.form['endtime'])
+        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count)
+
+    return json.dumps({'histogram': histogram, 'summary_table': summary_table})
 
 @app.route('/error_table', methods = ['POST'])
 def error_table():

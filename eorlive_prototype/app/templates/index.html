@@ -19,15 +19,13 @@
         <button onclick="getObservations()">Get observations</button>
     </div>
 </div>
-<br>
-<br>
 <table style="width:100%" class="tableClass">
     <div id="main_content_div">
         <tr class="rowClass">
             <div id="left_content_div">
                 <td class="cellClass">
                     <br>
-                    <div id='observations_summary'></div>
+                    <div id='observations_main'></div>
                     <br>
                     <span style="font-size:30px;">Comments</span>
                     {% if g.user and g.user.is_authenticated() %}
@@ -41,7 +39,8 @@
             </div>
 
             <div id="right_content_div">
-                <td valign="top" class="right_cell">
+                <td valign="top" class="right_cell cellClass">
+                    <div id="summary_table"></div>
                     <h3>Data Sets</h3>
                     <hr>
                     <div id="filter_dropdown_div" style="vertical-align:top;">

@@ -80,7 +80,8 @@ function getObservations() {
         return;
     }
 
-    $("#observations_summary").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+    $("#observations_main").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+    $("#summary_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
     // Make each date into a string of the format "YYYY-mm-ddTHH:MM:SSZ", which is the format used in the local database.
     var startUTC = startDate.toISOString().slice(0, 19) + "Z";
@@ -91,9 +92,10 @@ function getObservations() {
         url: "/histogram_data",
         data: {'starttime': startUTC, 'endtime': endUTC},
         success: function(data) {
-            $("#observations_summary").html(data);
+            $("#observations_main").html(data.histogram);
+            $("#summary_table").html(data.summary_table);
         },
-        dataType: "html"
+        dataType: "json"
     });
 
     var e = document.getElementById('filter_dropdown');
