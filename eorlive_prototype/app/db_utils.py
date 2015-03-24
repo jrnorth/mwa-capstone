@@ -1,5 +1,6 @@
 from flask import g
 from datetime import datetime
+from requests_futures.sessions import FuturesSession
 
 def send_query(db, query):
     cur = db.cursor()
@@ -21,3 +22,49 @@ def get_gps_utc_constants():
     GPS_UTC_DELTA = (jan_6_1980 - jan_1_1970).total_seconds()
 
     return (GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA)
+
+def get_gps_from_datetime(start_datetime, end_datetime):
+    session = FuturesSession()
+
+    baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
+
+    requestURLStart = baseUTCToGPSURL + start_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+
+    requestURLEnd = baseUTCToGPSURL + end_datetime.strftime('%Y-%m-%dT%H:%M:%S')
+
+    #Start the first Web service request in the background.
+    future_start = session.get(requestURLStart)
+
+    #The second request is started immediately.
+    future_end = session.get(requestURLEnd)
+
+    #Wait for the first request to complete, if it hasn't already.
+    start_gps = int(future_start.result().content)
+
+    #Wait for the second request to complete, if it hasn't already.
+    end_gps = int(future_end.result().content)
+
+    return (start_gps, end_gps)
+
+def get_datetime_from_gps(start_gps, end_gps):
+    session = FuturesSession()
+
+    baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?gpssec='
+
+    requestURLStart = baseUTCToGPSURL + str(start_gps)
+
+    requestURLEnd = baseUTCToGPSURL + str(end_gps)
+
+    #Start the first Web service request in the background.
+    future_start = session.get(requestURLStart)
+
+    #The second request is started immediately.
+    future_end = session.get(requestURLEnd)
+
+    #Wait for the first request to complete, if it hasn't already.
+    start_datetime = datetime.strptime(future_start.result().content.decode('utf-8'), '"%Y-%m-%dT%H:%M:%S"')
+
+    #Wait for the second request to complete, if it hasn't already.
+    end_datetime = datetime.strptime(future_end.result().content.decode('utf-8'), '"%Y-%m-%dT%H:%M:%S"')
+
+    return (start_datetime, end_datetime)

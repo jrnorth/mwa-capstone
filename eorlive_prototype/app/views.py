@@ -5,7 +5,6 @@ from app import models, db_utils, histogram_utils
 import requests
 import json
 import hashlib
-from requests_futures.sessions import FuturesSession
 from sqlalchemy import and_
 from datetime import datetime, timedelta
 import psycopg2
@@ -18,10 +17,7 @@ import os
 def index(setName = None):
     # GET is the default request method.
     # Since we're using GET, we have to access arguments by request.args.get() rather than request.form[]
-
     if setName is not None:
-        session = FuturesSession()
-
         theSet = models.Set.query.filter(models.Set.name == setName).first()
 
         if theSet is None:
@@ -31,14 +27,21 @@ def index(setName = None):
         error_counts = histogram_utils.get_error_counts(theSet.start, theSet.end)[0]
         plot_bands = histogram_utils.get_plot_bands(theSet)
 
+        start_datetime, end_datetime = db_utils.get_datetime_from_gps(theSet.start, theSet.end)
+
+        formatted_start = start_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        formatted_end = end_datetime.strftime('%Y-%m-%d %H:%M:%S')
+
         if (g.user is not None and g.user.is_authenticated()):
             return render_template('setView.html', setName=theSet.name, set_id=theSet.id,
                 setStart=theSet.start, setEnd=theSet.end, observation_counts=observation_counts,
-                error_counts=error_counts, plot_bands=plot_bands, range_end=theSet.end)
+                error_counts=error_counts, plot_bands=plot_bands, range_end=theSet.end,
+                formatted_start=formatted_start, formatted_end=formatted_end)
         else: #logged out view
             return render_template('setView.html', setName=theSet.name, set_id=theSet.id, setStart=theSet.start,
                 setEnd=theSet.end, logged_out=True, observation_counts=observation_counts, error_counts=error_counts,
-                plot_bands=plot_bands, range_end=theSet.end)
+                plot_bands=plot_bands, range_end=theSet.end, formatted_start=formatted_start,
+                formatted_end=formatted_end)
     else: #original case in index
         return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
 
@@ -67,25 +70,7 @@ def histogram_data():
 
     enddatetime = datetime.strptime(request.form['endtime'], '%Y-%m-%dT%H:%M:%SZ')
 
-    session = FuturesSession()
-
-    baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
-
-    requestURLStart = baseUTCToGPSURL + request.form['starttime']
-
-    requestURLEnd = baseUTCToGPSURL + request.form['endtime']
-
-    #Start the first Web service request in the background.
-    future_start = session.get(requestURLStart)
-
-    #The second request is started immediately.
-    future_end = session.get(requestURLEnd)
-
-    #Wait for the first request to complete, if it hasn't already.
-    start_gps = int(future_start.result().content)
-
-    #Wait for the second request to complete, if it hasn't already.
-    end_gps = int(future_end.result().content)
+    start_gps, end_gps = db_utils.get_gps_from_datetime(startdatetime, enddatetime)
 
     response = db_utils.send_query(g.eor_db, '''SELECT starttime, stoptime, obsname, ra_phase_center
                     FROM mwa_setting
@@ -167,29 +152,11 @@ def histogram_data():
 
 @app.route('/error_table', methods = ['POST'])
 def error_table():
-    starttime = datetime.utcfromtimestamp(int(request.form['starttime']) / 1000).strftime('%Y-%m-%dT%H:%M:%SZ')
+    starttime = datetime.utcfromtimestamp(int(request.form['starttime']) / 1000)
 
-    endtime = datetime.utcfromtimestamp(int(request.form['endtime']) / 1000).strftime('%Y-%m-%dT%H:%M:%SZ')
+    endtime = datetime.utcfromtimestamp(int(request.form['endtime']) / 1000)
 
-    baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
-
-    requestURLStart = baseUTCToGPSURL + starttime
-
-    requestURLEnd = baseUTCToGPSURL + endtime
-
-    session = FuturesSession()
-
-    #Start the first Web service request in the background.
-    future_start = session.get(requestURLStart)
-
-    #The second request is started immediately.
-    future_end = session.get(requestURLEnd)
-
-    #Wait for the first request to complete, if it hasn't already.
-    start_gps = int(future_start.result().content)
-
-    #Wait for the second request to complete, if it hasn't already.
-    end_gps = int(future_end.result().content)
+    start_gps, end_gps = db_utils.get_gps_from_datetime(starttime, endtime)
 
     obscontroller_response = db_utils.send_query(g.eor_db, '''SELECT reference_time, observation_number, comment
                             FROM obscontroller_log
@@ -201,8 +168,10 @@ def error_table():
                             WHERE reference_time >= {} AND reference_time < {}
                             ORDER BY reference_time ASC'''.format(start_gps, end_gps)).fetchall()
 
-    return render_template('error_table.html', obscontroller_error_list=obscontroller_response, recvstatuspolice_error_list=recvstatuspolice_response,
-                            start_time=starttime, end_time=endtime)
+    return render_template('error_table.html', obscontroller_error_list=obscontroller_response,
+                            recvstatuspolice_error_list=recvstatuspolice_response,
+                            start_time=starttime.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                            end_time=endtime.strftime('%Y-%m-%dT%H:%M:%SZ'))
 
 @app.before_request
 def before_request():
@@ -271,18 +240,7 @@ def get_sets():
         elif filter_type == 'filter_within_cur':
             startUTC = request.form['starttime']
             endUTC = request.form['endtime']
-            baseUTCToGPSURL = 'http://ngas01.ivec.org/metadata/tconv/?utciso='
-            requestURLStart = baseUTCToGPSURL + startUTC
-            requestURLEnd = baseUTCToGPSURL + endUTC
-            session = FuturesSession()
-            #Start the first Web service request in the background.
-            future_start = session.get(requestURLStart)
-            #The second request is started immediately.
-            future_end = session.get(requestURLEnd)
-            #Wait for the first request to complete, if it hasn't already.
-            start_gps = int(future_start.result().content)
-            #Wait for the second request to complete, if it hasn't already.
-            end_gps = int(future_end.result().content)
+            start_gps, end_gps = db_utils.get_gps_from_datetime(startUTC, endUTC)
             setList = models.Set.query.filter(and_(models.Set.start >= start_gps, models.Set.end <= end_gps)).all()
 
         else:

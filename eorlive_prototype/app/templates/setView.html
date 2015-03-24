@@ -8,7 +8,7 @@
             <button id='backbutton' onclick="backToHistogram()">Back to histogram</button>
             <div id='error_table'></div>
             <div id="set_histogram"></div>
-            <button type="button" onclick="downloadSet()">Download set</button>
+            <button type="button" onclick="goToNGAS()">NGAS Observations</button>
         </div>
     </div>
 </div>
@@ -170,6 +170,10 @@
             }]
         });
     });
+
+    function goToNGAS() {
+        window.open("http://ngas01.ivec.org/admin/observation/observationsetting?projectid=G0009&startTime={{formatted_start}}&endTime={{formatted_end}}", '_blank');
+    };
 
     function downloadSet() {
         window.open("/download_set?set_id={{set_id}}", '_blank');
