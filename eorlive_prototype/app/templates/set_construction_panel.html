@@ -123,7 +123,9 @@
                 name: $('#set_name_textbox').val(),
                 startObsId: fullRange.startObsId,
                 endObsId: fullRange.endObsId,
-                flaggedRanges: rangesOfObsIds
+                flaggedRanges: rangesOfObsIds,
+                lowOrHigh: currentData[0],
+                eor: currentData[1]
             }),
             success: function(data) {
                 if (data.duplicate_name) {

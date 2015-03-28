@@ -2,12 +2,14 @@ from app import db_utils, models
 from app.flask_app import app, db
 from flask import request, g, make_response, jsonify
 
-def insert_set_into_db(name, start, end, flagged_ranges):
+def insert_set_into_db(name, start, end, flagged_ranges, low_or_high, eor):
     new_set = models.Set()
     new_set.username = g.user.username
     new_set.name = name
     new_set.start = start
     new_set.end = end
+    new_set.low_or_high = low_or_high
+    new_set.eor = eor
     db.session.add(new_set)
     db.session.flush()
     db.session.refresh(new_set) # So we can get the set's id
@@ -50,7 +52,8 @@ def save_new_set():
             i += 1
 
         insert_set_into_db(name, request_content['startObsId'],
-            request_content['endObsId'], flagged_ranges)
+            request_content['endObsId'], flagged_ranges,
+            request_content['lowOrHigh'], 'EOR' + request_content['eor'])
 
         return jsonify()
     else:
