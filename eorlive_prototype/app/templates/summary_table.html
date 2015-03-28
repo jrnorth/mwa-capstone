@@ -1,7 +1,7 @@
-<table class='table table-striped table-bordered'>
+<table class="table-bordered table-striped">
     <thead>
         <tr>
-            <th>hrs (count)</th>
+            <th>hrs (#)</th>
             <th>Low</th>
             <th>High</th>
             <th>Total</th>
@@ -14,7 +14,7 @@
             <td>{{ low_eor0_hours | round(1) }} ({{ low_eor0_count }})</td>
             <td>{{ high_eor0_hours | round(1) }} ({{ high_eor0_count }})</td>
             <td>{{ (low_eor0_hours + high_eor0_hours) | round(1) }} ({{ low_eor0_count + high_eor0_count }})</td>
-            <td rowspan="3" style="color:red;text-align:center;vertical-align:middle;font-size:20px;">{{ error_count }}</td>
+            <td rowspan="3" style="color:red;vertical-align:middle;">{{ error_count }}</td>
         </tr>
         <tr>
             <th>EOR1</th>
