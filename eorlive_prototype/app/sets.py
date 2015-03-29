@@ -1,4 +1,4 @@
-from app import db_utils, models
+from app import db_utils, models, histogram_utils
 from app.flask_app import app, db
 from flask import request, g, make_response, jsonify
 
@@ -87,7 +87,7 @@ def save_new_set():
         low_or_high = request_content['lowOrHigh']
         eor = request_content['eor']
 
-        total_data_hours, flagged_data_hrs = get_data_hours_in_set(
+        total_data_hrs, flagged_data_hrs = get_data_hours_in_set(
             start_gps, end_gps, low_or_high, eor, flagged_ranges)
 
         insert_set_into_db(name, start_gps, end_gps, flagged_ranges,
