@@ -102,7 +102,8 @@ def upload_set():
 
             last_index = next_index + 1
 
-        insert_set_into_db(set_name, all_obs_ids[0], all_obs_ids[len(all_obs_ids) - 1], bad_ranges)
+        insert_set_into_db(set_name, all_obs_ids[0], all_obs_ids[len(all_obs_ids) - 1],
+            bad_ranges, request.form['low_or_high'], request.form['eor'])
 
         return "OK"
     else:

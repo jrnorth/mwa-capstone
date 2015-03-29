@@ -8,6 +8,19 @@
     <br>
     <h3>Upload Set From Text File</h3>
     <input type="file" id="upload_set_file">
+    Low/High:
+    <select id="low_high_dropdown" onchange="setLowOrHigh(this)">
+        <option value="high">High</option>
+        <option value="low">Low</option>
+        <option value="any">Any</option>
+    </select>
+    EOR0/EOR1:
+    <select id="eor_dropdown" onchange="setEOR(this)">
+        <option value="EOR0">EOR0</option>
+        <option value="EOR1">EOR1</option>
+        <option value="any">Any</option>
+    </select>
+    <br>
     <input type="text" id="upload_set_name" placeholder="Enter set name...">
     <button type="button" id="upload_set_button" onclick="uploadSet()">Upload set</button>
     <br>
@@ -30,10 +43,21 @@
         <p>No Sets</p>
     {% endif %}
 <script>
+    var low_or_high = 'high';
+    var eor = 'EOR0';
+
     function deleteSetHelper(setName) {
         if (confirm('Are you sure you want to delete ' + setName + '?')) {
             deleteSet(setName);
         }
+    };
+
+    function setLowOrHigh(select) {
+        low_or_high = select.value;
+    };
+
+    function setEOR(select) {
+        eor = select.value;
     };
 
     function uploadSet() {
@@ -54,6 +78,8 @@
         var formData = new FormData();
         formData.append('file', files[0]);
         formData.append('set_name', setName);
+        formData.append('low_or_high', low_or_high);
+        formData.append('eor', eor);
 
         var setUploadButton = function(text, disabled) {
             $("#upload_set_button").html(text);
