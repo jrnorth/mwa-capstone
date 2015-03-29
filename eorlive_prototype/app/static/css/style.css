@@ -21,6 +21,23 @@
     width: 100%;
 }
 
+#set_list_div {
+    max-height: 800px;
+    max-width: 100%;
+    width: 100%;
+    overflow: auto;
+}
+
+#set_list_div table {
+    width: 100%;
+    max-width: 100%;
+}
+
+#set_list_div td {
+    padding-right: 5px;
+    padding-left: 5px;
+}
+
 body            { font-family: sans-serif; background: #eee; }
 a, h1, h2       { color: #377ba8; }
 h1, h2          { font-family: 'Georgia', serif; margin: 0; }
