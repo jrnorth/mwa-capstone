@@ -2,7 +2,8 @@ from app import db_utils, models
 from app.flask_app import app, db
 from flask import request, g, make_response, jsonify
 
-def insert_set_into_db(name, start, end, flagged_ranges, low_or_high, eor):
+def insert_set_into_db(name, start, end, flagged_ranges, low_or_high,
+        eor, total_data_hrs, flagged_data_hrs):
     new_set = models.Set()
     new_set.username = g.user.username
     new_set.name = name
@@ -10,6 +11,8 @@ def insert_set_into_db(name, start, end, flagged_ranges, low_or_high, eor):
     new_set.end = end
     new_set.low_or_high = low_or_high
     new_set.eor = eor
+    new_set.total_data_hrs = total_data_hrs
+    new_set.flagged_data_hrs = flagged_data_hrs
     db.session.add(new_set)
     db.session.flush()
     db.session.refresh(new_set) # So we can get the set's id
@@ -31,6 +34,34 @@ def insert_set_into_db(name, start, end, flagged_ranges, low_or_high, eor):
 
     db.session.commit()
 
+def is_obs_flagged(obs_id, flagged_ranges):
+    for flagged_range in flagged_ranges:
+        if obs_id >= flagged_range[0] and obs_id <= flagged_range[len(flagged_range) - 1]:
+            return True
+    return False
+
+def get_data_hours_in_set(start, end, low_or_high, eor, flagged_ranges):
+    total_data_hrs = flagged_data_hrs = 0
+
+    low_high_clause, eor_clause = histogram_utils.get_lowhigh_and_eor_clauses(low_or_high, eor)
+
+    all_obs_ids_tuples = db_utils.send_query(g.eor_db, '''SELECT starttime, stoptime
+                            FROM mwa_setting
+                            WHERE starttime >= {} AND starttime <= {}
+                            AND projectid='G0009'
+                            {}
+                            {}
+                            ORDER BY starttime ASC'''.format(start, end, low_high_clause, eor_clause)).fetchall()
+
+    for obs in all_obs_ids_tuples:
+        obs_id = obs[0]
+        data_hrs = (obs[1] - obs_id) / 3600
+        total_data_hrs += data_hrs
+        if is_obs_flagged(obs_id, flagged_ranges):
+            flagged_data_hrs += data_hrs
+
+    return (total_data_hrs, flagged_data_hrs)
+
 @app.route('/save_new_set', methods=['POST'])
 def save_new_set():
     if (g.user is not None and g.user.is_authenticated()):
@@ -51,9 +82,16 @@ def save_new_set():
                 flagged_ranges[i].append(pair[1])
             i += 1
 
-        insert_set_into_db(name, request_content['startObsId'],
-            request_content['endObsId'], flagged_ranges,
-            request_content['lowOrHigh'], 'EOR' + request_content['eor'])
+        start_gps = request_content['startObsId']
+        end_gps = request_content['endObsId']
+        low_or_high = request_content['lowOrHigh']
+        eor = request_content['eor']
+
+        total_data_hours, flagged_data_hrs = get_data_hours_in_set(
+            start_gps, end_gps, low_or_high, eor, flagged_ranges)
+
+        insert_set_into_db(name, start_gps, end_gps, flagged_ranges,
+            low_or_high, 'EOR' + eor, total_data_hrs, flagged_data_hrs)
 
         return jsonify()
     else:
@@ -83,11 +121,14 @@ def upload_set():
 
         good_obs_ids.sort()
 
+        start_gps = good_obs_ids[0]
+        end_gps = good_obs_ids[len(good_obs_ids) - 1]
+
         all_obs_ids_tuples = db_utils.send_query(g.eor_db, '''SELECT starttime
                             FROM mwa_setting
                             WHERE starttime >= {} AND starttime <= {}
-                            ORDER BY starttime ASC'''.format(good_obs_ids[0],
-                            good_obs_ids[len(good_obs_ids) - 1])).fetchall()
+                            ORDER BY starttime ASC'''
+                            .format(start_gps, end_gps)).fetchall()
 
         all_obs_ids = [tup[0] for tup in all_obs_ids_tuples]
 
@@ -102,8 +143,14 @@ def upload_set():
 
             last_index = next_index + 1
 
-        insert_set_into_db(set_name, all_obs_ids[0], all_obs_ids[len(all_obs_ids) - 1],
-            bad_ranges, request.form['low_or_high'], request.form['eor'])
+        low_or_high = request.form['low_or_high']
+        eor = request.form['eor']
+
+        total_data_hrs, flagged_data_hrs = get_data_hours_in_set(
+            start_gps, end_gps, low_or_high, eor, bad_ranges)
+
+        insert_set_into_db(set_name, start_gps, end_gps, bad_ranges,
+            low_or_high, eor, total_data_hrs, flagged_data_hrs)
 
         return "OK"
     else:
