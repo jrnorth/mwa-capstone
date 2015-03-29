@@ -23,7 +23,8 @@ def index(setName = None):
         if theSet is None:
             return render_template('index.html')
 
-        observation_counts = histogram_utils.get_observation_counts(theSet.start, theSet.end)
+        observation_counts = histogram_utils.get_observation_counts(theSet.start, theSet.end,
+            theSet.low_or_high, theSet.eor)
         error_counts = histogram_utils.get_error_counts(theSet.start, theSet.end)[0]
         plot_bands = histogram_utils.get_plot_bands(theSet)
 

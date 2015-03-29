@@ -43,12 +43,24 @@ def get_error_counts(start_gps, end_gps):
 
     return (error_counts, error_count)
 
-def get_observation_counts(start_gps, end_gps):
+def get_observation_counts(start_gps, end_gps, low_or_high, eor):
+    low_high_clause = "" if low_or_high == 'any' else "AND obsname LIKE '" + low_or_high + "%'"
+
+    eor_clause = ''
+
+    if eor != 'any':
+        if eor == 'EOR0':
+            eor_clause = "AND ra_phase_center = 0"
+        else:
+            eor_clause = "AND ra_phase_center = 60"
+
     response = db_utils.send_query(g.eor_db, '''SELECT starttime
                 FROM mwa_setting
                 WHERE starttime >= {} AND starttime <= {}
                 AND projectid='G0009'
-                ORDER BY starttime ASC'''.format(start_gps, end_gps)).fetchall()
+                {}
+                {}
+                ORDER BY starttime ASC'''.format(start_gps, end_gps, low_high_clause, eor_clause)).fetchall()
 
     GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = db_utils.get_gps_utc_constants()
 
