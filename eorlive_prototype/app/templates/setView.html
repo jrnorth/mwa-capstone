@@ -12,6 +12,7 @@
             <p>Creator: {{ creator }}</p>
             <p>High/Low: {{ low_or_high }}</p>
             <p>EOR0/EOR1: {{ eor }}</p>
+            <p>Data hours: {{ total_data_hrs | round(2) }} ({{ flagged_data_hrs | round(2) }} flagged)</p>
             <button type="button" onclick="goToNGAS()">NGAS Observations</button>
         </div>
     </div>

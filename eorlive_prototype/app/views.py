@@ -38,13 +38,15 @@ def index(setName = None):
                 setStart=theSet.start, setEnd=theSet.end, observation_counts=observation_counts,
                 error_counts=error_counts, plot_bands=plot_bands, range_end=theSet.end,
                 formatted_start=formatted_start, formatted_end=formatted_end,
-                low_or_high=theSet.low_or_high, eor=theSet.eor, creator=theSet.username)
+                low_or_high=theSet.low_or_high, eor=theSet.eor, creator=theSet.username,
+                total_data_hrs=theSet.total_data_hrs, flagged_data_hrs=theSet.flagged_data_hrs)
         else: #logged out view
             return render_template('setView.html', setName=theSet.name, set_id=theSet.id, setStart=theSet.start,
                 setEnd=theSet.end, logged_out=True, observation_counts=observation_counts, error_counts=error_counts,
                 plot_bands=plot_bands, range_end=theSet.end, formatted_start=formatted_start,
                 formatted_end=formatted_end, low_or_high=theSet.low_or_high,
-                eor=theSet.eor, creator=theSet.username)
+                eor=theSet.eor, creator=theSet.username, total_data_hrs=theSet.total_data_hrs,
+                flagged_data_hrs=theSet.flagged_data_hrs)
     else: #original case in index
         return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
 
