@@ -5,25 +5,37 @@
                 {% if set %}
                     <tr>
                         <td>
-                            <a href="set/{{ set.name }}" style="float:left;">{{ set.name }}   --   {{ set.username }}</a>
-                            <div style="float:left;margin-left:10px;">
-                                <ul>
-                                    <li>
-                                    {% if set.low_or_high == 'any' %}
-                                        low/high
-                                    {% else %}
-                                        {{ set.low_or_high }}
-                                    {% endif %}
-                                    </li>
-                                    <li>
-                                    {% if set.eor == 'any' %}
-                                        EOR0/EOR1
-                                    {% else %}
-                                        {{ set.eor }}
-                                    {% endif %}
-                                    </li>
-                                </ul>
-                            </div>
+                            <table>
+                                <tr>
+                                    <td colspan="2">
+                                        <a href="/set/{{ set.name }}">{{ set.name }}</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {{ set.username }}
+                                    </td>
+                                    <td>
+                                        {{ set.total_data_hrs | round(1) }} hrs
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {% if set.low_or_high == 'any' %}
+                                            low/high
+                                        {% else %}
+                                            {{ set.low_or_high }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if set.eor == 'any' %}
+                                            EOR0/EOR1
+                                        {% else %}
+                                            {{ set.eor }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
                 {% endif %}
