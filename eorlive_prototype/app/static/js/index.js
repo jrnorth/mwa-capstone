@@ -1,3 +1,9 @@
+//http://stackoverflow.com/questions/1144783/replacing-all-occurrences-of-a-string-in-javascript
+String.prototype.replaceAll = function (find, replace) {
+    var str = this;
+    return str.replace(new RegExp(find.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), replace);
+};
+
 $(function() {
     var startDatePicker = $("#datepicker_start");
     var endDatePicker = $("#datepicker_end");
@@ -37,8 +43,8 @@ $(function() {
         dataType: "html"
     });
 
-    var startTimeStr = $("#datepicker_start").val().replace("/", "-", "g").replace(" ", "T") + ":00Z";
-    var endTimeStr = $("#datepicker_end").val().replace("/", "-", "g").replace(" ", "T") + ":00Z";
+    var startTimeStr = $("#datepicker_start").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
+    var endTimeStr = $("#datepicker_end").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
 
     $("#tabs").find("a").each(function(index) {
         switch (index) {
