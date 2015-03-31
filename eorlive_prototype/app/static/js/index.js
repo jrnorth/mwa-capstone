@@ -23,7 +23,6 @@ $(function() {
 
     //global ajax vars
     window.setRequest = null;
-    window.histogramRequest = null;
     window.dataAmountRequest = null;
     window.dataSummaryTableRequest = null;
 
@@ -36,6 +35,17 @@ $(function() {
             $("#data_amount_table").html(data);
         },
         dataType: "html"
+    });
+
+    // Set up the tabs.
+    $("#tabs").tabs({
+        beforeLoad: function(event, ui) {
+            ui.panel.html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+            var startTimeStr = $("#datepicker_start").val().replace("/", "-", "g").replace(" ", "T") + ":00Z";
+            var endTimeStr = $("#datepicker_end").val().replace("/", "-", "g").replace(" ", "T") + ":00Z";
+            ui.ajaxSettings.url = "/histogram_data?starttime=" + startTimeStr +
+                "&endtime=" + endTimeStr;
+        }
     });
 
     getObservations();
@@ -60,8 +70,10 @@ function abortRequestIfPending(request) {
 
 function getObservations() {
     window.setRequest = abortRequestIfPending(window.setRequest);
-    window.histogramRequest = abortRequestIfPending(window.histogramRequest);
     window.dataSummaryTableRequest = abortRequestIfPending(window.dataSummaryTableRequest);
+
+    // Load the first tab.
+    $("#tabs").tabs("load", 0);
 
     var start = $("#datepicker_start").val();
     var end = $("#datepicker_end").val();
@@ -83,22 +95,11 @@ function getObservations() {
         return;
     }
 
-    $("#observations_main").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
     $("#summary_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
     // Make each date into a string of the format "YYYY-mm-ddTHH:MM:SSZ", which is the format used in the local database.
     var startUTC = startDate.toISOString().slice(0, 19) + "Z";
     var endUTC = endDate.toISOString().slice(0, 19) + "Z";
-
-    window.histogramRequest = $.ajax({
-        type: "GET",
-        url: "/histogram_data",
-        data: {'starttime': startUTC, 'endtime': endUTC},
-        success: function(data) {
-            $("#observations_main").html(data);
-        },
-        dataType: "html"
-    });
 
     window.dataSummaryTableRequest = $.ajax({
         type: "POST",
