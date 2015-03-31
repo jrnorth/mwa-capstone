@@ -69,11 +69,14 @@ def data_amount():
     return render_template('data_amount_table.html', hours_scheduled=hours_scheduled, hours_observed=hours_observed,
         hours_with_data=hours_with_data, hours_with_uvfits=hours_with_uvfits, data_time=data_time)
 
-@app.route('/histogram_data', methods = ['POST'])
+@app.route('/histogram_data', methods = ['GET'])
 def histogram_data():
-    startdatetime = datetime.strptime(request.form['starttime'], '%Y-%m-%dT%H:%M:%SZ')
+    start_time = request.args.get('starttime')
+    end_time = request.args.get('endtime')
 
-    enddatetime = datetime.strptime(request.form['endtime'], '%Y-%m-%dT%H:%M:%SZ')
+    startdatetime = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%SZ')
+
+    enddatetime = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%SZ')
 
     start_gps, end_gps = db_utils.get_gps_from_datetime(startdatetime, enddatetime)
 
@@ -144,8 +147,8 @@ def histogram_data():
         low_eor1_counts=low_eor1_counts, high_eor1_counts=high_eor1_counts,
         error_counts=error_counts, utc_obsid_map_l0=utc_obsid_map_l0,
         utc_obsid_map_l1=utc_obsid_map_l1, utc_obsid_map_h0=utc_obsid_map_h0,
-        utc_obsid_map_h1=utc_obsid_map_h1, range_start=request.form['starttime'],
-        range_end=request.form['endtime'])
+        utc_obsid_map_h1=utc_obsid_map_h1, range_start=start_time,
+        range_end=end_time)
 
     summary_table = render_template('summary_table.html', error_count=error_count,
         low_eor0_count=low_eor0_count, high_eor0_count=high_eor0_count,

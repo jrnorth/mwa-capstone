@@ -88,7 +88,7 @@ function getObservations() {
     var endUTC = endDate.toISOString().slice(0, 19) + "Z";
 
     window.histogramRequest = $.ajax({
-        type: "POST",
+        type: "GET",
         url: "/histogram_data",
         data: {'starttime': startUTC, 'endtime': endUTC},
         success: function(data) {
