@@ -25,6 +25,7 @@ $(function() {
     window.setRequest = null;
     window.histogramRequest = null;
     window.dataAmountRequest = null;
+    window.dataSummaryTableRequest = null;
 
     $("#data_amount_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
@@ -49,17 +50,19 @@ function getDateTimeString(now) {
     return now.getUTCFullYear() + "/" + month + "/" + date + " " + hours + ":" + minutes;
 };
 
+function abortRequestIfPending(request) {
+    if (request) {
+        request.abort();
+        return null;
+    }
+    return request;
+};
+
 function getObservations() {
-    if (window.setRequest)
-    {
-        window.setRequest.abort();
-        window.setRequest = null;
-    }
-    if (window.histogramRequest)
-    {
-        window.histogramRequest.abort();
-        window.histogramRequest = null;
-    }
+    window.setRequest = abortRequestIfPending(window.setRequest);
+    window.histogramRequest = abortRequestIfPending(window.histogramRequest);
+    window.dataSummaryTableRequest = abortRequestIfPending(window.dataSummaryTableRequest);
+
     var start = $("#datepicker_start").val();
     var end = $("#datepicker_end").val();
     re = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/;
@@ -92,10 +95,19 @@ function getObservations() {
         url: "/histogram_data",
         data: {'starttime': startUTC, 'endtime': endUTC},
         success: function(data) {
-            $("#observations_main").html(data.histogram);
-            $("#summary_table").html(data.summary_table);
+            $("#observations_main").html(data);
         },
-        dataType: "json"
+        dataType: "html"
+    });
+
+    window.dataSummaryTableRequest = $.ajax({
+        type: "POST",
+        url: "/data_summary_table",
+        data: {'starttime': startUTC, 'endtime': endUTC},
+        success: function(data) {
+            $("#summary_table").html(data);
+        },
+        dataTpe: "html"
     });
 
     var e = document.getElementById('filter_dropdown');

@@ -96,15 +96,10 @@ def histogram_data():
 
     error_counts, error_count = histogram_utils.get_error_counts(start_gps, end_gps)
 
-    low_eor0_count = high_eor0_count = low_eor1_count = high_eor1_count = 0
-    low_eor0_hours = high_eor0_hours = low_eor1_hours = high_eor1_hours = 0
-
     utc_obsid_map_l0 = []
     utc_obsid_map_l1 = []
     utc_obsid_map_h0 = []
     utc_obsid_map_h1 = []
-
-    prev_high_time = prev_low_time = 0
 
     GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = db_utils.get_gps_utc_constants()
 
@@ -122,41 +117,25 @@ def histogram_data():
         if 'low' in obs_name:
             if ra_phase_center == 0: # EOR0
                 low_eor0_counts.append([utc_millis, 1])
-                low_eor0_count += 1
-                low_eor0_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_l0.append([utc_millis, int(observation[0])])
             elif ra_phase_center == 60: # EOR1
                 low_eor1_counts.append([utc_millis, 1])
-                low_eor1_count += 1
-                low_eor1_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_l1.append([utc_millis, int(observation[0])])
         elif 'high' in obs_name:
             if ra_phase_center == 0: # EOR0
                 high_eor0_counts.append([utc_millis, 1])
-                high_eor0_count += 1
-                high_eor0_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_h0.append([utc_millis, int(observation[0])])
             elif ra_phase_center == 60: # EOR1
                 high_eor1_counts.append([utc_millis, 1])
-                high_eor1_count += 1
-                high_eor1_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_h1.append([utc_millis, int(observation[0])])
 
-    histogram = render_template('histogram.html',
+    return render_template('histogram.html',
         low_eor0_counts=low_eor0_counts, high_eor0_counts=high_eor0_counts,
         low_eor1_counts=low_eor1_counts, high_eor1_counts=high_eor1_counts,
         error_counts=error_counts, utc_obsid_map_l0=utc_obsid_map_l0,
         utc_obsid_map_l1=utc_obsid_map_l1, utc_obsid_map_h0=utc_obsid_map_h0,
         utc_obsid_map_h1=utc_obsid_map_h1, range_start=start_time,
         range_end=end_time)
-
-    summary_table = render_template('summary_table.html', error_count=error_count,
-        low_eor0_count=low_eor0_count, high_eor0_count=high_eor0_count,
-        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count,
-        low_eor0_hours=low_eor0_hours, high_eor0_hours=high_eor0_hours,
-        low_eor1_hours=low_eor1_hours, high_eor1_hours=high_eor1_hours)
-
-    return json.dumps({'histogram': histogram, 'summary_table': summary_table})
 
 @app.route('/error_table', methods = ['POST'])
 def error_table():
