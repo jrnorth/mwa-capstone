@@ -37,14 +37,31 @@ $(function() {
         dataType: "html"
     });
 
+    var startTimeStr = $("#datepicker_start").val().replace("/", "-", "g").replace(" ", "T") + ":00Z";
+    var endTimeStr = $("#datepicker_end").val().replace("/", "-", "g").replace(" ", "T") + ":00Z";
+
+    $("#tabs").find("a").each(function(index) {
+        switch (index) {
+            case 0:
+                var url = "/histogram_data?starttime=" + startTimeStr + "&endtime=" + endTimeStr;
+                $(this).attr("href", url);
+                break;
+        }
+    });
+
     // Set up the tabs.
     $("#tabs").tabs({
         beforeLoad: function(event, ui) {
+            if (ui.tab.data("loaded")) {
+                event.preventDefault();
+                return;
+            }
+
             ui.panel.html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
-            var startTimeStr = $("#datepicker_start").val().replace("/", "-", "g").replace(" ", "T") + ":00Z";
-            var endTimeStr = $("#datepicker_end").val().replace("/", "-", "g").replace(" ", "T") + ":00Z";
-            ui.ajaxSettings.url = "/histogram_data?starttime=" + startTimeStr +
-                "&endtime=" + endTimeStr;
+
+            ui.jqXHR.success(function() {
+                ui.tab.data("loaded", true);
+            });
         }
     });
 
