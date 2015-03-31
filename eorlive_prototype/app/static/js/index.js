@@ -48,7 +48,7 @@ $(function() {
         }
     });
 
-    getObservations();
+    getObservations(false /* Don't load the first tab, it's already being loaded */);
     getComments();
 });
 
@@ -68,12 +68,13 @@ function abortRequestIfPending(request) {
     return request;
 };
 
-function getObservations() {
+function getObservations(loadTab) {
     window.setRequest = abortRequestIfPending(window.setRequest);
     window.dataSummaryTableRequest = abortRequestIfPending(window.dataSummaryTableRequest);
 
-    // Load the first tab.
-    $("#tabs").tabs("load", 0);
+    // Load the first tab if it's not already being loaded.
+    if (loadTab)
+        $("#tabs").tabs("load", 0);
 
     var start = $("#datepicker_start").val();
     var end = $("#datepicker_end").val();
