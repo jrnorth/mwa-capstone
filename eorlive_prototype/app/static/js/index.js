@@ -43,18 +43,6 @@ $(function() {
         dataType: "html"
     });
 
-    var startTimeStr = $("#datepicker_start").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
-    var endTimeStr = $("#datepicker_end").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
-
-    $("#tabs").find("a").each(function(index) {
-        switch (index) {
-            case 0:
-                var url = "/histogram_data?starttime=" + startTimeStr + "&endtime=" + endTimeStr;
-                $(this).attr("href", url);
-                break;
-        }
-    });
-
     // Set up the tabs.
     $("#tabs").tabs({
         beforeLoad: function(event, ui) {
@@ -64,6 +52,21 @@ $(function() {
             }
 
             ui.panel.html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+            var startTimeStr = $("#datepicker_start").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
+            var endTimeStr = $("#datepicker_end").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
+
+            var index = ui.tab.index();
+            switch (index) {
+                case 0:
+                    var url = "/histogram_data?starttime=" + startTimeStr + "&endtime=" + endTimeStr;
+                    ui.ajaxSettings.url = url;
+                    break;
+                case 1:
+                    var url = "/qs_data?starttime=" + startTimeStr + "&endtime=" + endTimeStr;
+                    ui.ajaxSettings.url = url;
+                    break;
+            };
 
             ui.jqXHR.success(function() {
                 ui.tab.data("loaded", true);
@@ -96,8 +99,13 @@ function getObservations(loadTab) {
     window.dataSummaryTableRequest = abortRequestIfPending(window.dataSummaryTableRequest);
 
     // Load the first tab if it's not already being loaded.
-    if (loadTab)
+    if (loadTab) {
+        $("#tabs").tabs("option", "active", 0);
+        $("#tabs > ul > li").each(function(index) {
+            $(this).data("loaded", false);
+        });
         $("#tabs").tabs("load", 0);
+    }
 
     var start = $("#datepicker_start").val();
     var end = $("#datepicker_end").val();

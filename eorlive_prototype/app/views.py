@@ -137,6 +137,61 @@ def histogram_data():
         utc_obsid_map_h1=utc_obsid_map_h1, range_start=start_time,
         range_end=end_time)
 
+@app.route('/qs_data')
+def qs_data():
+    start_time = request.args.get('starttime')
+    end_time = request.args.get('endtime')
+
+    start_datetime = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%SZ')
+    end_datetime = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%SZ')
+
+    start_gps, end_gps = db_utils.get_gps_from_datetime(start_datetime, end_datetime)
+
+    response = db_utils.send_query(g.eor_00, '''SELECT obsid, window_x, window_y,
+                                    wedge_res_x, wedge_res_y, gal_wedge_x,
+                                    gal_wedge_y, ptsrc_wedge_x, ptsrc_wedge_y
+                                    FROM qs
+                                    WHERE wedge_timestamp IS NOT NULL
+                                    AND obsid >= {} AND obsid <= {}
+                                    ORDER BY obsid ASC'''.format(start_gps, end_gps)).fetchall()
+
+    GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = db_utils.get_gps_utc_constants()
+
+    window_x = []
+    window_y = []
+    wedge_res_x = []
+    wedge_res_y = []
+    gal_wedge_x = []
+    gal_wedge_y = []
+    ptsrc_wedge_x = []
+    ptsrc_wedge_y = []
+
+    for row in response:
+                    # Actual UTC time of the observation (for the graph)
+        utc_millis = int((row[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
+
+        window_x.append([utc_millis, row[1]])
+        window_y.append([utc_millis, row[2]])
+        wedge_res_x.append([utc_millis, row[3]])
+        wedge_res_y.append([utc_millis, row[4]])
+        gal_wedge_x.append([utc_millis, row[5]])
+        gal_wedge_y.append([utc_millis, row[6]])
+        ptsrc_wedge_x.append([utc_millis, row[7]])
+        ptsrc_wedge_y.append([utc_millis, row[8]])
+
+    data = {
+        "window_x": window_x,
+        "window_y": window_y,
+        "wedge_res_x": wedge_res_x,
+        "wedge_res_y": wedge_res_y,
+        "gal_wedge_x": gal_wedge_x,
+        "gal_wedge_y": gal_wedge_y,
+        "ptsrc_wedge_x": ptsrc_wedge_x,
+        "ptsrc_wedge_y": ptsrc_wedge_y
+    };
+
+    return render_template("qs_graph.html", data=data)
+
 @app.route('/error_table', methods = ['POST'])
 def error_table():
     starttime = datetime.utcfromtimestamp(int(request.form['starttime']) / 1000)
@@ -164,15 +219,22 @@ def error_table():
 def before_request():
     g.user = current_user
     try :
-        g.eor_db = psycopg2.connect(database='mwa', host='eor-db.mit.edu', user=os.environ['MWA_DB_USERNAME'], password=os.environ['MWA_DB_PW'])
+        g.eor_db = psycopg2.connect(database='mwa', host='eor-db.mit.edu',
+            user=os.environ['MWA_DB_USERNAME'], password=os.environ['MWA_DB_PW'])
+        g.eor_00 = psycopg2.connect(database='mwa_qc', host='eor-00.mit.edu',
+            user=os.environ['MWA_DB_USERNAME'], password=os.environ['MWA_DB_PW'])
     except Exception as e:
-        print("Can't connect to the eor database at eor-db.mit.edu - %s" % e)
+        print("Can't connect to database - %s" % e)
 
 @app.teardown_request
 def teardown_request(exception):
     eor_db = getattr(g, 'eor_db', None)
     if eor_db is not None:
         eor_db.close()
+
+    eor_00 = getattr(g, 'eor_00', None)
+    if eor_00 is not None:
+        eor_00.close()
 
 @lm.user_loader
 def load_user(id):
