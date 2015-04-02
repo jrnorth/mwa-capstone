@@ -3,55 +3,50 @@
 <table style="width:100%" class="tableClass">
     <div id="main_content_div">
         <tr class="rowClass">
-            <div id="left_content_div">
-                <td class="cellClass">
-                    <div id='date_controls'>
-                        <span>Range start:</span>
-                        {% if starttime %}
-                        <input type='text' id='datepicker_start' value='{{starttime}}'
-                        {% else %}
-                        <input type='text' id='datepicker_start'
-                        {% endif %}
-                        autocomplete='off'/>
-                        <span>Range end:</span>
-                        {% if endtime %}
-                        <input type='text' id='datepicker_end' value='{{endtime}}'
-                        {% else %}
-                        <input type='text' id='datepicker_end'
-                        {% endif %}
-                        autocomplete='off'/>
-                        <button onclick="getObservations()">Get observations</button>
-                    </div>
-                    <div id='observations_main'></div>
-                    <br>
-                    <span style="font-size:30px;">Comments</span>
-                    {% if g.user and g.user.is_authenticated() %}
-                    <button type="button" onclick="newThread()" class="replyButton" style="margin-top:12px;">New thread</button>
+            <td class="cellClass cellTop">
+                <div id='date_controls'>
+                    <span>Range start:</span>
+                    {% if starttime %}
+                    <input type='text' id='datepicker_start' value='{{starttime}}'
+                    {% else %}
+                    <input type='text' id='datepicker_start'
                     {% endif %}
-                    <div id='comments_div'></div>
-                    {% include 'comment_reply.html' %}
-                    <br>
-                    <div id='data_amount_table'></div>
-                </td>
-            </div>
-
-            <div id="right_content_div">
-                <td valign="top" class="right_cell cellClass">
-                    <div id="summary_table"></div>
-                    <h3>Data Sets</h3>
-                    <hr>
-                    <div id="filter_dropdown_div" style="vertical-align:top;">
-                        Filter sets:
-                        <select id="filter_dropdown" onchange="filterDropdownChanged(this)">
-                            <option value="all" selected>All</option>
-                            <option value="yours">Your Sets</option>
-                            <option value="filter_within_cur">Contained within current range</option>
-                        </select>
-                    </div>
-                    <br>
-                    <div id='set_list_div' class='set_list'></div>
-                </td>
-            </div>
+                    autocomplete='off'/>
+                    <span>Range end:</span>
+                    {% if endtime %}
+                    <input type='text' id='datepicker_end' value='{{endtime}}'
+                    {% else %}
+                    <input type='text' id='datepicker_end'
+                    {% endif %}
+                    autocomplete='off'/>
+                    <button onclick="getObservations()">Get observations</button>
+                </div>
+                <div id='observations_main'></div>
+                <br>
+                <span style="font-size:30px;">Comments</span>
+                {% if g.user and g.user.is_authenticated() %}
+                <button type="button" onclick="newThread()" class="replyButton" style="margin-top:12px;">New thread</button>
+                {% endif %}
+                <div id='comments_div'></div>
+                {% include 'comment_reply.html' %}
+                <br>
+                <div id='data_amount_table'></div>
+            </td>
+            <td class="right_cell cellClass cellTop">
+                <div id="summary_table"></div>
+                <h3>Data Sets</h3>
+                <hr>
+                <div id="filter_dropdown_div" style="vertical-align:top;">
+                    Filter sets:
+                    <select id="filter_dropdown" onchange="filterDropdownChanged(this)">
+                        <option value="all" selected>All</option>
+                        <option value="yours">Your Sets</option>
+                        <option value="filter_within_cur">Contained within current range</option>
+                    </select>
+                </div>
+                <br>
+                <div id='set_list_div' class='set_list'></div>
+            </td>
         </tr>
     </div>
 </table>

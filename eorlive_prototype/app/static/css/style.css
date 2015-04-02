@@ -75,6 +75,10 @@ h2              { font-size: 1.2em; }
     display: table-cell;
 }
 
+.cellTop {
+    vertical-align: top;
+}
+
 .profileCell {
     vertical-align: top;
     padding: 0px 10px 10px 10px;
