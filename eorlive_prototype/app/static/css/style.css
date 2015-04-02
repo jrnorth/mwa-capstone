@@ -190,6 +190,7 @@ h2              { font-size: 1.2em; }
 
 .profile td {
     padding-left: 10px;
+    padding-bottom: 10px;
     border: 2px solid black;
     border-collapse: collapse;
 }
