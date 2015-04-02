@@ -75,6 +75,10 @@ h2              { font-size: 1.2em; }
     display: table-cell;
 }
 
+.cellTop {
+    vertical-align: top;
+}
+
 .right_cell {
     padding: 10px;
     border-style: solid;
@@ -173,4 +177,19 @@ h2              { font-size: 1.2em; }
 .replyButton:active {
     position:relative;
     top:1px;
+}
+
+.profile {
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    margin-top: 10px;
+    border: 2px solid black;
+    border-collapse: collapse;
+}
+
+.profile td {
+    padding-left: 10px;
+    border: 2px solid black;
+    border-collapse: collapse;
 }

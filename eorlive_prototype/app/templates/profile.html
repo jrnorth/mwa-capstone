@@ -1,47 +1,58 @@
 {% extends "layout.html" %}
 {% block body %}
-    Username: {{user.username}}
-    <br>
-    Name: {{user.first_name}} {{user.last_name}}
-    <br>
-    Email: {{user.email}}
-    <br>
-    <h3>Upload Set From Text File</h3>
-    <input type="file" id="upload_set_file">
-    Low/High:
-    <select id="low_high_dropdown" onchange="setLowOrHigh(this)">
-        <option value="high">High</option>
-        <option value="low">Low</option>
-        <option value="any">Any</option>
-    </select>
-    EOR0/EOR1:
-    <select id="eor_dropdown" onchange="setEOR(this)">
-        <option value="EOR0">EOR0</option>
-        <option value="EOR1">EOR1</option>
-        <option value="any">Any</option>
-    </select>
-    <br>
-    <input type="text" id="upload_set_name" placeholder="Enter set name...">
-    <button type="button" id="upload_set_button" onclick="uploadSet()">Upload set</button>
-    <br>
-    <h3>Your Sets</h3>
-    {% if sets %}
-        {% for set in sets %}
-            {% if set %}
-                <div id="set_name_div">
-                    <a href="set/{{ set.name }}">{{ set.name }}</a>
-                </div>
-                <!--
-                <div id = "set_delete_div">
-                    <button onclick="deleteSetHelper('{{ set.name }}')">Delete set</button>
-                </div>
-                -->
-                <br>
+<table class="tableClass profile">
+    <tr class="rowClass">
+        <td class="cellClass cellTop">
+            <h3>Your Profile</h3>
+            Username: {{user.username}}
+            <br>
+            Name: {{user.first_name}} {{user.last_name}}
+            <br>
+            Email: {{user.email}}
+        </td>
+        <td class="cellClass cellTop" rowspan="2">
+            <h3>Your Sets</h3>
+            {% if sets %}
+                {% for set in sets %}
+                    {% if set %}
+                        <div id="set_name_div">
+                            <a href="set/{{ set.name }}">{{ set.name }}</a>
+                        </div>
+                        <!--
+                        <div id = "set_delete_div">
+                            <button onclick="deleteSetHelper('{{ set.name }}')">Delete set</button>
+                        </div>
+                        -->
+                        <br>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>No Sets</p>
             {% endif %}
-        {% endfor %}
-    {% else %}
-        <p>No Sets</p>
-    {% endif %}
+        </td>
+    </tr>
+    <tr class="rowClass">
+        <td class="cellClass cellTop">
+            <h3>Upload Set From Text File</h3>
+            <input type="file" id="upload_set_file">
+            Low/High:
+            <select id="low_high_dropdown" onchange="setLowOrHigh(this)">
+                <option value="high">High</option>
+                <option value="low">Low</option>
+                <option value="any">Any</option>
+            </select>
+            EOR0/EOR1:
+            <select id="eor_dropdown" onchange="setEOR(this)">
+                <option value="EOR0">EOR0</option>
+                <option value="EOR1">EOR1</option>
+                <option value="any">Any</option>
+            </select>
+            <br>
+            <input type="text" id="upload_set_name" placeholder="Enter set name...">
+            <button type="button" id="upload_set_button" onclick="uploadSet()">Upload set</button>
+        </td>
+    </tr>
+</table>
 <script>
     var low_or_high = 'high';
     var eor = 'EOR0';
