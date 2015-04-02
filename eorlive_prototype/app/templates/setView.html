@@ -3,7 +3,6 @@
 <div id="main_content_div">
     <div id="main_content_row">
         <div id="left_content">
-            <button type="button" onclick="downloadSet()">Download set</button>
             <h1>{{ setName }}</h1>
             <button id='backbutton' onclick="backToHistogram()">Back to histogram</button>
             <div id='error_table'></div>
@@ -13,6 +12,7 @@
             <p>High/Low: {{ low_or_high }}</p>
             <p>EOR0/EOR1: {{ eor }}</p>
             <p>Data hours: {{ total_data_hrs | round(2) }} ({{ flagged_data_hrs | round(2) }} flagged)</p>
+            <button type="button" onclick="downloadSet()">Download set</button>
             <button type="button" onclick="goToNGAS()">NGAS Observations</button>
         </div>
     </div>
