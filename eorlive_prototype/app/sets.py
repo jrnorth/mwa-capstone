@@ -221,7 +221,7 @@ def data_summary_table():
         except TypeError as te:
             ra_phase_center = -1
 
-        data_hours = (stop_time - start_time) / 3600
+        data_hours = (stop_time - start_time) / 3600.0
 
         if 'low' in obs_name:
             if ra_phase_center == 0:
