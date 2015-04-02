@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
+<div id='top_div' class="top_div_class">
+</div>
 <table style="width:100%" class="tableClass">
     <div id="main_content_div">
         <tr class="rowClass">
@@ -23,6 +25,17 @@
                         <button onclick="getObservations()">Get observations</button>
                     </div>
                     <div id='observations_main'></div>
+                    <br>
+                    <div id='tabs'>
+                        <ul>
+                            <li>
+                                <a href="">Obs &amp; Err</a>
+                            </li>
+                            <li>
+                                <a href="">QS</a>
+                            </li>
+                        </ul>
+                    </div>
                     <br>
                     <span style="font-size:30px;">Comments</span>
                     {% if g.user and g.user.is_authenticated() %}
@@ -75,7 +88,8 @@
         renderSets(currentData, startUTC, endUTC);
     };
 </script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
 <script src="../static/js/setsAndComments.js"></script>
 <script src="../static/js/jquery.datetimepicker.js"></script>
 <script src="../static/js/collapsible.min.js"></script>

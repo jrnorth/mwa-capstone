@@ -69,11 +69,14 @@ def data_amount():
     return render_template('data_amount_table.html', hours_scheduled=hours_scheduled, hours_observed=hours_observed,
         hours_with_data=hours_with_data, hours_with_uvfits=hours_with_uvfits, data_time=data_time)
 
-@app.route('/histogram_data', methods = ['POST'])
+@app.route('/histogram_data', methods = ['GET'])
 def histogram_data():
-    startdatetime = datetime.strptime(request.form['starttime'], '%Y-%m-%dT%H:%M:%SZ')
+    start_time = request.args.get('starttime')
+    end_time = request.args.get('endtime')
 
-    enddatetime = datetime.strptime(request.form['endtime'], '%Y-%m-%dT%H:%M:%SZ')
+    startdatetime = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%SZ')
+
+    enddatetime = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%SZ')
 
     start_gps, end_gps = db_utils.get_gps_from_datetime(startdatetime, enddatetime)
 
@@ -93,15 +96,10 @@ def histogram_data():
 
     error_counts, error_count = histogram_utils.get_error_counts(start_gps, end_gps)
 
-    low_eor0_count = high_eor0_count = low_eor1_count = high_eor1_count = 0
-    low_eor0_hours = high_eor0_hours = low_eor1_hours = high_eor1_hours = 0
-
     utc_obsid_map_l0 = []
     utc_obsid_map_l1 = []
     utc_obsid_map_h0 = []
     utc_obsid_map_h1 = []
-
-    prev_high_time = prev_low_time = 0
 
     GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = db_utils.get_gps_utc_constants()
 
@@ -119,41 +117,80 @@ def histogram_data():
         if 'low' in obs_name:
             if ra_phase_center == 0: # EOR0
                 low_eor0_counts.append([utc_millis, 1])
-                low_eor0_count += 1
-                low_eor0_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_l0.append([utc_millis, int(observation[0])])
             elif ra_phase_center == 60: # EOR1
                 low_eor1_counts.append([utc_millis, 1])
-                low_eor1_count += 1
-                low_eor1_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_l1.append([utc_millis, int(observation[0])])
         elif 'high' in obs_name:
             if ra_phase_center == 0: # EOR0
                 high_eor0_counts.append([utc_millis, 1])
-                high_eor0_count += 1
-                high_eor0_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_h0.append([utc_millis, int(observation[0])])
             elif ra_phase_center == 60: # EOR1
                 high_eor1_counts.append([utc_millis, 1])
-                high_eor1_count += 1
-                high_eor1_hours += (observation[1] - observation[0]) / 3600
                 utc_obsid_map_h1.append([utc_millis, int(observation[0])])
 
-    histogram = render_template('histogram.html',
+    return render_template('histogram.html',
         low_eor0_counts=low_eor0_counts, high_eor0_counts=high_eor0_counts,
         low_eor1_counts=low_eor1_counts, high_eor1_counts=high_eor1_counts,
         error_counts=error_counts, utc_obsid_map_l0=utc_obsid_map_l0,
         utc_obsid_map_l1=utc_obsid_map_l1, utc_obsid_map_h0=utc_obsid_map_h0,
-        utc_obsid_map_h1=utc_obsid_map_h1, range_start=request.form['starttime'],
-        range_end=request.form['endtime'])
+        utc_obsid_map_h1=utc_obsid_map_h1, range_start=start_time,
+        range_end=end_time)
 
-    summary_table = render_template('summary_table.html', error_count=error_count,
-        low_eor0_count=low_eor0_count, high_eor0_count=high_eor0_count,
-        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count,
-        low_eor0_hours=low_eor0_hours, high_eor0_hours=high_eor0_hours,
-        low_eor1_hours=low_eor1_hours, high_eor1_hours=high_eor1_hours)
+@app.route('/qs_data')
+def qs_data():
+    start_time = request.args.get('starttime')
+    end_time = request.args.get('endtime')
 
-    return json.dumps({'histogram': histogram, 'summary_table': summary_table})
+    start_datetime = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%SZ')
+    end_datetime = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%SZ')
+
+    start_gps, end_gps = db_utils.get_gps_from_datetime(start_datetime, end_datetime)
+
+    response = db_utils.send_query(g.eor_00, '''SELECT obsid, window_x, window_y,
+                                    wedge_res_x, wedge_res_y, gal_wedge_x,
+                                    gal_wedge_y, ptsrc_wedge_x, ptsrc_wedge_y
+                                    FROM qs
+                                    WHERE wedge_timestamp IS NOT NULL
+                                    AND obsid >= {} AND obsid <= {}
+                                    ORDER BY obsid ASC'''.format(start_gps, end_gps)).fetchall()
+
+    GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = db_utils.get_gps_utc_constants()
+
+    window_x = []
+    window_y = []
+    wedge_res_x = []
+    wedge_res_y = []
+    gal_wedge_x = []
+    gal_wedge_y = []
+    ptsrc_wedge_x = []
+    ptsrc_wedge_y = []
+
+    for row in response:
+                    # Actual UTC time of the observation (for the graph)
+        utc_millis = int((row[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
+
+        window_x.append([utc_millis, row[1]])
+        window_y.append([utc_millis, row[2]])
+        wedge_res_x.append([utc_millis, row[3]])
+        wedge_res_y.append([utc_millis, row[4]])
+        gal_wedge_x.append([utc_millis, row[5]])
+        gal_wedge_y.append([utc_millis, row[6]])
+        ptsrc_wedge_x.append([utc_millis, row[7]])
+        ptsrc_wedge_y.append([utc_millis, row[8]])
+
+    data = {
+        "window_x": window_x,
+        "window_y": window_y,
+        "wedge_res_x": wedge_res_x,
+        "wedge_res_y": wedge_res_y,
+        "gal_wedge_x": gal_wedge_x,
+        "gal_wedge_y": gal_wedge_y,
+        "ptsrc_wedge_x": ptsrc_wedge_x,
+        "ptsrc_wedge_y": ptsrc_wedge_y
+    };
+
+    return render_template("qs_graph.html", data=data)
 
 @app.route('/error_table', methods = ['POST'])
 def error_table():
@@ -182,15 +219,22 @@ def error_table():
 def before_request():
     g.user = current_user
     try :
-        g.eor_db = psycopg2.connect(database='mwa', host='eor-db.mit.edu', user=os.environ['MWA_DB_USERNAME'], password=os.environ['MWA_DB_PW'])
+        g.eor_db = psycopg2.connect(database='mwa', host='eor-db.mit.edu',
+            user=os.environ['MWA_DB_USERNAME'], password=os.environ['MWA_DB_PW'])
+        g.eor_00 = psycopg2.connect(database='mwa_qc', host='eor-00.mit.edu',
+            user=os.environ['MWA_DB_USERNAME'], password=os.environ['MWA_DB_PW'])
     except Exception as e:
-        print("Can't connect to the eor database at eor-db.mit.edu - %s" % e)
+        print("Can't connect to database - %s" % e)
 
 @app.teardown_request
 def teardown_request(exception):
     eor_db = getattr(g, 'eor_db', None)
     if eor_db is not None:
         eor_db.close()
+
+    eor_00 = getattr(g, 'eor_00', None)
+    if eor_00 is not None:
+        eor_00.close()
 
 @lm.user_loader
 def load_user(id):

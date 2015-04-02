@@ -1,3 +1,9 @@
+//http://stackoverflow.com/questions/1144783/replacing-all-occurrences-of-a-string-in-javascript
+String.prototype.replaceAll = function (find, replace) {
+    var str = this;
+    return str.replace(new RegExp(find.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), replace);
+};
+
 $(function() {
     var startDatePicker = $("#datepicker_start");
     var endDatePicker = $("#datepicker_end");
@@ -23,8 +29,8 @@ $(function() {
 
     //global ajax vars
     window.setRequest = null;
-    window.histogramRequest = null;
     window.dataAmountRequest = null;
+    window.dataSummaryTableRequest = null;
 
     $("#data_amount_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
@@ -37,7 +43,38 @@ $(function() {
         dataType: "html"
     });
 
-    getObservations();
+    // Set up the tabs.
+    $("#tabs").tabs({
+        beforeLoad: function(event, ui) {
+            if (ui.tab.data("loaded")) {
+                event.preventDefault();
+                return;
+            }
+
+            ui.panel.html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+            var startTimeStr = $("#datepicker_start").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
+            var endTimeStr = $("#datepicker_end").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
+
+            var index = ui.tab.index();
+            switch (index) {
+                case 0:
+                    var url = "/histogram_data?starttime=" + startTimeStr + "&endtime=" + endTimeStr;
+                    ui.ajaxSettings.url = url;
+                    break;
+                case 1:
+                    var url = "/qs_data?starttime=" + startTimeStr + "&endtime=" + endTimeStr;
+                    ui.ajaxSettings.url = url;
+                    break;
+            };
+
+            ui.jqXHR.success(function() {
+                ui.tab.data("loaded", true);
+            });
+        }
+    });
+
+    getObservations(false /* Don't load the first tab, it's already being loaded */);
     getComments();
 });
 
@@ -49,17 +86,27 @@ function getDateTimeString(now) {
     return now.getUTCFullYear() + "/" + month + "/" + date + " " + hours + ":" + minutes;
 };
 
-function getObservations() {
-    if (window.setRequest)
-    {
-        window.setRequest.abort();
-        window.setRequest = null;
+function abortRequestIfPending(request) {
+    if (request) {
+        request.abort();
+        return null;
     }
-    if (window.histogramRequest)
-    {
-        window.histogramRequest.abort();
-        window.histogramRequest = null;
+    return request;
+};
+
+function getObservations(loadTab) {
+    window.setRequest = abortRequestIfPending(window.setRequest);
+    window.dataSummaryTableRequest = abortRequestIfPending(window.dataSummaryTableRequest);
+
+    // Load the first tab if it's not already being loaded.
+    if (loadTab) {
+        $("#tabs").tabs("option", "active", 0);
+        $("#tabs > ul > li").each(function(index) {
+            $(this).data("loaded", false);
+        });
+        $("#tabs").tabs("load", 0);
     }
+
     var start = $("#datepicker_start").val();
     var end = $("#datepicker_end").val();
     re = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/;
@@ -80,22 +127,20 @@ function getObservations() {
         return;
     }
 
-    $("#observations_main").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
     $("#summary_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
     // Make each date into a string of the format "YYYY-mm-ddTHH:MM:SSZ", which is the format used in the local database.
     var startUTC = startDate.toISOString().slice(0, 19) + "Z";
     var endUTC = endDate.toISOString().slice(0, 19) + "Z";
 
-    window.histogramRequest = $.ajax({
+    window.dataSummaryTableRequest = $.ajax({
         type: "POST",
-        url: "/histogram_data",
+        url: "/data_summary_table",
         data: {'starttime': startUTC, 'endtime': endUTC},
         success: function(data) {
-            $("#observations_main").html(data.histogram);
-            $("#summary_table").html(data.summary_table);
+            $("#summary_table").html(data);
         },
-        dataType: "json"
+        dataTpe: "html"
     });
 
     var e = document.getElementById('filter_dropdown');
