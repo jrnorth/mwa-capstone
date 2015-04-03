@@ -143,9 +143,7 @@ function getObservations(loadTab) {
         dataTpe: "html"
     });
 
-    var e = document.getElementById('filter_dropdown');
-    var eVal = e.options[e.selectedIndex].value;
-    renderSets(eVal, startUTC, endUTC);
+    applyFiltersAndSort();
 };
 
 function getComments() {
@@ -171,4 +169,32 @@ function getDate(datestr) {
     var hour = datestr.substring(11, 13);
     var minute = datestr.substring(14, 16);
     return new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
+};
+
+var applyFiltersAndSort = function() {
+    var filter = $("#filter_setlist_dropdown").val();
+    var eor = $("#eor_setlist_dropdown").val();
+    var high_low = $("#high_low_setlist_dropdown").val();
+    var sort = $("#sort_setlist_dropdown").val();
+
+    var set_controls = {
+        'filter': filter,
+        'eor': eor,
+        'high_low': high_low,
+        'sort': sort
+    };
+
+    var start = $("#datepicker_start").val();
+    var end = $("#datepicker_end").val();
+
+    var startDate, endDate;
+
+    startDate = getDate(start);
+    endDate = getDate(end);
+
+    // Make each date into a string of the format "YYYY-mm-ddTHH:MM:SSZ", which is the format used in the local database.
+    var startUTC = startDate.toISOString().slice(0, 19) + "Z";
+    var endUTC = endDate.toISOString().slice(0, 19) + "Z";
+
+    renderSets(set_controls, startUTC, endUTC);
 };

@@ -1,13 +1,18 @@
-function renderSets(filterType, startUTC, endUTC) {
+function renderSets(set_controls, startUTC, endUTC) {
     $("#set_list_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
     window.setRequest = $.ajax({
         type: "POST",
         url: "/get_sets",
-        data: {'filter_type': filterType, 'starttime': startUTC, 'endtime': endUTC},
+        data: JSON.stringify({
+            'set_controls': set_controls,
+            'starttime': startUTC,
+            'endtime': endUTC
+        }),
         success: function(data) {
             $("#set_list_div").html(data);
         },
+        contentType: 'application/json',
         dataType: 'html'
     });
 };
