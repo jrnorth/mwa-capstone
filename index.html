@@ -85,7 +85,7 @@
 <a name="meeting-2-summary" class="anchor" href="#meeting-2-summary"><span class="octicon octicon-link"></span></a>Meeting 20 Summary</h2>
 
 <p>Friday, April 3rd, 2015 at 1:30 pm
-ISTB4
+ISTB4 L1-83
 Attendees: Joseph North, Connor Alfheim, David Ganey, Ryan Dougherty, Dylan Lusi, Dr. Jacobs</p>
 
 <h4>
@@ -96,10 +96,10 @@ Attendees: Joseph North, Connor Alfheim, David Ganey, Ryan Dougherty, Dylan Lusi
 
 <h4>
 <a name="results-and-action-items" class="anchor" href="#results-and-action-items"><span class="octicon octicon-link"></span></a>Update on Last Week's Agenda Items</h4>
-<p>The QS chart and tabs are added, along with multiple UI improvements</p>
+<p>The QS graph has been implemented. Additionally, the tab interface for graphs on the main page has been implemented, with the new QS graph in its own tab and the existing histogram in another tab. Finally, we made numerous UI improvements.</p>
 <h4>Information Agenda Items</h4>
 <ul>
-  <li>We should research the pricing for various hosting options.<li>
+  <li>We plan to research the pricing for various hosting options.<li>
 </ul>
 <h4>Actionable Agenda Items</h4>
 <ul>
@@ -115,8 +115,8 @@ Flag Plot
 <li>
 Database maintenance
   <ul>
-  <li>Description: Documentation and steps to migrate and modify the data store in the future</li>
-  <li>Discussion: Currently, migration works only sometimes.</li>
+  <li>Description: Documentation and steps to migrate and modify the database in the future.</li>
+  <li>Discussion: To make the deployment of database changes as easy as possible, we should clearly document the procedure by which the database on the production site is updated.</li>
   <li>Assigned: David</li>
   <li>Due: 4/10/2015</li>
   </ul>
@@ -124,8 +124,8 @@ Database maintenance
 <li>
 Custom graphs
   <ul>
-  <li>Description: Users should be able to customize which graphs appear in their tabs</li>
-  <li>Discussion: This will also involve the graph extensibility research</li>
+  <li>Description: Users should be able to customize their own graphs by specifying what database tables/columns they want to use as a data source and what type of graph they want. They should then be able to specify which graphs they see on the main page by selecting from their custom graphs.</li>
+  <li>Discussion: We will need to determine the best method for graph customization - should users be able to customize a graph through an interface on the site, or should they have to write their own code that plugs in to our API?</li>
   <li>Assigned: Joe</li>
   <li>Due: 4/10/2015</li>
   </ul>
@@ -134,8 +134,8 @@ Custom graphs
 UI updates
   <ul>
   <li>Description: Users should be able to adjust the width of the histogram bars and should be able to see sets
-    on the main page, not on set view pages. Additionally, date ranges on the main page should cache (per tab, if possible) instead of resetting to current date on load. Filters should also be adjusted to use checkboxes. Collapse the set list somewhat. EOR logo should be a button to return to index</li>
-  <li>Discussion: We will need to rework the set view app route to accommodate that</li>
+    on the main page, not on set view pages. Additionally, the date ranges on the main page should be cached (per tab, if possible) instead of resetting to the current date when the page loads. Set filters should be refined - we should enable filtering by user (i.e. who created the set). The set browsing list should be redesigned to contain less whitespace. Finally, the EoRLive logo on the header bar should link to the main page.</li>
+  <li>Discussion: The main ideas behind these UI updates are a) users will want to see as much information on the main page as possible, and b) users will want to customize how they see their data in as many ways as possible.</li>
   <li>Assigned: Ryan and Ben</li>
   <li>Due: 4/10/2015</li>
   </ul>
@@ -143,8 +143,8 @@ UI updates
 <li>
 User management
   <ul>
-  <li>Description: It should be possible to create users through the app. Additionally, allow users to view a users page showing each individual and the sets they've created. Admins can delete users through this page.</li>
-  <li>Discussion: We'll need a way to verify users are allowed to register</li>
+  <li>Description: We need to enable user account creation through an interface on the site. Additionally, we should include a page that allows users to view a users page that shows each individual and the sets they've created. Admins can delete users through this page.</li>
+  <li>Discussion: We'll need a way to verify that a user is allowed to register.</li>
   <li>Assigned: David and Connor</li>
   <li>Due: 4/10/2015</li>
   </ul>
@@ -152,7 +152,7 @@ User management
 <li>
 API Documentation
   <ul>
-  <li>Description: Create a document showing how to set up and work with the code produced in this project</li>
+  <li>Description: Create a document showing how to set up and work with the code produced in this project.</li>
   <li>Discussion: Others will continue to work on this project after we graduate, so we need to provide ample documentation explaining the structure of the project, how to install it, etc. Most importantly, the scientists using this site will want to add their own functionality, so the APIs we create need to be well-documented for their sake.</li>
   <li>Assigned: Ryan</li>
   <li>Due: 4/10/2015</li>
