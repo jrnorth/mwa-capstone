@@ -278,22 +278,41 @@ def profile():
 
 @app.route('/get_sets', methods = ['POST'])
 def get_sets():
-    filter_type = request.form['filter_type']
     if (g.user is not None and g.user.is_authenticated()):
-        if filter_type == 'all':
-            setList = models.Set.query.all()
+        request_content = request.get_json()
+        set_controls = request_content['set_controls']
+        filter_type = set_controls['filter']
+        eor = set_controls['eor']
+        high_low = set_controls['high_low']
+        sort = set_controls['sort']
 
-        elif filter_type == 'yours':
-            setList = models.Set.query.filter(models.Set.username == g.user.username).all()
+        query = models.Set.query
 
-        elif filter_type == 'filter_within_cur':
-            startUTC = request.form['starttime']
-            endUTC = request.form['endtime']
-            start_gps, end_gps = db_utils.get_gps_from_datetime(startUTC, endUTC)
-            setList = models.Set.query.filter(and_(models.Set.start >= start_gps, models.Set.end <= end_gps)).all()
+        if filter_type:
+            if filter_type == 'yours':
+                query = query.filter(models.Set.username == g.user.username)
+            elif filter_type == 'filter_within_cur':
+                startUTC = request_content['starttime']
+                endUTC = request_content['endtime']
+                start_datetime = datetime.strptime(startUTC, '%Y-%m-%dT%H:%M:%SZ')
+                end_datetime = datetime.strptime(endUTC, '%Y-%m-%dT%H:%M:%SZ')
+                start_gps, end_gps = db_utils.get_gps_from_datetime(start_datetime, end_datetime)
+                query = query.filter(and_(models.Set.start >= start_gps, models.Set.end <= end_gps))
 
-        else:
-            setList = models.Set.query.all()
+        if eor:
+            query = query.filter(models.Set.eor == eor) # eor is 'EOR0' or 'EOR1', which are the values used in the DB
+
+        if high_low:
+            query = query.filter(models.Set.low_or_high == high_low) # high_low is 'high' or 'low', which are the
+                                                                     # values used in the DB
+
+        if sort:
+            if sort == 'hours':
+                query = query.order_by(models.Set.total_data_hrs.desc())
+            elif sort == 'time':
+                query = query.order_by(models.Set.created_on.desc())
+
+        setList = query.all()
 
         if setList is not None:
             return render_template('setList.html', sets=setList)
