@@ -1,6 +1,7 @@
 from app import db_utils, models, histogram_utils
 from app.flask_app import app, db
-from flask import request, g, make_response, jsonify
+from flask import request, g, make_response, jsonify, render_template
+from datetime import datetime
 
 def insert_set_into_db(name, start, end, flagged_ranges, low_or_high,
         eor, total_data_hrs, flagged_data_hrs):
@@ -190,3 +191,57 @@ def download_set():
         return response
     else:
         return make_response("That set wasn't found.", 500)
+
+@app.route('/data_summary_table', methods=['POST'])
+def data_summary_table():
+    starttime = request.form['starttime']
+    endtime = request.form['endtime']
+
+    startdatetime = datetime.strptime(starttime, '%Y-%m-%dT%H:%M:%SZ')
+    enddatetime = datetime.strptime(endtime, '%Y-%m-%dT%H:%M:%SZ')
+
+    start_gps, end_gps = db_utils.get_gps_from_datetime(startdatetime, enddatetime)
+
+    response = db_utils.send_query(g.eor_db, '''SELECT starttime, stoptime, obsname, ra_phase_center
+                    FROM mwa_setting
+                    WHERE starttime >= {} AND starttime <= {}
+                    AND projectid='G0009'
+                    ORDER BY starttime ASC'''.format(start_gps, end_gps)).fetchall()
+
+    low_eor0_count = low_eor1_count = high_eor0_count = high_eor1_count = 0
+    low_eor0_hours = low_eor1_hours = high_eor0_hours = high_eor1_hours = 0
+
+    for observation in response:
+        start_time = observation[0]
+        stop_time = observation[1]
+        obs_name = observation[2]
+
+        try:
+            ra_phase_center = int(observation[3])
+        except TypeError as te:
+            ra_phase_center = -1
+
+        data_hours = (stop_time - start_time) / 3600
+
+        if 'low' in obs_name:
+            if ra_phase_center == 0:
+                low_eor0_count += 1
+                low_eor0_hours += data_hours
+            elif ra_phase_center == 60:
+                low_eor1_count += 1
+                low_eor1_hours += data_hours
+        elif 'high' in obs_name:
+            if ra_phase_center == 0:
+                high_eor0_count += 1
+                high_eor0_hours += data_hours
+            elif ra_phase_center == 60:
+                high_eor1_count += 1
+                high_eor1_hours += data_hours
+
+    error_counts, error_count = histogram_utils.get_error_counts(start_gps, end_gps)
+
+    return render_template("summary_table.html", error_count=error_count,
+        low_eor0_count=low_eor0_count, high_eor0_count=high_eor0_count,
+        low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count,
+        low_eor0_hours=low_eor0_hours, high_eor0_hours=high_eor0_hours,
+        low_eor1_hours=low_eor1_hours, high_eor1_hours=high_eor1_hours)

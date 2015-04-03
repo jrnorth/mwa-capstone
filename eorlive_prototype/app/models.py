@@ -49,6 +49,7 @@ class Set(db.Model):
     eor = db.Column(db.String(4)) # Whether this set contains 'EOR0', 'EOR1', or 'any' observations.
     total_data_hrs = db.Column(db.Float)
     flagged_data_hrs = db.Column(db.Float)
+    created_on = db.Column(db.DateTime, default=datetime.utcnow)
 
 class FlaggedSubset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
