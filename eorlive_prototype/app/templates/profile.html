@@ -42,14 +42,24 @@
     var low_or_high = 'high';
     var eor = 'EOR0';
 
+    var set_controls = {
+        'filter': 'yours',
+        'eor': '',
+        'high_low': '',
+        'sort': ''
+    };
+
     $(function() {
         $.ajax({
             type: 'POST',
             url: '/get_sets',
-            data: { 'filter_type': 'yours' },
+            data: JSON.stringify({
+                'set_controls': set_controls
+            }),
             success: function(data) {
                 $("#set_list_div").html(data);
             },
+            contentType: 'application/json',
             dataType: "html"
         });
     });
