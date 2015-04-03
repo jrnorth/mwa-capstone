@@ -1,113 +1,106 @@
 {% extends "layout.html" %}
 {% block body %}
-<div id='top_div' class="top_div_class">
-</div>
 <table style="width:100%" class="tableClass">
     <div id="main_content_div">
         <tr class="rowClass">
-            <div id="left_content_div">
-                <td class="cellClass">
-                    <div id='date_controls'>
-                        <span>Range start:</span>
-                        {% if starttime %}
-                        <input type='text' id='datepicker_start' value='{{starttime}}'
-                        {% else %}
-                        <input type='text' id='datepicker_start'
-                        {% endif %}
-                        autocomplete='off'/>
-                        <span>Range end:</span>
-                        {% if endtime %}
-                        <input type='text' id='datepicker_end' value='{{endtime}}'
-                        {% else %}
-                        <input type='text' id='datepicker_end'
-                        {% endif %}
-                        autocomplete='off'/>
-                        <button onclick="getObservations(true)">Get observations</button>
-                    </div>
-                    <div id='observations_main'></div>
-                    <br>
-                    <div id='tabs'>
-                        <ul>
-                            <li>
-                                <a href="">Obs &amp; Err</a>
-                            </li>
-                            <li>
-                                <a href="">QS</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <br>
-                    <span style="font-size:30px;">Comments</span>
-                    {% if g.user and g.user.is_authenticated() %}
-                    <button type="button" onclick="newThread()" class="replyButton" style="margin-top:12px;">New thread</button>
+            <td class="cellClass cellTop">
+                <div id='date_controls'>
+                    <span>Range start:</span>
+                    {% if starttime %}
+                    <input type='text' id='datepicker_start' value='{{starttime}}'
+                    {% else %}
+                    <input type='text' id='datepicker_start'
                     {% endif %}
-                    <div id='comments_div'></div>
-                    {% include 'comment_reply.html' %}
-                    <br>
-                    <div id='data_amount_table'></div>
-                </td>
-            </div>
-
-            <div id="right_content_div">
-                <td valign="top" class="right_cell cellClass">
-                    <div id="summary_table"></div>
-                    <h3>Data Sets</h3>
-                    <div id="filter_dropdown_div" style="vertical-align:top;">
-                        <table>
-                            <tr>
-                                <td>
-                                    Filter sets:
-                                </td>
-                                <td>
-                                    <select id="filter_setlist_dropdown">
-                                        <option value="" selected>All</option>
-                                        <option value="yours">Your sets</option>
-                                        <option value="filter_within_cur">Contained within current range</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    EOR0/EOR1:
-                                </td>
-                                <td>
-                                    <select id="eor_setlist_dropdown">
-                                        <option value="" selected>All</option>
-                                        <option value="EOR0">EOR0</option>
-                                        <option value="EOR1">EOR1</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    High/Low:
-                                </td>
-                                <td>
-                                    <select id="high_low_setlist_dropdown">
-                                        <option value="" selected>All</option>
-                                        <option value="high">High</option>
-                                        <option value="low">Low</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    Sort:
-                                </td>
-                                <td>
-                                    <select id="sort_setlist_dropdown">
-                                        <option value="" selected>None</option>
-                                        <option value="hours">Data hours (desc)</option>
-                                        <option value="time">Creation time (desc)</option>
-                                    </select>
-                                    <button type="button" onclick="applyFiltersAndSort()">Go</button>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div id='set_list_div'></div>
-                </td>
-            </div>
+                    autocomplete='off'/>
+                    <span>Range end:</span>
+                    {% if endtime %}
+                    <input type='text' id='datepicker_end' value='{{endtime}}'
+                    {% else %}
+                    <input type='text' id='datepicker_end'
+                    {% endif %}
+                    autocomplete='off'/>
+                    <button onclick="getObservations(true)">Get observations</button>
+                </div>
+                <div id='observations_main'></div>
+                <br>
+                <div id='tabs'>
+                    <ul>
+                        <li>
+                            <a href="">Obs &amp; Err</a>
+                        </li>
+                        <li>
+                            <a href="">QS</a>
+                        </li>
+                    </ul>
+                </div>
+                <br>
+                <span style="font-size:30px;">Comments</span>
+                {% if g.user and g.user.is_authenticated() %}
+                <button type="button" onclick="newThread()" class="replyButton" style="margin-top:12px;">New thread</button>
+                {% endif %}
+                <div id='comments_div'></div>
+                {% include 'comment_reply.html' %}
+                <br>
+                <div id='data_amount_table'></div>
+            </td>
+            <td class="right_cell cellClass cellTop">
+                <div id="summary_table"></div>
+                <h3>Data Sets</h3>
+                <div id="filter_dropdown_div" style="vertical-align:top;">
+                    <table>
+                        <tr>
+                            <td>
+                                Filter sets:
+                            </td>
+                            <td>
+                                <select id="filter_setlist_dropdown">
+                                    <option value="" selected>All</option>
+                                    <option value="yours">Your sets</option>
+                                    <option value="filter_within_cur">Contained within current range</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                EOR0/EOR1:
+                            </td>
+                            <td>
+                                <select id="eor_setlist_dropdown">
+                                    <option value="" selected>All</option>
+                                    <option value="EOR0">EOR0</option>
+                                    <option value="EOR1">EOR1</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                High/Low:
+                            </td>
+                            <td>
+                                <select id="high_low_setlist_dropdown">
+                                    <option value="" selected>All</option>
+                                    <option value="high">High</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Sort:
+                            </td>
+                            <td>
+                                <select id="sort_setlist_dropdown">
+                                    <option value="" selected>None</option>
+                                    <option value="hours">Data hours (desc)</option>
+                                    <option value="time">Creation time (desc)</option>
+                                </select>
+                                <button type="button" onclick="applyFiltersAndSort()">Go</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id='set_list_div' class='set_list'></div>
+            </td>
         </tr>
     </div>
 </table>

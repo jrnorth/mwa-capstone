@@ -21,19 +21,19 @@
     width: 100%;
 }
 
-#set_list_div {
+.set_list {
     max-height: 800px;
     max-width: 100%;
     width: 100%;
     overflow: auto;
 }
 
-#set_list_div table {
+.set_list table {
     width: 100%;
     max-width: 100%;
 }
 
-#set_list_div td {
+.set_list td {
     padding-right: 5px;
     padding-left: 5px;
 }
@@ -73,6 +73,17 @@ h2              { font-size: 1.2em; }
 
 .cellClass {
     display: table-cell;
+}
+
+.cellTop {
+    vertical-align: top;
+}
+
+.profileCell {
+    vertical-align: top;
+    padding: 0px 10px 10px 10px;
+    border: 2px solid black;
+    border-collapse: collapse;
 }
 
 .right_cell {
@@ -173,4 +184,13 @@ h2              { font-size: 1.2em; }
 .replyButton:active {
     position:relative;
     top:1px;
+}
+
+.profile {
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    margin-top: 10px;
+    border: 2px solid black;
+    border-collapse: collapse;
 }
