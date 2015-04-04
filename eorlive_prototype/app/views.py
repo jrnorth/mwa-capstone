@@ -310,6 +310,16 @@ def profile():
     else:
         return redirect(url_for('login'))
 
+@app.route('/user_page')
+def user_page():
+    if (g.user is not None and g.user.is_authenticated()):
+        user = models.User.query.get(g.user.username)
+        userList = models.User.query.all()
+        setList = models.Set.query.all()
+        return render_template('user_page.html', theUser=user, userList=userList, setList=setList)
+    else:
+        return redirect(url_for('login'))
+
 @app.route('/get_sets', methods = ['POST'])
 def get_sets():
     if (g.user is not None and g.user.is_authenticated()):

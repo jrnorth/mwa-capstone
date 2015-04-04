@@ -21,6 +21,7 @@
                 {% else %}
                 <span>logged in as {{ g.user.username }} | </span>
                 <span><a href="{{ url_for('profile') }}">profile</a> | </span>
+                <a href="{{ url_for('user_page') }}">users</a> |
                 <a href="{{ url_for('logout') }}">log out</a>
                 {% endif %}
             </span>

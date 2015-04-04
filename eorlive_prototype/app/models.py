@@ -16,6 +16,7 @@ class User(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     owned_sets = db.relationship('Set', backref='user')
     subscribed_sets = db.relationship('Set', secondary=set_subscriptions)
+    admin = db.Column(db.Boolean, default=False)
 
     def __init__(self, username, password, email, first_name, last_name):
         self.username = username;

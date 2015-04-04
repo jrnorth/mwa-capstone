@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<table class="tableClass user">
+    <tr class="rowClass userRow">
+        <td class="cellClass userCell">Username</td>
+        <td class="cellClass userCell">Sets</td>
+        {% if theUser.admin %}
+            <td class"cellClass userCell">Delete</td>
+        {% endif %}
+    </tr>
+    {% for user in userList %}
+        {% if user %}
+            <tr class="rowClass userRow">
+                <td class="cellClass userCell"> {{ user.username }} </td>
+                <td class="cellClass userCell">
+                    {% for set in setList %}
+                        {% if set %}
+                            {% if set.username == user.username %} <!--gotta be a better way than this...-->
+                                <a href="/set/{{ set.name }}">{{ set.name }}</a>
+                                <br>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                {% if theUser.username != user.username %}
+                    {% if theUser.admin %}
+                        <td class="cellClass userCell"> <button type="button" id="delete_user_button" onclick="deleteUser()">Delete User</button></td>
+                    {% endif %}
+                {% endif %}
+            </tr>
+        {% endif %}
+    {% endfor %}
+</table>
+
+
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+<script>
+    function deleteUser() {
+        alert("Find a way to verify if this should appear");
+    }
+</script>
+
+{% endblock %}

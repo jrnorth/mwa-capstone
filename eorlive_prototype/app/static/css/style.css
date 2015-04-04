@@ -188,3 +188,26 @@ h2              { font-size: 1.2em; }
     border: 2px solid black;
     border-collapse: collapse;
 }
+
+.user {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    margin-top: 10px;
+    border: 2px solid black;
+    border-collapse: collapse;
+}
+
+.userCell {
+    vertical-align: top;
+    padding: 10px 10px 10px 10px;
+    border: 2px solid black;
+    border-collapse: collapse;
+}
+
+.userRow {
+    vertical-align: top;
+    padding: 2px 2px 2px 2px;
+    border: 2px solid black;
+    border-collapse: collapse;
+}
