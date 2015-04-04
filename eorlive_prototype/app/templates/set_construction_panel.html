@@ -135,20 +135,7 @@
                 } else {
                     alert("Set saved successfully!");
                     //refresh the set view
-                    var e = document.getElementById("filter_dropdown");
-                    var currentFilter = e.options[e.selectedIndex].value;
-                    var start = $("#datepicker_start").val();
-                    var end = $("#datepicker_end").val();
-                    re = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/;
-
-                    var startDate, endDate;
-
-                    startDate = getDate(start);
-                    endDate = getDate(end);
-
-                    var startUTC = startDate.toISOString().slice(0, 19) + "Z";
-                    var endUTC = endDate.toISOString().slice(0, 19) + "Z";
-                    renderSets(currentFilter, startUTC, endUTC);
+                    applyFiltersAndSort();
                 }
 
                 setSaveButton("Save set", false);
