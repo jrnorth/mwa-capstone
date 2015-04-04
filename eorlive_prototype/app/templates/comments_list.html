@@ -12,7 +12,10 @@
             </p>
             <div>
                 {% for comment in thread.comments %}
-                    <p>{{ comment.username }} @ {{ comment.created_on }}: {{ comment.text }}</p>
+                    <p>
+                        {{ comment.username }} @ {{ comment.created_on.strftime('%Y-%m-%d %H:%M') }}:
+                        {{ comment.text }}
+                    </p>
                 {% endfor %}
             </div>
         {% endfor %}
