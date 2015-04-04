@@ -44,10 +44,17 @@
         <td>
             <select id="sort_setlist_dropdown">
                 <option value="" selected>None</option>
-                <option value="hours">Data hours (desc)</option>
-                <option value="time">Creation time (desc)</option>
+                <option value="hours">Data hrs (desc)</option>
+                <option value="time">Most recent</option>
             </select>
+        </td>
+    </tr>
+    <tr>
+        <td>
             <button type="button" onclick="applyFiltersAndSort()">Go</button>
+        </td>
+        <td>
+            <input type="checkbox" id="range_filter">In current range</input>
         </td>
     </tr>
 </table>

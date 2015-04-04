@@ -185,12 +185,14 @@ var applyFiltersAndSort = function() {
     var eor = $("#eor_setlist_dropdown").val();
     var high_low = $("#high_low_setlist_dropdown").val();
     var sort = $("#sort_setlist_dropdown").val();
+    var ranged = $("#range_filter").prop('checked');
 
     var set_controls = {
         'user': user,
         'eor': eor,
         'high_low': high_low,
-        'sort': sort
+        'sort': sort,
+        'ranged': ranged
     };
 
     var start = $("#datepicker_start").val();

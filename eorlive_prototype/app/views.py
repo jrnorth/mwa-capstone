@@ -285,6 +285,7 @@ def get_sets():
         eor = set_controls['eor']
         high_low = set_controls['high_low']
         sort = set_controls['sort']
+        ranged = set_controls['ranged']
 
         query = models.Set.query
 
@@ -297,6 +298,15 @@ def get_sets():
         if high_low:
             query = query.filter(models.Set.low_or_high == high_low) # high_low is 'high' or 'low', which are the
                                                                      # values used in the DB
+
+        if ranged:
+            start_utc = request_content['starttime']
+            end_utc = request_content['endtime']
+            start_datetime = datetime.strptime(start_utc, '%Y-%m-%dT%H:%M:%SZ')
+            end_datetime = datetime.strptime(end_utc, '%Y-%m-%dT%H:%M:%SZ')
+            start_gps, end_gps = db_utils.get_gps_from_datetime(start_datetime, end_datetime)
+            query = query.filter(and_(models.Set.start >= start_gps,
+                                    models.Set.end <= end_gps))
 
         if sort:
             if sort == 'hours':
