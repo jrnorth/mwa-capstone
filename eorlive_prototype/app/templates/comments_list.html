@@ -1,21 +1,22 @@
 <div id="comments_list" class="collapse-container">
     {% if threads | length > 0 %}
         {% for thread in threads %}
-            <h3>
+            <p>
                 <span class="arrow-r"></span>
-                {{ thread.title }} by {{ thread.username }} at {{ thread.created_on }}
+                {{ thread.title }} ({{ thread.comments | length }} replies,
+                last updated {{ thread.last_updated.strftime('%Y-%m-%d %H:%M') }})
                 {% if g.user and g.user.is_authenticated() %}
                 <button type="button" class="replyButton" onclick="reply(event, '{{thread.id}}', '{{thread.title}}')">
                     Reply
                 </button>
                 {% endif %}
-            </h3>
+            </p>
             <div>
                 {% for comment in thread.comments %}
-                    <h4>
-                        {{ comment.username }} @ {{ comment.created_on }}
-                    </h4>
-                    <p>{{ comment.text }}</p>
+                    <p>
+                        {{ comment.username }} @ {{ comment.created_on.strftime('%Y-%m-%d %H:%M') }}:
+                        {{ comment.text }}
+                    </p>
                 {% endfor %}
             </div>
         {% endfor %}

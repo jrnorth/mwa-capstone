@@ -93,13 +93,6 @@ h2              { font-size: 1.2em; }
     width: 20%;
 }
 
-.comments_class
-{
-    padding: 10px;
-    border-style: solid;
-    border-width: 2px;
-}
-
 .arrow-r {
     width: 0;
     height: 0;
@@ -144,6 +137,7 @@ h2              { font-size: 1.2em; }
 }
 .collapse-container>:nth-child(even) p {
     padding: 0px 5px;
+    color: #000;
 }
 
 .collapse-container>:nth-child(odd):hover {
@@ -160,7 +154,7 @@ h2              { font-size: 1.2em; }
     border-radius: 0px 0px 3px 3px;
 }
 
-.collapse-container h1, .collapse-container h2, .collapse-container h3 {
+.collapse-container p {
     color: #f9f9f9;
 }
 
