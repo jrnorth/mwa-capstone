@@ -1,10 +1,11 @@
 from flask import render_template, g, make_response, request
 from app.flask_app import app, db
 from app import models
+from datetime import datetime
 
 @app.route('/get_all_comments')
 def get_all_comments():
-    threads = models.Thread.query.all()
+    threads = models.Thread.query.order_by(models.Thread.last_updated.desc()).all()
 
     for thread in threads:
         thread.comments = models.Comment.query.filter(models.Comment.thread_id == thread.id).all()
@@ -22,6 +23,11 @@ def thread_reply():
         new_comment.text = text
         new_comment.username = g.user.username
         db.session.add(new_comment)
+
+        thread = models.Thread.query.filter(models.Thread.id == thread_id).first()
+        thread.last_updated = datetime.utcnow()
+        db.session.add(thread)
+
         db.session.commit()
         return make_response("Success", 200)
     else:

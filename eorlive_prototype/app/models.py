@@ -90,6 +90,7 @@ class Thread(db.Model):
     title = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(32), db.ForeignKey('user.username'))
     created_on = db.Column(db.DateTime, default=datetime.utcnow)
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
