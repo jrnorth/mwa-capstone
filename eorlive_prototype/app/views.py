@@ -281,23 +281,15 @@ def get_sets():
     if (g.user is not None and g.user.is_authenticated()):
         request_content = request.get_json()
         set_controls = request_content['set_controls']
-        filter_type = set_controls['filter']
+        username = set_controls['user']
         eor = set_controls['eor']
         high_low = set_controls['high_low']
         sort = set_controls['sort']
 
         query = models.Set.query
 
-        if filter_type:
-            if filter_type == 'yours':
-                query = query.filter(models.Set.username == g.user.username)
-            elif filter_type == 'filter_within_cur':
-                startUTC = request_content['starttime']
-                endUTC = request_content['endtime']
-                start_datetime = datetime.strptime(startUTC, '%Y-%m-%dT%H:%M:%SZ')
-                end_datetime = datetime.strptime(endUTC, '%Y-%m-%dT%H:%M:%SZ')
-                start_gps, end_gps = db_utils.get_gps_from_datetime(start_datetime, end_datetime)
-                query = query.filter(and_(models.Set.start >= start_gps, models.Set.end <= end_gps))
+        if username:
+            query = query.filter(models.Set.username == username)
 
         if eor:
             query = query.filter(models.Set.eor == eor) # eor is 'EOR0' or 'EOR1', which are the values used in the DB
