@@ -3,7 +3,8 @@
         {% for thread in threads %}
             <p>
                 <span class="arrow-r"></span>
-                {{ thread.title }} by {{ thread.username }} at {{ thread.created_on }}
+                {{ thread.title }} ({{ thread.comments | length }} replies,
+                last updated {{ thread.last_updated.strftime('%Y-%m-%d %H:%M') }})
                 {% if g.user and g.user.is_authenticated() %}
                 <button type="button" class="replyButton" onclick="reply(event, '{{thread.id}}', '{{thread.title}}')">
                     Reply
