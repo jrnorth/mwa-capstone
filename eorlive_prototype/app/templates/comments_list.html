@@ -1,7 +1,7 @@
 <div id="comments_list" class="collapse-container">
     {% if threads | length > 0 %}
         {% for thread in threads %}
-            <h3>
+            <p>
                 <span class="arrow-r"></span>
                 {{ thread.title }} by {{ thread.username }} at {{ thread.created_on }}
                 {% if g.user and g.user.is_authenticated() %}
@@ -9,13 +9,10 @@
                     Reply
                 </button>
                 {% endif %}
-            </h3>
+            </p>
             <div>
                 {% for comment in thread.comments %}
-                    <h4>
-                        {{ comment.username }} @ {{ comment.created_on }}
-                    </h4>
-                    <p>{{ comment.text }}</p>
+                    <p>{{ comment.username }} @ {{ comment.created_on }}: {{ comment.text }}</p>
                 {% endfor %}
             </div>
         {% endfor %}
