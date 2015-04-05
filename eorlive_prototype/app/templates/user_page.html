@@ -57,7 +57,8 @@
     {% for user in userList %}
         {% if user %}
             <tr class="rowClass userRow">
-                <td class="cellClass userCell"> {{ user.username }} </td>
+                <td class="cellClass userCell"> {{ user.username }} <br> {{ user.first_name }} {{ user.last_name }} 
+                    <br> {{ user.email }} </td>
                 <td class="cellClass userCell">
                     {% for set in setList %}
                         {% if set %}
