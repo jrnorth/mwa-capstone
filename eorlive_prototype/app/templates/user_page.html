@@ -3,6 +3,8 @@
 
 <script>
     function callback(value, username) {
+        $('#delete_user_button').html("Working");
+
         if (value == 1) {
             $.ajax({
                 type: "POST",
@@ -35,7 +37,7 @@
         $("#dialog-confirm").dialog({
             resizable: false,
             modal: true,
-            title: "Modal",
+            title: "Delete User",
             height: 400,
             width: 400,
             buttons: {
@@ -54,13 +56,14 @@
         });
     }
 </script>
-
-<table class="tableClass user">
+<h2>Users</h2>
+<br>
+<table class="table table-striped table-bordered">
     <tr class="rowClass userRow">
         <td class="cellClass userCell">Username</td>
         <td class="cellClass userCell">Sets</td>
         {% if theUser.admin %}
-            <td class"cellClass userCell">Delete</td>
+            <td class="cellClass userCell">Delete</td>
         {% endif %}
     </tr>
     {% for user in userList %}
@@ -81,6 +84,8 @@
                     {% if theUser.admin %}
                         <td class="cellClass userCell"> <button type="button" id="delete_user_button" onclick="deleteUser('{{ user.username }}')">Delete User</button></td>
                     {% endif %}
+                {% else %}
+                    <td class="cellClass userCell"> </td>
                 {% endif %}
             </tr>
         {% endif %}
