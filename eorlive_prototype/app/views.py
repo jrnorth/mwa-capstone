@@ -332,10 +332,9 @@ def delete_user():
             theSet = models.Set.query.filter(models.Set.id == aSet.id).first()
             if action == 'transfer':
                 theSet.username = g.user.username
-                db.session.commit()
             else: #destroy, cascade deletion
                 db.session.delete(theSet)
-                db.session.commit()
+            db.session.commit()
 
         u = models.User.query.filter(models.User.username == username).first()
 
