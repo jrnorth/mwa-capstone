@@ -2,31 +2,19 @@
 {% block body %}
 
 <script>
-    function callback(value, username) {
+    function deleteHelper(action, username) {
         $('#delete_user_button').html("Working");
 
-        if (value == 1) {
-            $.ajax({
-                type: "POST",
-                url: "/delete_user",
-                data: {'username': username, 'action': 'transfer'},
-                success: function(data) {
-                    document.write(data);
-                },
-                dataType: "html"
-            });
-        }
-        else if (value == 2) {
-            $.ajax({
-                type: "POST",
-                url: "/delete_user",
-                data: {'username': username, 'action': 'destroy'},
-                success: function(data) {
-                    document.write(data);
-                },
-                dataType: "html"
-            });
-        }
+        
+        $.ajax({
+            type: "POST",
+            url: "/delete_user",
+            data: {'username': username, 'action': action},
+            success: function(data) {
+                document.write(data);
+            },
+            dataType: "html"
+        });
     }
 
     function deleteUser(username) {
@@ -43,11 +31,11 @@
             buttons: {
                 "Delete user and transfer sets": function () {
                     $(this).dialog('close');
-                    callback(1, username);
+                    deleteHelper('transfer', username);
                 },
                 "Delete user and destroy sets forever": function () {
                     $(this).dialog('close');
-                    callback(2, username);
+                    deleteHelper('destroy', username);
                 },
                 "Don't delete": function () {
                     $(this).dialog('close');
