@@ -320,6 +320,30 @@ def user_page():
     else:
         return redirect(url_for('login'))
 
+@app.route('/delete_user', methods=['POST'])
+def delete_user():
+    if (g.user is not None and g.user.is_authenticated()):
+        username = request.form['username']
+        action = request.form['action']
+
+        setList = models.Set.query.filter(models.Set.username == username)
+
+        for aSet in setList:
+            theSet = models.Set.query.filter(models.Set.id == aSet.id).first()
+            if action == 'transfer':
+                theSet.username = g.user.username
+                db.session.commit()
+            else: #destroy, cascade deletion
+                db.session.delete(theSet)
+                db.session.commit()
+
+        u = models.User.query.filter(models.User.username == username).first()
+
+        db.session.delete(u)
+        db.session.commit()
+
+        return redirect(url_for('user_page'))
+
 @app.route('/get_sets', methods = ['POST'])
 def get_sets():
     if (g.user is not None and g.user.is_authenticated()):
