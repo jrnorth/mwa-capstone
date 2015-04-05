@@ -109,15 +109,6 @@ function abortRequestIfPending(request) {
 function getObservations(loadTab) {
     window.dataSummaryTableRequest = abortRequestIfPending(window.dataSummaryTableRequest);
 
-    // Load the first tab if it's not already being loaded.
-    if (loadTab) {
-        $("#tabs").tabs("option", "active", 0);
-        $("#tabs > ul > li").each(function(index) {
-            $(this).data("loaded", false);
-        });
-        $("#tabs").tabs("load", 0);
-    }
-
     var start = $("#datepicker_start").val();
     var end = $("#datepicker_end").val();
     re = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/;
@@ -136,6 +127,15 @@ function getObservations(loadTab) {
     } else {
         alert("Invalid datetime format: " + end);
         return;
+    }
+
+    // Load the first tab if it's not already being loaded.
+    if (loadTab) {
+        $("#tabs").tabs("option", "active", 0);
+        $("#tabs > ul > li").each(function(index) {
+            $(this).data("loaded", false);
+        });
+        $("#tabs").tabs("load", 0);
     }
 
     $("#summary_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
