@@ -286,7 +286,7 @@ def signup():
             new_user = models.User(username, hashlib.sha512(real_pass).hexdigest(), email, fname, lname)
             db.session.add(new_user)
             db.session.flush()
-            db.session.refresh(new_user) # So we can get the new thread's id
+            db.session.refresh(new_user)
             db.session.commit()
 
             u = models.User.query.get(username)
