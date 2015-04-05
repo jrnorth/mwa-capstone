@@ -245,3 +245,8 @@ def data_summary_table():
         low_eor1_count=low_eor1_count, high_eor1_count=high_eor1_count,
         low_eor0_hours=low_eor0_hours, high_eor0_hours=high_eor0_hours,
         low_eor1_hours=low_eor1_hours, high_eor1_hours=high_eor1_hours)
+
+@app.route('/get_filters')
+def get_filters():
+    users = models.User.query.all()
+    return render_template("filters.html", users=users)

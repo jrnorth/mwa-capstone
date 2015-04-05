@@ -74,6 +74,18 @@ $(function() {
         }
     });
 
+    $("#filter_dropdown_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+    $.ajax({
+        type: "GET",
+        url: "/get_filters",
+        success: function(data) {
+            $("#filter_dropdown_div").html(data);
+            applyFiltersAndSort();
+        },
+        dataType: "html"
+    });
+
     getObservations(false /* Don't load the first tab, it's already being loaded */);
     getComments();
 });
@@ -95,7 +107,6 @@ function abortRequestIfPending(request) {
 };
 
 function getObservations(loadTab) {
-    window.setRequest = abortRequestIfPending(window.setRequest);
     window.dataSummaryTableRequest = abortRequestIfPending(window.dataSummaryTableRequest);
 
     // Load the first tab if it's not already being loaded.
@@ -140,10 +151,8 @@ function getObservations(loadTab) {
         success: function(data) {
             $("#summary_table").html(data);
         },
-        dataTpe: "html"
+        dataType: "html"
     });
-
-    applyFiltersAndSort();
 };
 
 function getComments() {
@@ -172,16 +181,18 @@ function getDate(datestr) {
 };
 
 var applyFiltersAndSort = function() {
-    var filter = $("#filter_setlist_dropdown").val();
+    var user = $("#user_setlist_dropdown").val();
     var eor = $("#eor_setlist_dropdown").val();
     var high_low = $("#high_low_setlist_dropdown").val();
     var sort = $("#sort_setlist_dropdown").val();
+    var ranged = $("#range_filter").prop('checked');
 
     var set_controls = {
-        'filter': filter,
+        'user': user,
         'eor': eor,
         'high_low': high_low,
-        'sort': sort
+        'sort': sort,
+        'ranged': ranged
     };
 
     var start = $("#datepicker_start").val();

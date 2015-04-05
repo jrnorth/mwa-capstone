@@ -45,59 +45,7 @@
             <td class="right_cell cellClass cellTop">
                 <div id="summary_table"></div>
                 <h3>Data Sets</h3>
-                <div id="filter_dropdown_div" style="vertical-align:top;">
-                    <table>
-                        <tr>
-                            <td>
-                                Filter sets:
-                            </td>
-                            <td>
-                                <select id="filter_setlist_dropdown">
-                                    <option value="" selected>All</option>
-                                    <option value="yours">Your sets</option>
-                                    <option value="filter_within_cur">Contained within current range</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                EOR0/EOR1:
-                            </td>
-                            <td>
-                                <select id="eor_setlist_dropdown">
-                                    <option value="" selected>All</option>
-                                    <option value="EOR0">EOR0</option>
-                                    <option value="EOR1">EOR1</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                High/Low:
-                            </td>
-                            <td>
-                                <select id="high_low_setlist_dropdown">
-                                    <option value="" selected>All</option>
-                                    <option value="high">High</option>
-                                    <option value="low">Low</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Sort:
-                            </td>
-                            <td>
-                                <select id="sort_setlist_dropdown">
-                                    <option value="" selected>None</option>
-                                    <option value="hours">Data hours (desc)</option>
-                                    <option value="time">Creation time (desc)</option>
-                                </select>
-                                <button type="button" onclick="applyFiltersAndSort()">Go</button>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+                <div id="filter_dropdown_div" class="cellTop"></div>
                 <div id='set_list_div' class='set_list'></div>
             </td>
         </tr>

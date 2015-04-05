@@ -38,31 +38,20 @@
     </tr>
 </table>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="../static/js/setsAndComments.js"></script>
 <script>
     var low_or_high = 'high';
     var eor = 'EOR0';
 
     var set_controls = {
-        'filter': 'yours',
+        'user': '{{user.username}}',
         'eor': '',
         'high_low': '',
-        'sort': ''
+        'sort': '',
+        'ranged': false
     };
 
-    $(function() {
-        $.ajax({
-            type: 'POST',
-            url: '/get_sets',
-            data: JSON.stringify({
-                'set_controls': set_controls
-            }),
-            success: function(data) {
-                $("#set_list_div").html(data);
-            },
-            contentType: 'application/json',
-            dataType: "html"
-        });
-    });
+    $(renderSets(set_controls, '', ''));
 
     function deleteSetHelper(setName) {
         if (confirm('Are you sure you want to delete ' + setName + '?')) {
