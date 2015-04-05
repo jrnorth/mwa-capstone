@@ -54,14 +54,14 @@ class Set(db.Model):
 
 class FlaggedSubset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    set_id = db.Column(db.Integer, db.ForeignKey('set.id'))
+    set_id = db.Column(db.Integer, db.ForeignKey('set.id', ondelete="CASCADE"))
     start = db.Column(db.Integer)
     end = db.Column(db.Integer)
 
 class FlaggedObsIds(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     obs_id = db.Column(db.Integer)
-    flagged_subset_id = db.Column(db.Integer, db.ForeignKey('flagged_subset.id'))
+    flagged_subset_id = db.Column(db.Integer, db.ForeignKey('flagged_subset.id', ondelete="CASCADE"))
 
 class GraphData(db.Model):
     # AUTO_INCREMENT is automatically set on the first Integer primary key column that is not marked as a foreign key.
