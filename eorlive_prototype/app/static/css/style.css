@@ -57,9 +57,9 @@ h2              { font-size: 1.2em; }
                   color: #fff; padding-left: 10px; }
 .nav_right      { text-align: right; float: right; padding-right: 10px;
                   padding-top: 2px; color: #fff; }
-.nav_right a:link    { color: #fff; }
-.nav_right a:visited { color: #fff; }
-.nav_right a:hover   { color: #cacaca; }
+.metanav a:link    { color: #fff; }
+.metanav a:visited { color: #fff; }
+.metanav a:hover   { color: #cacaca; }
 
 .tableClass {
     display: table;
