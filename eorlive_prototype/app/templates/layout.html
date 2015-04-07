@@ -16,10 +16,12 @@
             <span class='nav_right'>
                 <a href="{{ url_for('index') }}">home</a> |
                 {% if not g.user.is_authenticated() %}
-                <a href="{{ url_for('login') }}">log in</a>
+                <a href="{{ url_for('login') }}">log in</a> |
+                <a href="{{ url_for('signup') }}">sign up</a>
                 {% else %}
                 <span>logged in as {{ g.user.username }} | </span>
                 <span><a href="{{ url_for('profile') }}">profile</a> | </span>
+                <a href="{{ url_for('user_page') }}">users</a> |
                 <a href="{{ url_for('logout') }}">log out</a>
                 {% endif %}
             </span>
