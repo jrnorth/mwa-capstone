@@ -10,10 +10,10 @@ $(function() {
     startDatePicker.datetimepicker();
     endDatePicker.datetimepicker();
 
-    var isStartDate = startDatePicker.val().length !== 0;
-    var isEndDate = endDatePicker.val().length !== 0;
-
-    if (!isStartDate || !isEndDate) {
+    if (sessionStorage.startDate && sessionStorage.endDate) {
+        startDatePicker.val(sessionStorage.startDate);
+        endDatePicker.val(sessionStorage.endDate);
+    } else {
         var now = new Date();
         var nowStr = getDateTimeString(now);
 
@@ -21,10 +21,11 @@ $(function() {
         var yesterday = new Date(now.getTime() - MS_PER_DAY);
         var yesterdayStr = getDateTimeString(yesterday);
 
-        if (!isStartDate)
-            startDatePicker.val(yesterdayStr);
-        if (!isEndDate)
-            endDatePicker.val(nowStr);
+        startDatePicker.val(yesterdayStr);
+        endDatePicker.val(nowStr);
+
+        sessionStorage.startDate = yesterdayStr;
+        sessionStorage.endDate = nowStr;
     }
 
     //global ajax vars
@@ -112,6 +113,10 @@ function getObservations(loadTab) {
     var start = $("#datepicker_start").val();
     var end = $("#datepicker_end").val();
     re = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}$/;
+
+    // Update the sessionStorage
+    sessionStorage.startDate = start;
+    sessionStorage.endDate = end;
 
     var startDate, endDate;
 

@@ -6,19 +6,9 @@
             <td class="cellClass cellTop">
                 <div id='date_controls'>
                     <span>Range start:</span>
-                    {% if starttime %}
-                    <input type='text' id='datepicker_start' value='{{starttime}}'
-                    {% else %}
-                    <input type='text' id='datepicker_start'
-                    {% endif %}
-                    autocomplete='off'/>
+                    <input type='text' id='datepicker_start' autocomplete='off'/>
                     <span>Range end:</span>
-                    {% if endtime %}
-                    <input type='text' id='datepicker_end' value='{{endtime}}'
-                    {% else %}
-                    <input type='text' id='datepicker_end'
-                    {% endif %}
-                    autocomplete='off'/>
+                    <input type='text' id='datepicker_end' autocomplete='off'/>
                     <button onclick="getObservations(true)">Get observations</button>
                 </div>
                 <div id='observations_main'></div>

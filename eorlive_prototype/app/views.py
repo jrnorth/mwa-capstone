@@ -48,7 +48,7 @@ def index(setName = None):
                 eor=theSet.eor, creator=theSet.username, total_data_hrs=theSet.total_data_hrs,
                 flagged_data_hrs=theSet.flagged_data_hrs)
     else: #original case in index
-        return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
+        return render_template('index.html')
 
 @app.route('/data_amount', methods = ['GET'])
 def data_amount():
