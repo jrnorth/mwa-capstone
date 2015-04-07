@@ -69,12 +69,12 @@
                         {% endif %}
                     {% endfor %}
                 </td>
-                {% if theUser.username != user.username %}
-                    {% if theUser.admin %}
+                {% if theUser.admin %}
+                    {% if theUser.username != user.username %}
                         <td class="cellClass userCell"> <button type="button" id="delete_user_button" onclick="deleteUser('{{ user.username }}')">Delete User</button></td>
+                    {% else %}
+                        <td class="cellClass userCell"> </td>
                     {% endif %}
-                {% else %}
-                    <td class="cellClass userCell"> </td>
                 {% endif %}
             </tr>
         {% endif %}
