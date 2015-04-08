@@ -1,0 +1,18 @@
+{% block content %}
+<div id="{{data_source_str}}"></div>
+<script>
+    {% for series in graph_data %}
+        var {{ series }} = {{ graph_data[series] | tojson }};
+    {% endfor %}
+
+    var plotBands = {{ plot_bands | tojson }};
+
+    $("#{{data_source_str}}").highcharts('StockChart',
+        {% include template_name %}
+    , function (chart) {
+        for (var i = 0; i < plotBands.length; ++i) {
+            chart.xAxis[0].addPlotBand(plotBands[i]);
+        }
+    });
+</script>
+{% endblock %}

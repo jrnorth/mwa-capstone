@@ -53,20 +53,11 @@ $(function() {
 
             ui.panel.html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
-            var startTimeStr = $("#datepicker_start").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
-            var endTimeStr = $("#datepicker_end").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
-
-            var index = ui.tab.index();
-            switch (index) {
-                case 0:
-                    var url = "/histogram_data?starttime=" + startTimeStr + "&endtime=" + endTimeStr;
-                    ui.ajaxSettings.url = url;
-                    break;
-                case 1:
-                    var url = "/qs_data?starttime=" + startTimeStr + "&endtime=" + endTimeStr;
-                    ui.ajaxSettings.url = url;
-                    break;
-            };
+            if (ui.ajaxSettings.url.search("&set=") === -1) { // There is no set, so we need to add the date range.
+                var startTimeStr = $("#datepicker_start").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
+                var endTimeStr = $("#datepicker_end").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
+                ui.ajaxSettings.url += "&start=" + startTimeStr + "&end=" + endTimeStr;
+            }
 
             ui.jqXHR.success(function() {
                 ui.tab.data("loaded", true);
@@ -135,7 +126,16 @@ function getObservations(loadTab) {
         $("#tabs > ul > li").each(function(index) {
             $(this).data("loaded", false);
         });
+        $("#tabs > ul > li > a").each(function(index) {
+            var url = $(this).attr("href");
+            var shortUrl = url.split("&").slice(0, 2).join("&");
+            $(this).attr("href", shortUrl);
+        });
         $("#tabs").tabs("load", 0);
+    }
+
+    if (loadTab) { // The user pressed the "Get observations" button, so they're viewing a date range now.
+        $("#set_or_date_range_label").html("date range");
     }
 
     $("#summary_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");

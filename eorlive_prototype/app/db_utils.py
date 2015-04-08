@@ -1,6 +1,9 @@
 from flask import g
 from datetime import datetime
 from requests_futures.sessions import FuturesSession
+from app import models
+import psycopg2
+import os
 
 def send_query(db, query):
     cur = db.cursor()
@@ -68,3 +71,54 @@ def get_datetime_from_gps(start_gps, end_gps):
     end_datetime = datetime.strptime(future_end.result().content.decode('utf-8'), '"%Y-%m-%dT%H:%M:%S"')
 
     return (start_datetime, end_datetime)
+
+def build_query(data_source):
+    query = "SELECT "
+
+    query += data_source.obs_column
+
+    columns = models.GraphDataSourceColumn.query.filter(
+        models.GraphDataSourceColumn.graph_data_source == data_source.name).all()
+
+    for column in columns:
+        query += ", " + column.name
+
+    query += " FROM " + data_source.table
+    query += " WHERE "
+
+    query += data_source.obs_column + " >= {} AND "
+    query += data_source.obs_column + " <= {} "
+
+    query += " AND projectid='G0009' " if data_source.projectid else ""
+
+    query += " ORDER BY " + data_source.obs_column + " ASC"
+
+    return (query, columns)
+
+def get_graph_data(data_source_str, start_gps, end_gps):
+    data_source = models.GraphDataSource.query.filter(models.GraphDataSource.name == data_source_str).first()
+
+    query, columns = build_query(data_source)
+
+    db_conn = psycopg2.connect(database=data_source.database, host=data_source.host,
+        user=os.environ['MWA_DB_USERNAME'], password=os.environ['MWA_DB_PW'])
+
+    results = send_query(db_conn, query.format(start_gps, end_gps)).fetchall()
+
+    db_conn.close()
+
+    # Initialize empty data structure
+    data = {}
+    for column in columns:
+        data[column.name] = []
+
+    GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = get_gps_utc_constants()
+
+    for row in results:
+                            # Actual UTC time of the observation (for the graph)
+        utc_millis = int((row[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
+        for column_index in range(1, len(row) - 1): # Each row is a tuple that has an empty element at the end.
+            if row[column_index] is not None:
+                data[columns[column_index - 1].name].append([utc_millis, row[column_index]])
+
+    return data

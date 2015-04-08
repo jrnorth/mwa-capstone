@@ -6,30 +6,50 @@
             <td class="cellClass cellTop">
                 <div id='date_controls'>
                     <span>Range start:</span>
-                    {% if starttime %}
-                    <input type='text' id='datepicker_start' value='{{starttime}}'
+                    {% if the_set %}
+                    <input type='text' id='datepicker_start' value='{{start_time_str_short}}'
                     {% else %}
                     <input type='text' id='datepicker_start'
                     {% endif %}
                     autocomplete='off'/>
                     <span>Range end:</span>
-                    {% if endtime %}
-                    <input type='text' id='datepicker_end' value='{{endtime}}'
+                    {% if the_set %}
+                    <input type='text' id='datepicker_end' value='{{end_time_str_short}}'
                     {% else %}
                     <input type='text' id='datepicker_end'
                     {% endif %}
                     autocomplete='off'/>
                     <button onclick="getObservations(true)">Get observations</button>
+                    You are viewing a
+                    <span id="set_or_date_range_label">
+                    {% if the_set %}
+                     set ({{the_set.name}})
+                    {% else %}
+                     date range
+                    {% endif %}
+                    </span>
                 </div>
                 <div id='observations_main'></div>
                 <br>
                 <div id='tabs'>
                     <ul>
                         <li>
-                            <a href="">Obs &amp; Err</a>
+                            {% if the_set %}
+                            <a href="/get_graph?graphType=Obs_Err&dataSource=Obs_Err&set={{the_set.name}}">
+                            {% else %}
+                            <a href="/get_graph?graphType=Obs_Err&dataSource=Obs_Err">
+                            {% endif %}
+                                Obs &amp; Err
+                            </a>
                         </li>
                         <li>
-                            <a href="">QS</a>
+                            {% if the_set %}
+                            <a href="/get_graph?graphType=Line&dataSource=QS&set={{the_set.name}}">
+                            {% else %}
+                            <a href="/get_graph?graphType=Line&dataSource=QS">
+                            {% endif %}
+                                QS
+                            </a>
                         </li>
                     </ul>
                 </div>

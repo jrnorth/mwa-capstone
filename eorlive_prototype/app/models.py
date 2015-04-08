@@ -98,3 +98,20 @@ class Comment(db.Model):
     text = db.Column(db.String(1000), nullable=False)
     username = db.Column(db.String(32), db.ForeignKey('user.username'))
     created_on = db.Column(db.DateTime, default=datetime.utcnow)
+
+class GraphType(db.Model):
+    name = db.Column(db.String(100), primary_key=True)
+
+class GraphDataSource(db.Model):
+    name = db.Column(db.String(100), primary_key=True)
+    graph_type = db.Column(db.String(100), db.ForeignKey('graph_type.name'))
+    host = db.Column(db.String(100))
+    database = db.Column(db.String(100))
+    table = db.Column(db.String(100))
+    obs_column = db.Column(db.String(100)) # Which column has the observation ids.
+    projectid = db.Column(db.Boolean) # Whether the table has a projectid field.
+
+class GraphDataSourceColumn(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    graph_data_source = db.Column(db.String(100), db.ForeignKey('graph_data_source.name'))
+    name = db.Column(db.String(100))

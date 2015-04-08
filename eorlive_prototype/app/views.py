@@ -15,40 +15,83 @@ import os
 @app.route('/index/set/<setName>')
 @app.route('/set/<setName>')
 def index(setName = None):
-    # GET is the default request method.
-    # Since we're using GET, we have to access arguments by request.args.get() rather than request.form[]
     if setName is not None:
-        theSet = models.Set.query.filter(models.Set.name == setName).first()
+        the_set = models.Set.query.filter(models.Set.name == setName).first()
 
-        if theSet is None:
-            return render_template('index.html')
+        if the_set is not None:
+            start_datetime, end_datetime = db_utils.get_datetime_from_gps(
+                the_set.start, the_set.end)
+            start_time_str_full = start_datetime.strftime('%Y-%m-%d %H:%M:%S')
+            end_time_str_full = end_datetime.strftime('%Y-%m-%d %H:%M:%S')
+            start_time_str_short = start_datetime.strftime('%Y/%m/%d %H:%M')
+            end_time_str_short = end_datetime.strftime('%Y/%m/%d %H:%M')
 
-        observation_counts = histogram_utils.get_observation_counts(theSet.start, theSet.end,
-            theSet.low_or_high, theSet.eor)
-        error_counts = histogram_utils.get_error_counts(theSet.start, theSet.end)[0]
-        plot_bands = histogram_utils.get_plot_bands(theSet)
+            return render_template('index.html', the_set=the_set,
+                start_time_str_full=start_time_str_full,
+                end_time_str_full=end_time_str_full,
+                start_time_str_short=start_time_str_short,
+                end_time_str_short=end_time_str_short)
 
-        start_datetime, end_datetime = db_utils.get_datetime_from_gps(theSet.start, theSet.end)
+    return render_template('index.html')
 
-        formatted_start = start_datetime.strftime('%Y-%m-%d %H:%M:%S')
-        formatted_end = end_datetime.strftime('%Y-%m-%d %H:%M:%S')
+@app.route('/get_graph')
+def get_graph():
+    graph_type_str = request.args.get('graphType')
+    if graph_type_str is None:
+        return make_response('No graph type', 500)
 
-        if (g.user is not None and g.user.is_authenticated()):
-            return render_template('setView.html', setName=theSet.name, set_id=theSet.id,
-                setStart=theSet.start, setEnd=theSet.end, observation_counts=observation_counts,
-                error_counts=error_counts, plot_bands=plot_bands, range_end=theSet.end,
-                formatted_start=formatted_start, formatted_end=formatted_end,
-                low_or_high=theSet.low_or_high, eor=theSet.eor, creator=theSet.username,
-                total_data_hrs=theSet.total_data_hrs, flagged_data_hrs=theSet.flagged_data_hrs)
-        else: #logged out view
-            return render_template('setView.html', setName=theSet.name, set_id=theSet.id, setStart=theSet.start,
-                setEnd=theSet.end, logged_out=True, observation_counts=observation_counts, error_counts=error_counts,
-                plot_bands=plot_bands, range_end=theSet.end, formatted_start=formatted_start,
-                formatted_end=formatted_end, low_or_high=theSet.low_or_high,
-                eor=theSet.eor, creator=theSet.username, total_data_hrs=theSet.total_data_hrs,
-                flagged_data_hrs=theSet.flagged_data_hrs)
-    else: #original case in index
-        return render_template('index.html', starttime=request.args.get('starttime'), endtime=request.args.get('endtime'))
+    data_source_str = request.args.get('dataSource')
+    if data_source_str is None:
+        return make_response('No data source', 500)
+
+    set_str = request.args.get('set')
+
+    template_name = "js/" + graph_type_str.lower() + ".js"
+
+    if set_str is None: # There should be a date range instead.
+        start_time_str = request.args.get('start')
+        end_time_str = request.args.get('end')
+        if start_time_str is None or end_time_str is None:
+            return make_response('No date range specified', 500)
+
+        start_datetime = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M:%SZ')
+
+        end_datetime = datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M:%SZ')
+
+        start_gps, end_gps = db_utils.get_gps_from_datetime(start_datetime, end_datetime)
+
+        if graph_type_str == 'Obs_Err':
+            return histogram_utils.get_obs_err_histogram(start_gps, end_gps,
+                start_time_str, end_time_str)
+        else:
+            graph_data = db_utils.get_graph_data(data_source_str, start_gps, end_gps)
+            return render_template('graph.html', graph_type_str=graph_type_str.lower(),
+                data_source_str=data_source_str, graph_data=graph_data,
+                plot_bands=[], template_name=template_name)
+    else:
+        the_set = models.Set.query.filter(models.Set.name == set_str).first()
+        if the_set is None:
+            return make_response('Set not found', 500)
+
+        plot_bands = histogram_utils.get_plot_bands(the_set)
+
+        if graph_type_str == 'Obs_Err':
+            observation_counts = histogram_utils.get_observation_counts(
+                the_set.start, the_set.end, the_set.low_or_high, the_set.eor)
+            error_counts = histogram_utils.get_error_counts(the_set.start, the_set.end)[0]
+            start_datetime, end_datetime = db_utils.get_datetime_from_gps(
+                the_set.start, the_set.end)
+            start_time_str_full = start_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+            end_time_str_full = end_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+            return render_template('setView.html', the_set=the_set,
+                observation_counts=observation_counts, error_counts=error_counts,
+                plot_bands=plot_bands, start_time_str_full=start_time_str_full,
+                end_time_str_full=end_time_str_full)
+        else:
+            graph_data = db_utils.get_graph_data(data_source_str, the_set.start, the_set.end)
+            return render_template('graph.html', graph_type_str=graph_type_str.lower(),
+                data_source_str=data_source_str, graph_data=graph_data, plot_bands=plot_bands,
+                template_name=template_name)
 
 @app.route('/data_amount', methods = ['GET'])
 def data_amount():
@@ -68,74 +111,6 @@ def data_amount():
 
     return render_template('data_amount_table.html', hours_scheduled=hours_scheduled, hours_observed=hours_observed,
         hours_with_data=hours_with_data, hours_with_uvfits=hours_with_uvfits, data_time=data_time)
-
-@app.route('/histogram_data', methods = ['GET'])
-def histogram_data():
-    start_time = request.args.get('starttime')
-    end_time = request.args.get('endtime')
-
-    startdatetime = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%SZ')
-
-    enddatetime = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%SZ')
-
-    start_gps, end_gps = db_utils.get_gps_from_datetime(startdatetime, enddatetime)
-
-    response = db_utils.send_query(g.eor_db, '''SELECT starttime, stoptime, obsname, ra_phase_center
-                    FROM mwa_setting
-                    WHERE starttime >= {} AND starttime <= {}
-                    AND projectid='G0009'
-                    ORDER BY starttime ASC'''.format(start_gps, end_gps)).fetchall()
-
-    low_eor0_counts = []
-
-    high_eor0_counts = []
-
-    low_eor1_counts = []
-
-    high_eor1_counts = []
-
-    error_counts, error_count = histogram_utils.get_error_counts(start_gps, end_gps)
-
-    utc_obsid_map_l0 = []
-    utc_obsid_map_l1 = []
-    utc_obsid_map_h0 = []
-    utc_obsid_map_h1 = []
-
-    GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = db_utils.get_gps_utc_constants()
-
-    for observation in response:
-                        # Actual UTC time of the observation (for the graph)
-        utc_millis = int((observation[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
-
-        obs_name = observation[2]
-
-        try:
-            ra_phase_center = int(observation[3])
-        except TypeError as te:
-            ra_phase_center = -1
-
-        if 'low' in obs_name:
-            if ra_phase_center == 0: # EOR0
-                low_eor0_counts.append([utc_millis, 1])
-                utc_obsid_map_l0.append([utc_millis, int(observation[0])])
-            elif ra_phase_center == 60: # EOR1
-                low_eor1_counts.append([utc_millis, 1])
-                utc_obsid_map_l1.append([utc_millis, int(observation[0])])
-        elif 'high' in obs_name:
-            if ra_phase_center == 0: # EOR0
-                high_eor0_counts.append([utc_millis, 1])
-                utc_obsid_map_h0.append([utc_millis, int(observation[0])])
-            elif ra_phase_center == 60: # EOR1
-                high_eor1_counts.append([utc_millis, 1])
-                utc_obsid_map_h1.append([utc_millis, int(observation[0])])
-
-    return render_template('histogram.html',
-        low_eor0_counts=low_eor0_counts, high_eor0_counts=high_eor0_counts,
-        low_eor1_counts=low_eor1_counts, high_eor1_counts=high_eor1_counts,
-        error_counts=error_counts, utc_obsid_map_l0=utc_obsid_map_l0,
-        utc_obsid_map_l1=utc_obsid_map_l1, utc_obsid_map_h0=utc_obsid_map_h0,
-        utc_obsid_map_h1=utc_obsid_map_h1, range_start=start_time,
-        range_end=end_time)
 
 @app.route('/qs_data')
 def qs_data():

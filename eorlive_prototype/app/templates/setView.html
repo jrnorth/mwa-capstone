@@ -1,26 +1,16 @@
-{% extends "layout.html" %}
 {% block body %}
 <div id="main_content_div">
-    <div id="main_content_row">
-        <div id="left_content">
-            <h1>{{ setName }}</h1>
-            <button id='backbutton' onclick="backToHistogram()">Back to histogram</button>
-            <div id='error_table'></div>
-            <div id="set_histogram"></div>
-            <h3>Set Details</h3>
-            <p>Creator: {{ creator }}</p>
-            <p>High/Low: {{ low_or_high }}</p>
-            <p>EOR0/EOR1: {{ eor }}</p>
-            <p>Data hours: {{ total_data_hrs | round(2) }} ({{ flagged_data_hrs | round(2) }} flagged)</p>
-            <button type="button" onclick="downloadSet()">Download set</button>
-            <button type="button" onclick="goToNGAS()">NGAS Observations</button>
-        </div>
-    </div>
+    <button id='backbutton' onclick="backToHistogram()">Back to histogram</button>
+    <div id='error_table'></div>
+    <div id="obs_err"></div>
+    <h3>Set Details</h3>
+    <p>Creator: {{ the_set.username }}</p>
+    <p>High/Low: {{ the_set.low_or_high }}</p>
+    <p>EOR0/EOR1: {{ the_set.eor }}</p>
+    <p>Data hours: {{ the_set.total_data_hrs | round(2) }} ({{ the_set.flagged_data_hrs | round(2) }} flagged)</p>
+    <button type="button" onclick="downloadSet()">Download set</button>
+    <button type="button" onclick="goToNGAS()">NGAS Observations</button>
 </div>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script src="../static/js/setsAndComments.js"></script>
-<script src="http://code.highcharts.com/stock/highstock.js"></script>
-<script src="http://code.highcharts.com/stock/highcharts-more.js"></script>
 <script type="text/javascript">
     {% include "js/histogram_utils.js" %} <!-- Because there are functions that depend on Python variables -->
 </script>
@@ -38,9 +28,8 @@
     $(function() {
         $('#backbutton').hide();
         $('#error_table').hide();
-        $('#set_histogram').html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
-        $("#set_histogram").highcharts('StockChart', {
+        $("#obs_err").highcharts('StockChart', {
             colors: [
                 '#7cb5ec',
                 '#FF0000',
@@ -77,7 +66,7 @@
                                 var columnLimits = getColumnRangeLimits(event, this.xAxis.series[1]);
                                 var startTime = columnLimits.startTime, endTime = columnLimits.endTime;
 
-                                $('#set_histogram').hide();
+                                $('#obs_err').hide();
                                 $('#error_table').html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
                                 $('#error_table').show();
 
@@ -178,11 +167,11 @@
     });
 
     function goToNGAS() {
-        window.open("http://ngas01.ivec.org/admin/observation/observationsetting?projectid=G0009&startTime={{formatted_start}}&endTime={{formatted_end}}", '_blank');
+        window.open("http://ngas01.ivec.org/admin/observation/observationsetting?projectid=G0009&startTime={{start_time_str_full}}&endTime={{end_time_str_full}}", '_blank');
     };
 
     function downloadSet() {
-        window.open("/download_set?set_id={{set_id}}", '_blank');
+        window.open("/download_set?set_id={{the_set.id}}", '_blank');
     };
 </script>
 {% endblock %}
