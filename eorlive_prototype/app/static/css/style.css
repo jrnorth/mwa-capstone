@@ -57,9 +57,9 @@ h2              { font-size: 1.2em; }
                   color: #fff; padding-left: 10px; }
 .nav_right      { text-align: right; float: right; padding-right: 10px;
                   padding-top: 2px; color: #fff; }
-.nav_right a:link    { color: #fff; }
-.nav_right a:visited { color: #fff; }
-.nav_right a:hover   { color: #cacaca; }
+.metanav a:link    { color: #fff; }
+.metanav a:visited { color: #fff; }
+.metanav a:hover   { color: #cacaca; }
 
 .tableClass {
     display: table;
@@ -185,6 +185,29 @@ h2              { font-size: 1.2em; }
     margin-right: auto;
     width: 50%;
     margin-top: 10px;
+    border: 2px solid black;
+    border-collapse: collapse;
+}
+
+.user {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    margin-top: 10px;
+    border: 2px solid black;
+    border-collapse: collapse;
+}
+
+.userCell {
+    vertical-align: top;
+    padding: 10px 10px 10px 10px;
+    border: 2px solid black;
+    border-collapse: collapse;
+}
+
+.userRow {
+    vertical-align: top;
+    padding: 2px 2px 2px 2px;
     border: 2px solid black;
     border-collapse: collapse;
 }

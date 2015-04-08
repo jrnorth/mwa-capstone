@@ -19,4 +19,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder "../eorlive_prototype", "/mnt/eorlive_prototype"
 
   config.vm.provision :shell, path: "provision.sh", privileged: false
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 4096
+    v.cpus = 4
+  end
+
+  #https://stefanwrobel.com/how-to-make-vagrant-performance-not-suck
+  # Required for NFS to work, pick any local IP
+  config.vm.network :private_network, ip: '192.168.50.50'
+  # Use NFS for shared folders for better performance
+  config.vm.synced_folder '.', '/vagrant', nfs: true
 end
