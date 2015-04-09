@@ -9,6 +9,7 @@ from sqlalchemy import and_
 from datetime import datetime, timedelta
 import psycopg2
 import os
+import re
 
 @app.route('/')
 @app.route('/index')
@@ -280,6 +281,8 @@ def signup():
             error = "Passwords must be the same."
         elif testU is not None:
             error = "That username is already in use."
+        elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            error = "That email address is not correct."
         else:
             real_pass = password.encode('UTF-8')
 
