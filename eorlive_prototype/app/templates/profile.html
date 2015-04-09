@@ -14,6 +14,16 @@
             <h3>Your Sets</h3>
             <div id='set_list_div' class='set_list'></div>
         </td>
+        <td class="cellClass profileCell" rowspan="3">
+            <h3>Your Data Sources</h3>
+            <button type="button" id="change_active_data_sources"
+                onclick="changeActiveDataSources()">Update</button>
+            <div id='data_source_list' class='set_list'></div>
+        </td>
+        <td class="cellClass profileCell" rowspan="3">
+            <h3>Available Data Sources</h3>
+            <div id='unsubscribed_data_source_list' class='set_list'></div>
+        </td>
     </tr>
     <tr class="rowClass">
         <td class="cellClass profileCell">
@@ -63,7 +73,75 @@
         'ranged': false
     };
 
-    $(renderSets(set_controls, '', ''));
+    $(function() {
+        renderSets(set_controls, '', '');
+        getUsersDataSources();
+        getUnsubscribedDataSources();
+    });
+
+    function getUsersDataSources() {
+        $("#change_active_data_sources").prop('disabled', true);
+        $("#data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $.ajax({
+            type: "GET",
+            url: "/get_users_data_sources",
+            success: function(data) {
+                $("#change_active_data_sources").prop('disabled', false);
+                $("#data_source_list").html(data);
+            },
+            error: function(xhr, status, error) {
+                $("#data_source_list").html("An error occurred");
+            },
+            dataType: "html"
+        });
+    };
+
+    function changeActiveDataSources() {
+        $("#change_active_data_sources").prop('disabled', true);
+
+        var activeDataSources = [];
+        $("#data_source_list input:checked").each(function() {
+            activeDataSources.push($(this).attr('value'));
+        });
+
+        $("#data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+        $.ajax({
+            type: "POST",
+            url: "/update_active_data_sources",
+            data: JSON.stringify({
+                activeDataSources: activeDataSources
+            }),
+            success: function(data) {
+                getUsersDataSources();
+            },
+            error: function(xhr, status, error) {
+                alert("An error occurred");
+                $("#change_active_data_sources").prop('disabled', false);
+            },
+            contentType: "application/json"
+        });
+    };
+
+    function getUnsubscribedDataSources() {
+        $("#unsubscribed_data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+        $.ajax({
+            type: "GET",
+            url: "/get_unsubscribed_data_sources",
+            success: function(data) {
+                $("#unsubscribed_data_source_list").html(data);
+            },
+            error: function(xhr, status, error) {
+                $("#unsubscribed_data_source_list").html("An error occurred");
+            },
+            dataType: "html"
+        });
+    };
+
+    function subscribeToDataSource(button) {
+
+    };
 
     function deleteSetHelper(setName) {
         if (confirm('Are you sure you want to delete ' + setName + '?')) {
