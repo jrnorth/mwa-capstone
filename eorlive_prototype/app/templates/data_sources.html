@@ -9,6 +9,11 @@
                 <td>
                     <input type="checkbox" value="{{data_source.name}}" checked>Activate
                 </td>
+                <td>
+                    <button type="button" value="{{data_source.name}}" onclick="unsubscribeFromDataSource(this)">
+                        Remove from yours
+                    </button>
+                </td>
             </tr>
         {% endfor %}
         {% for data_source in subscribed_but_inactive_data_sources %}
@@ -19,6 +24,11 @@
                 </td>
                 <td>
                     <input type="checkbox" value="{{data_source.name}}">Activate
+                </td>
+                <td>
+                    <button type="button" value="{{data_source.name}}" onclick="unsubscribeFromDataSource(this)">
+                        Remove from yours
+                    </button>
                 </td>
             </tr>
         {% endfor %}

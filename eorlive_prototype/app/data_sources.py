@@ -118,3 +118,23 @@ def subscribe_to_data_source():
         return "Success"
     else:
         return make_response("You must be logged in to use this feature.", 401)
+
+@app.route('/unsubscribe_from_data_source', methods = ['POST'])
+def unsubscribe_from_data_source():
+    if g.user is not None and g.user.is_authenticated():
+        data_source_name = request.form['dataSource']
+
+        data_source = models.GraphDataSource.query.filter(
+            models.GraphDataSource.name == data_source_name).first()
+
+        g.user.subscribed_data_sources.remove(data_source)
+        try:
+            g.user.active_data_sources.remove(data_source)
+        except ValueError as e:
+            #The user didn't have this as an active data source.
+            print("Tried to remove an inactive data source")
+        db.session.add(g.user)
+        db.session.commit()
+        return "Success"
+    else:
+        return make_response("You must be logged in to use this feature.", 401)

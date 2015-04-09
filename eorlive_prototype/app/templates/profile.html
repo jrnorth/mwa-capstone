@@ -17,7 +17,7 @@
         <td class="cellClass profileCell" rowspan="3">
             <h3>Your Data Sources</h3>
             <button type="button" id="change_active_data_sources"
-                onclick="changeActiveDataSources()">Update</button>
+                onclick="changeActiveDataSources()">Update active</button>
             <div id='data_source_list' class='set_list'></div>
         </td>
         <td class="cellClass profileCell" rowspan="3">
@@ -140,11 +140,38 @@
     };
 
     function subscribeToDataSource(button) {
+        $("#unsubscribed_data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#change_active_data_sources").prop('disabled', true);
+
         var dataSource = button.value;
 
         $.ajax({
             type: "POST",
             url: "/subscribe_to_data_source",
+            data: {
+                dataSource: dataSource
+            },
+            success: function(data) {
+                getUnsubscribedDataSources();
+                getUsersDataSources();
+            },
+            error: function(xhr, status, error) {
+                alert("An error occurred");
+            }
+        });
+    };
+
+    function unsubscribeFromDataSource(button) {
+        $("#unsubscribed_data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#change_active_data_sources").prop('disabled', true);
+
+        var dataSource = button.value;
+
+        $.ajax({
+            type: "POST",
+            url: "/unsubscribe_from_data_source",
             data: {
                 dataSource: dataSource
             },
