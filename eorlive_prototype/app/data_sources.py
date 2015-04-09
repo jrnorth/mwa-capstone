@@ -73,7 +73,7 @@ def get_unsubscribed_data_sources():
         unsubscribed_data_sources = list(set(all_data_sources) -\
             set(subscribed_data_sources))
 
-        return render_template("data_sources.html",
+        return render_template("unsubscribed_data_sources.html",
             unsubscribed_data_sources=unsubscribed_data_sources)
     else:
         return make_response("You must be logged in to use this feature.", 401);
