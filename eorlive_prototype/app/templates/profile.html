@@ -140,7 +140,22 @@
     };
 
     function subscribeToDataSource(button) {
+        var dataSource = button.value;
 
+        $.ajax({
+            type: "POST",
+            url: "/subscribe_to_data_source",
+            data: {
+                dataSource: dataSource
+            },
+            success: function(data) {
+                getUnsubscribedDataSources();
+                getUsersDataSources();
+            },
+            error: function(xhr, status, error) {
+                alert("An error occurred");
+            }
+        });
     };
 
     function deleteSetHelper(setName) {

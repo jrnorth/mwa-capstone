@@ -49,7 +49,7 @@ def get_columns():
 
         return render_template("column_list.html", column_tuples=column_tuples)
     else:
-        return make_response("You must be logged in to use this feature.", 401);
+        return make_response("You must be logged in to use this feature.", 401)
 
 @app.route('/get_users_data_sources')
 def get_users_data_sources():
@@ -62,7 +62,7 @@ def get_users_data_sources():
             subscribed_but_inactive_data_sources=subscribed_but_inactive_data_sources,
             active_data_sources=g.user.active_data_sources)
     else:
-        return make_response("You must be logged in to use this feature.", 401);
+        return make_response("You must be logged in to use this feature.", 401)
 
 @app.route('/get_unsubscribed_data_sources')
 def get_unsubscribed_data_sources():
@@ -76,7 +76,7 @@ def get_unsubscribed_data_sources():
         return render_template("unsubscribed_data_sources.html",
             unsubscribed_data_sources=unsubscribed_data_sources)
     else:
-        return make_response("You must be logged in to use this feature.", 401);
+        return make_response("You must be logged in to use this feature.", 401)
 
 @app.route('/update_active_data_sources', methods = ['POST'])
 def update_active_data_sources():
@@ -102,4 +102,19 @@ def update_active_data_sources():
         db.session.commit()
         return "Success"
     else:
-        return make_response("You must be logged in to use this feature.", 401);
+        return make_response("You must be logged in to use this feature.", 401)
+
+@app.route('/subscribe_to_data_source', methods = ['POST'])
+def subscribe_to_data_source():
+    if g.user is not None and g.user.is_authenticated():
+        data_source_name = request.form['dataSource']
+
+        data_source = models.GraphDataSource.query.filter(
+            models.GraphDataSource.name == data_source_name).first()
+
+        g.user.subscribed_data_sources.append(data_source)
+        db.session.add(g.user)
+        db.session.commit()
+        return "Success"
+    else:
+        return make_response("You must be logged in to use this feature.", 401)
