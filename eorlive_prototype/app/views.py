@@ -394,14 +394,11 @@ def get_sets():
 def delete_set():
     if (g.user is not None and g.user.is_authenticated()):
         set_name = request.form['set_name']
-        user = models.User.query.get(g.user.username)
 
         theSet = models.Set.query.filter(models.Set.name == set_name).first()
 
         db.session.delete(theSet)
         db.session.commit()
-
-        setList = models.Set.query.filter(models.Set.username == g.user.username)
-        return render_template('profile.html', user=user, sets=setList)
+        return render_template('index.html')
     else:
         return redirect(url_for('login'))

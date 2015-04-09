@@ -14,6 +14,7 @@
             <p>Data hours: {{ total_data_hrs | round(2) }} ({{ flagged_data_hrs | round(2) }} flagged)</p>
             <button type="button" onclick="downloadSet()">Download set</button>
             <button type="button" onclick="goToNGAS()">NGAS Observations</button>
+            <button id="delete_set_button" type="button" onclick="deleteSet()">Delete Set</button>
         </div>
     </div>
 </div>
@@ -184,5 +185,24 @@
     function downloadSet() {
         window.open("/download_set?set_id={{set_id}}", '_blank');
     };
+
+    function deleteSet() {
+        var conf = confirm("Are you sure you wish to delete the set?");
+        if (conf == true)
+        {
+            $("#delete_set_button").html("Working");
+            $.ajax({
+                type: "POST",
+                url: "/delete_set",
+                data: {
+                    'set_name': '{{ setName }}'
+                },
+                success: function(data) {
+                    document.write(data);
+                },
+                dataType: "html"
+            });
+        }
+    }
 </script>
 {% endblock %}
