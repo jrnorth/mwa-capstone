@@ -33,6 +33,24 @@
                 <br>
                 <div id='tabs'>
                     <ul>
+                    {% if g.user and g.user.is_authenticated() %}
+                        {% for data_source in active_data_sources %}
+                            <li>
+                                {% if the_set %}
+                                <a href="/get_graph?graphType={{data_source.graph_type}}&dataSource={{data_source.name}}&set={{the_set.name}}">
+                                {% else %}
+                                <a href="/get_graph?graphType={{data_source.graph_type}}&dataSource={{data_source.name}}">
+                                {% endif %}
+                                    {{data_source.name}}
+                                </a>
+                            </li>
+                        {% endfor %}
+                        {% if active_data_sources | length == 0 %}
+                            <li>
+                                <a>No active data sources</a>
+                            </li>
+                        {% endif %}
+                    {% else %} <!-- Not logged in, just see the histogram -->
                         <li>
                             {% if the_set %}
                             <a href="/get_graph?graphType=Obs_Err&dataSource=Obs_Err&set={{the_set.name}}">
@@ -42,15 +60,7 @@
                                 Obs &amp; Err
                             </a>
                         </li>
-                        <li>
-                            {% if the_set %}
-                            <a href="/get_graph?graphType=Line&dataSource=QS&set={{the_set.name}}">
-                            {% else %}
-                            <a href="/get_graph?graphType=Line&dataSource=QS">
-                            {% endif %}
-                                QS
-                            </a>
-                        </li>
+                    {% endif %}
                     </ul>
                 </div>
                 <span style="font-size:30px;">Comments</span>

@@ -15,6 +15,11 @@ import os
 @app.route('/index/set/<setName>')
 @app.route('/set/<setName>')
 def index(setName = None):
+    active_data_sources = []
+
+    if g.user is not None and g.user.is_authenticated():
+        active_data_sources = g.user.active_data_sources
+
     if setName is not None:
         the_set = models.Set.query.filter(models.Set.name == setName).first()
 
@@ -30,9 +35,10 @@ def index(setName = None):
                 start_time_str_full=start_time_str_full,
                 end_time_str_full=end_time_str_full,
                 start_time_str_short=start_time_str_short,
-                end_time_str_short=end_time_str_short)
+                end_time_str_short=end_time_str_short,
+                active_data_sources=active_data_sources)
 
-    return render_template('index.html')
+    return render_template('index.html', active_data_sources=active_data_sources)
 
 @app.route('/get_graph')
 def get_graph():
