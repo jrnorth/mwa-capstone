@@ -10,7 +10,7 @@
             <br>
             Email: {{user.email}}
         </td>
-        <td class="cellClass profileCell" rowspan="2">
+        <td class="cellClass profileCell" rowspan="3">
             <h3>Your Sets</h3>
             <div id='set_list_div' class='set_list'></div>
         </td>
@@ -36,12 +36,24 @@
             <button type="button" id="upload_set_button" onclick="uploadSet()">Upload set</button>
         </td>
     </tr>
+    <tr class="rowClass">
+        <td class="cellClass profileCell">
+            <h3>Create New Data Source</h3>
+            <input type="text" id="hostname" placeholder="Enter host URL...">
+            <input type="text" id="database" placeholder="Enter database name...">
+            <button type="button" id="get_tables_button" onclick="getTables()">View tables</button>
+            <br>
+            <div id="table_list" style="display:hidden;"></div>
+            <div id="column_list" style="display:hidden;"></div>
+        </td>
+    </tr>
 </table>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="../static/js/setsAndComments.js"></script>
 <script>
     var low_or_high = 'high';
     var eor = 'EOR0';
+    var hostname, database, table;
 
     var set_controls = {
         'user': '{{user.username}}',
@@ -116,6 +128,76 @@
                 alert("An error occurred: " + status);
                 setUploadButton("Upload set", false);
             }
+        });
+    };
+
+    var setTablesButton = function(text, disabled) {
+        $("#get_tables_button").html(text);
+        $("#get_tables_button").prop('disabled', disabled);
+    };
+
+    var getTables = function() {
+        hostname = $("#hostname").val();
+        database = $("#database").val();
+
+        setTablesButton("Working...", true);
+        $("#table_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#column_list").hide();
+
+        $.ajax({
+            type: "POST",
+            url: "/get_tables",
+            data: {
+                hostname: hostname,
+                database: database
+            },
+            success: function(data) {
+                setTablesButton("Start", false);
+                $("#table_list").html(data);
+                $("#table_list").show();
+                // Automatically load the columns in the first table.
+                $("#table_select").change();
+            },
+            error: function(xhr, status, error) {
+                setTablesButton("Start", false);
+                $("#table_list").html("An error occurred");
+                $("#table_list").show();
+            },
+            dataType: "html"
+        });
+    };
+
+    var getColumns = function(select) {
+        table = select.value;
+
+        var setTableListDisabled = function(disabled) {
+            $("#table_select").prop('disabled', disabled);
+        };
+
+        setTablesButton("Start", true);
+        setTableListDisabled(true);
+        $("#column_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#column_list").show();
+
+        $.ajax({
+            type: "POST",
+            url: "/get_columns",
+            data: {
+                hostname: hostname,
+                database: database,
+                table: table
+            },
+            success: function(data) {
+                setTablesButton("Start", false);
+                setTableListDisabled(false);
+                $("#column_list").html(data);
+            },
+            error: function(xhr, status, error) {
+                setTablesButton("Start", false);
+                setTableListDisabled(false);
+                $("#column_list").html("An error occurred");
+            },
+            dataType: "html"
         });
     };
 </script>

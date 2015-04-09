@@ -1,0 +1,8 @@
+{% block content %}
+Columns:
+<div style="height:100px;overflow:auto;">
+{% for column in column_tuples %}
+    <input type="checkbox" name="{{column[0]}}">{{column[0]}}<br>
+{% endfor %}
+</div>
+{% endblock %}
