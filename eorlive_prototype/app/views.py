@@ -118,61 +118,6 @@ def data_amount():
     return render_template('data_amount_table.html', hours_scheduled=hours_scheduled, hours_observed=hours_observed,
         hours_with_data=hours_with_data, hours_with_uvfits=hours_with_uvfits, data_time=data_time)
 
-@app.route('/qs_data')
-def qs_data():
-    start_time = request.args.get('starttime')
-    end_time = request.args.get('endtime')
-
-    start_datetime = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%SZ')
-    end_datetime = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%SZ')
-
-    start_gps, end_gps = db_utils.get_gps_from_datetime(start_datetime, end_datetime)
-
-    response = db_utils.send_query(g.eor_00, '''SELECT obsid, window_x, window_y,
-                                    wedge_res_x, wedge_res_y, gal_wedge_x,
-                                    gal_wedge_y, ptsrc_wedge_x, ptsrc_wedge_y
-                                    FROM qs
-                                    WHERE wedge_timestamp IS NOT NULL
-                                    AND obsid >= {} AND obsid <= {}
-                                    ORDER BY obsid ASC'''.format(start_gps, end_gps)).fetchall()
-
-    GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = db_utils.get_gps_utc_constants()
-
-    window_x = []
-    window_y = []
-    wedge_res_x = []
-    wedge_res_y = []
-    gal_wedge_x = []
-    gal_wedge_y = []
-    ptsrc_wedge_x = []
-    ptsrc_wedge_y = []
-
-    for row in response:
-                    # Actual UTC time of the observation (for the graph)
-        utc_millis = int((row[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
-
-        window_x.append([utc_millis, row[1]])
-        window_y.append([utc_millis, row[2]])
-        wedge_res_x.append([utc_millis, row[3]])
-        wedge_res_y.append([utc_millis, row[4]])
-        gal_wedge_x.append([utc_millis, row[5]])
-        gal_wedge_y.append([utc_millis, row[6]])
-        ptsrc_wedge_x.append([utc_millis, row[7]])
-        ptsrc_wedge_y.append([utc_millis, row[8]])
-
-    data = {
-        "window_x": window_x,
-        "window_y": window_y,
-        "wedge_res_x": wedge_res_x,
-        "wedge_res_y": wedge_res_y,
-        "gal_wedge_x": gal_wedge_x,
-        "gal_wedge_y": gal_wedge_y,
-        "ptsrc_wedge_x": ptsrc_wedge_x,
-        "ptsrc_wedge_y": ptsrc_wedge_y
-    };
-
-    return render_template("qs_graph.html", data=data)
-
 @app.route('/error_table', methods = ['POST'])
 def error_table():
     starttime = datetime.utcfromtimestamp(int(request.form['starttime']) / 1000)
