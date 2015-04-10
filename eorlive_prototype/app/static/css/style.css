@@ -211,3 +211,7 @@ h2              { font-size: 1.2em; }
     border: 2px solid black;
     border-collapse: collapse;
 }
+
+.errorMessage {
+    color: #FF0000;
+}

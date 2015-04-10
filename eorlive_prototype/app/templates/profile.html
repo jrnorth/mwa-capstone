@@ -49,8 +49,9 @@
     <tr class="rowClass">
         <td class="cellClass profileCell">
             <h3>Create New Data Source</h3>
-            <input type="text" id="hostname" placeholder="Enter host URL...">
-            <input type="text" id="database" placeholder="Enter database name...">
+            <div id="graph_type_div"></div>
+            <input type="text" id="hostname" placeholder="Enter host URL..." maxlength="100">
+            <input type="text" id="database" placeholder="Enter database name..." maxlength="100">
             <button type="button" id="get_tables_button" onclick="getTables()">View tables</button>
             <br>
             <div id="table_list" style="display:hidden;"></div>
@@ -75,9 +76,26 @@
 
     $(function() {
         renderSets(set_controls, '', '');
+        getGraphTypes();
         getUsersDataSources();
         getUnsubscribedDataSources();
     });
+
+    function getGraphTypes() {
+        $("#graph_type_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+        $.ajax({
+            type: "GET",
+            url: "/get_graph_types",
+            success: function(data) {
+                $("#graph_type_div").html(data);
+            },
+            error: function(xhr, status, error) {
+                $("#graph_type_div").html("An error occurred");
+            },
+            dataType: "html"
+        });
+    };
 
     function getUsersDataSources() {
         $("#change_active_data_sources").prop('disabled', true);
@@ -185,6 +203,58 @@
         });
     };
 
+    function setDataSourceCreationControlsDisabled(disabled, text) {
+        $("#graph_type_select").prop('disabled', disabled);
+        $("#get_tables_button").prop('disabled', disabled);
+        $("#table_select").prop('disabled', disabled);
+        $("#create_data_source_button").prop('disabled', disabled);
+        $("#create_data_source_button").html(text);
+    };
+
+    function createDataSource() {
+        setDataSourceCreationControlsDisabled(true, "Working...");
+        $("#error_message").hide();
+
+        var graph_type = $("#graph_type_select").val();
+        var obs_column = $("#obs_column_name_box").val();
+        var data_source_name = $("#data_source_name_box").val();
+        var columns = [];
+        $("#column_checkbox_list input:checked").each(function() {
+            columns.push($(this).attr('name'));
+        });
+
+        $.ajax({
+            type: "POST",
+            url: "/create_data_source",
+            data: JSON.stringify({
+                graph_type: graph_type,
+                host: hostname,
+                database: database,
+                table: table,
+                columns: columns,
+                obs_column: obs_column,
+                data_source_name: data_source_name
+            }),
+            success: function(data) {
+                if (data.error) {
+                    $("#error_message").html(data.message);
+                    $("#error_message").show();
+                } else {
+                    getUsersDataSources();
+                    $("#error_message").hide();
+                }
+                setDataSourceCreationControlsDisabled(false, "Create data source");
+            },
+            error: function(xhr, status, error) {
+                $("#error_message").html("An error occurred");
+                $("#error_message").show();
+                setDataSourceCreationControlsDisabled(false, "Create data source");
+            },
+            dataType: "json",
+            contentType: "application/json"
+        });
+    };
+
     function deleteSetHelper(setName) {
         if (confirm('Are you sure you want to delete ' + setName + '?')) {
             deleteSet(setName);
@@ -272,14 +342,14 @@
                 database: database
             },
             success: function(data) {
-                setTablesButton("Start", false);
+                setTablesButton("View tables", false);
                 $("#table_list").html(data);
                 $("#table_list").show();
                 // Automatically load the columns in the first table.
                 $("#table_select").change();
             },
             error: function(xhr, status, error) {
-                setTablesButton("Start", false);
+                setTablesButton("View tables", false);
                 $("#table_list").html("An error occurred");
                 $("#table_list").show();
             },
@@ -294,7 +364,7 @@
             $("#table_select").prop('disabled', disabled);
         };
 
-        setTablesButton("Start", true);
+        setTablesButton("View tables", true);
         setTableListDisabled(true);
         $("#column_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
         $("#column_list").show();
@@ -308,12 +378,12 @@
                 table: table
             },
             success: function(data) {
-                setTablesButton("Start", false);
+                setTablesButton("View tables", false);
                 setTableListDisabled(false);
                 $("#column_list").html(data);
             },
             error: function(xhr, status, error) {
-                setTablesButton("Start", false);
+                setTablesButton("View tables", false);
                 setTableListDisabled(false);
                 $("#column_list").html("An error occurred");
             },

@@ -1,4 +1,4 @@
-from flask import render_template, request, g, make_response
+from flask import render_template, request, g, make_response, jsonify
 import psycopg2
 import os
 from app.flask_app import app, db
@@ -136,5 +136,98 @@ def unsubscribe_from_data_source():
         db.session.add(g.user)
         db.session.commit()
         return "Success"
+    else:
+        return make_response("You must be logged in to use this feature.", 401)
+
+@app.route('/get_graph_types')
+def get_graph_types():
+    graph_types = models.GraphType.query.all()
+    return render_template('graph_type_list.html', graph_types=graph_types)
+
+@app.route('/create_data_source', methods = ['POST'])
+def create_data_source():
+    if g.user is not None and g.user.is_authenticated():
+        request_content = request.get_json()
+
+        graph_type = request_content['graph_type']
+        host = request_content['host']
+        database = request_content['database']
+        table = request_content['table']
+        columns = request_content['columns']
+        obs_column = request_content['obs_column']
+        data_source_name = request_content['data_source_name']
+
+        if not graph_type or not host or not database or not table or not columns\
+            or not obs_column or not data_source_name:
+            return jsonify(error=True, message="You need to fill out all the fields.")
+
+        #Is the data source name unique?
+        if models.GraphDataSource.query.filter(models.GraphDataSource.name == data_source_name).first() is not None:
+            return jsonify(error=True, message="The data source name must be unique.")
+
+        try:
+            db_conn = psycopg2.connect(database=database, host=host,
+                user=os.environ['MWA_DB_USERNAME'], password=os.environ['MWA_DB_PW'])
+        except Exception as e:
+            return jsonify(error=True, message="Could not connect to that database.")
+
+        table_response = db_utils.send_query(db_conn, """SELECT table_name
+                                            FROM information_schema.tables
+                                            WHERE table_name = '{}'
+                                            AND table_schema='public'""".format(table)).fetchall()
+
+        if len(table_response) == 0: #No results, so the table doesn't exist.
+            db_conn.close()
+            return jsonify(error=True, message="The table {} doesn't exist.".format(table))
+
+        column_response = db_utils.send_query(db_conn, """SELECT column_name
+                                            FROM information_schema.columns
+                                            WHERE table_name = '{}'
+                                            AND numeric_precision IS NOT NULL""".format(table)).fetchall()
+
+        db_conn.close()
+
+        columns_with_obs_column = list(columns)
+        columns_with_obs_column.append(obs_column)
+
+        for column in columns_with_obs_column: # So we can check for the existence of the obs column along with the
+            column_exists = False              # others in the same loop.
+            for returned_column in column_response:
+                if returned_column[0] == column:
+                    column_exists = True
+                    break
+            if not column_exists:
+                return jsonify(error=True,
+                    message="The column {} does not exist in that table or is not a numeric column.".format(column))
+
+        projectid = False
+        for returned_column in column_response:
+            if returned_column[0] == 'projectid':
+                projectid = True
+                break
+
+        graph_data_source = models.GraphDataSource()
+        graph_data_source.name = data_source_name
+        graph_data_source.graph_type = graph_type
+        graph_data_source.host = host
+        graph_data_source.database = database
+        graph_data_source.table = table
+        graph_data_source.obs_column = obs_column
+        graph_data_source.projectid = projectid
+        db.session.add(graph_data_source)
+        db.session.flush()
+
+        for column in columns:
+            graph_data_source_column = models.GraphDataSourceColumn()
+            graph_data_source_column.name = column
+            graph_data_source_column.graph_data_source = data_source_name
+            db.session.add(graph_data_source_column)
+
+        g.user.subscribed_data_sources.append(graph_data_source)
+        db.session.add(g.user)
+
+        db.session.commit()
+
+        return jsonify(error=False)
     else:
         return make_response("You must be logged in to use this feature.", 401)

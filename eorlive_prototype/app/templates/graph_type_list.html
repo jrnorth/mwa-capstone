@@ -1,0 +1,8 @@
+{% block content %}
+Graph type:
+<select id="graph_type_select">
+{% for graph_type in graph_types %}
+    <option value="{{graph_type.name}}">{{graph_type.name}}</option>
+{% endfor %}
+</select>
+{% endblock %}
