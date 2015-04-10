@@ -134,13 +134,12 @@ function getObservations(loadTab) {
         return;
     }
 
-    // Load the first tab if it's not already being loaded.
+    // Load the currently selected tab if it's not already being loaded.
     if (loadTab) {
-        $("#tabs").tabs("option", "active", 0);
         $("#tabs > ul > li").each(function(index) {
             $(this).data("loaded", false);
         });
-        $("#tabs").tabs("load", 0);
+        $("#tabs").tabs("load", $("#tabs").tabs('option', 'active'));
     }
 
     $("#summary_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
