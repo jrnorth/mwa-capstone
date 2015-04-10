@@ -91,12 +91,12 @@ Attendees: Joseph North, Connor Alfheim, David Ganey, Ryan Dougherty</p>
 <h4>
 <a name="summary" class="anchor" href="#summary"><span class="octicon octicon-link"></span></a>Summary</h4>
 <ul>
-<li>We discussed the progress made on new features, demonstrated the features in use, and made a plan for what to work on in the coming week.</li>
+<li>We discussed the progress made on new features, demonstrated the features completed since the last meeting, and made a plan for what to work on in the coming week.</li>
 </ul>
 
 <h4>
 <a name="results-and-action-items" class="anchor" href="#results-and-action-items"><span class="octicon octicon-link"></span></a>Update on Last Week's Agenda Items</h4>
-<p>Custom data sources are implemented. User signup is implemented. Research and documentation are still in-progress.</p>
+<p>Custom data sources have been implemented. User signup has been implemented. Research and documentation are still in progress.</p>
 <h4>Information Agenda Items</h4>
 <ul>
   <li>We stll need to research the pricing for various hosting options.<li>
@@ -107,7 +107,7 @@ Attendees: Joseph North, Connor Alfheim, David Ganey, Ryan Dougherty</p>
 Flag Plot
   <ul>
   <li>Description: A plot on the main page that, when in browsing mode, shows which observations have been flagged by users and who those users are.</li>
-  <li>Discussion: Flagging should be integrated with the new content for custom data sources to allow flags for custom charts to appear.</li>
+  <li>Discussion: Flagging should be integrated with the new content for custom data sources to allow the general flagging plot to be displayed on user-defined custom graphs.</li>
   <li>Assigned: Connor</li>
   <li>Due: 4/17/2015</li>
   </ul>
@@ -124,8 +124,8 @@ Database maintenance
 <li>
 Custom data sources
   <ul>
-  <li>Description: Custom data sources are implemented now for creation of custom plots</li>
-  <li>Discussion: At this point, users simply need to create a Highcharts object with the configuration options. We still need documentation on how to do that. We believe at this point this is the simplest option. We also need to extend the set construction panel to custom charts.</li>
+  <li>Description: As of this week, users can choose an arbitrary selection of numeric columns in a single database table to create custom data sources that they can graph using pre-defined or custom graph types. We'll need to do some research and usability testing to determine whether this is the best way to allow users to create custom data sources. The ability to create sets interactively also needs to be extended to custom graph types.</li>
+  <li>Discussion: Currently, users simply need to create a Highcharts object with the desired options to create a custom graph type. We still need documentation on how to do that. At this point, we believe that this is the simplest option. We also need to give users the ability to flag observations (i.e. create data sets) on their custom graph types and not just on the existing histogram.</li>
   <li>Assigned: Joe</li>
   <li>Due: 4/17/2015</li>
   </ul>
@@ -134,7 +134,7 @@ Custom data sources
 Documentation and final report
   <ul>
   <li>Description: Create a wiki showing how to set up and work with the code produced in this project.</li>
-  <li>Discussion: We'll have to identify which components of the project require documentation.</li>
+  <li>Discussion: We'll have to identify which components of the project require documentation. Most importantly, the API we provide for creating custom graphs needs to be documented well, since it will probably be the most frequently used feature (and it requires that the user write some code). We will make sure to provide some detailed examples of custom graphs in our repository.</li>
   <li>Assigned: Ryan</li>
   <li>Due: 4/17/2015</li>
   </ul>
@@ -240,8 +240,8 @@ Attendees: Joseph North, Connor Alfheim, David Ganey, Ryan Dougherty, Dylan Lusi
 <p>The NGAS link has been added to the set view page. Additionally, the data summary table now includes observation hours. Other deliverables are still in progress.</p>
 <h4>Information Agenda Items</h4>
 <ul>
-	<li>We explored the QS (quality statistics) table that Dr. Jacobs recommended we take a look at for new data to plot.</li>
-	<li>Research external image hosting services in case we decide to pursue the image generation route for our sparklines.</li>
+    <li>We explored the QS (quality statistics) table that Dr. Jacobs recommended we take a look at for new data to plot.</li>
+    <li>Research external image hosting services in case we decide to pursue the image generation route for our sparklines.</li>
 </ul>
 <h4>Actionable Agenda Items</h4>
 <ul>
@@ -736,7 +736,7 @@ Chart interactivity features
 </li>
     This meeting summary was prepared by David Ganey
 </ul>
-          
+
 <h2>
 <a name="meeting-2-summary" class="anchor" href="#meeting-2-summary"><span class="octicon octicon-link"></span></a>Meeting 10 Summary</h2>
 
@@ -998,6 +998,6 @@ Attendees: Joseph North, Connor Alfheim, Ben Roos, David Ganey, Ryan Dougherty, 
 
     </div>
 
-    
+
   </body>
 </html>
