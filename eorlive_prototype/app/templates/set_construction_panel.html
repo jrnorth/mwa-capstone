@@ -128,10 +128,8 @@
                 eor: currentData[1]
             }),
             success: function(data) {
-                if (data.duplicate_name) {
-                    alert("Your set name must be unique.");
-                } else if (data.other_error) {
-                    alert("An error occurred. Please try again.");
+                if (data.error) {
+                    alert(data.message);
                 } else {
                     alert("Set saved successfully!");
                     //refresh the set view

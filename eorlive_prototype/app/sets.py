@@ -70,8 +70,16 @@ def save_new_set():
 
         name = request_content['name']
 
+        if name is None:
+            return jsonify(error=True, message="Name cannot be empty.")
+
+        name = name.strip()
+
+        if len(name) == 0:
+            return jsonify(error=True, message="Name cannot be empty.")
+
         if models.Set.query.filter(models.Set.name == name).count() > 0:
-            return jsonify(duplicate_name=True)
+            return jsonify(error=True, message="Name must be unique.")
 
         flagged_ranges = []
 
