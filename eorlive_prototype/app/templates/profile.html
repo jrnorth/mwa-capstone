@@ -304,11 +304,8 @@
             processData: false,
             contentType: false,
             success: function(data) {
-                if (data.duplicate_name) {
-                    alert("Your set name must be unique!");
-                    setUploadButton("Upload set", false);
-                } else if (data.data_error) {
-                    alert(data.data_error);
+                if (data.error) {
+                    alert(data.message);
                     setUploadButton("Upload set", false);
                 } else { // The set upload was successful.
                     location.reload(true); // Don't get cached copy.

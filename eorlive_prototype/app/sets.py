@@ -111,8 +111,16 @@ def upload_set():
     if (g.user is not None and g.user.is_authenticated()):
         set_name = request.form['set_name']
 
+        if set_name is None:
+            return jsonify(error=True, message="Name cannot be empty.")
+
+        set_name = set_name.strip()
+
+        if len(set_name) == 0:
+            return jsonify(error=True, message="Name cannot be empty.")
+
         if models.Set.query.filter(models.Set.name == set_name).count() > 0:
-            return jsonify(duplicate_name=True)
+            return jsonify(error=True, message="Name must be unique.")
 
         f = request.files['file']
 
