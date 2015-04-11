@@ -89,7 +89,7 @@ def save_new_set():
         eor = request_content['eor']
 
         total_data_hrs, flagged_data_hrs = get_data_hours_in_set(
-            start_gps, end_gps, low_or_high, eor, flagged_ranges)
+            start_gps, end_gps, low_or_high, 'EOR' + eor, flagged_ranges)
 
         insert_set_into_db(name, start_gps, end_gps, flagged_ranges,
             low_or_high, 'EOR' + eor, total_data_hrs, flagged_data_hrs)
