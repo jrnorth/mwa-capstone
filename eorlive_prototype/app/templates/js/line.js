@@ -3,7 +3,15 @@
         text: "{{data_source_str}}"
     },
     chart: {
-        zoomType: "x"
+        zoomType: "x",
+        events: {
+            selection: function(event) {
+                if (clickDragMode === 'flag') {
+                    event.preventDefault();
+                    flagClickAndDraggedRange(event);
+                }
+            }
+        }
     },
     credits: {
         enabled: false

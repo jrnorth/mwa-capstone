@@ -1,18 +1,48 @@
 {% block content %}
-<div id="{{data_source_str}}"></div>
+<div id="{{data_source_str_nospace}}"></div>
+{% if is_set %}
 <script>
+(function($) {
     {% for series in graph_data %}
         var {{ series }} = {{ graph_data[series] | tojson }};
     {% endfor %}
 
     var plotBands = {{ plot_bands | tojson }};
 
-    $("#{{data_source_str}}").highcharts('StockChart',
+    $("#{{data_source_str_nospace}}").highcharts('StockChart',
         {% include template_name %}
     , function (chart) {
         for (var i = 0; i < plotBands.length; ++i) {
             chart.xAxis[0].addPlotBand(plotBands[i]);
         }
     });
+}(jQuery));
 </script>
+{% else %}
+<div id="set_construction_panel_{{data_source_str_nospace}}">
+    {% include 'generic_set_construction_panel.html' %}
+</div>
+<script>
+var {{data_source_str_nospace}} = (function($) {
+    {% include 'js/generic_set_construction.js' %}
+
+    {% for series in graph_data %}
+        var {{ series }} = {{ graph_data[series] | tojson }};
+    {% endfor %}
+
+    var plotBands = {{ plot_bands | tojson }};
+
+    $("#{{data_source_str_nospace}}").highcharts('StockChart',
+        {% include template_name %}
+    , function (chart) {
+        _chart = chart;
+        for (var i = 0; i < plotBands.length; ++i) {
+            chart.xAxis[0].addPlotBand(plotBands[i]);
+        }
+    });
+
+    return dataSourceObj;
+}(jQuery));
+</script>
+{% endif %}
 {% endblock %}
