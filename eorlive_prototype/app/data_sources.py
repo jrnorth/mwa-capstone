@@ -161,6 +161,10 @@ def create_data_source():
             or not obs_column or not data_source_name:
             return jsonify(error=True, message="You need to fill out all the fields.")
 
+        data_source_name = data_source_name.strip()
+        if len(data_source_name) == 0:
+            return jsonify(error=True, message="Name cannot be empty.")
+
         #Is the data source name unique?
         if models.GraphDataSource.query.filter(models.GraphDataSource.name == data_source_name).first() is not None:
             return jsonify(error=True, message="The data source name must be unique.")
