@@ -43,21 +43,8 @@ def get_error_counts(start_gps, end_gps):
 
     return (error_counts, error_count)
 
-def get_lowhigh_and_eor_clauses(low_or_high, eor):
-    low_high_clause = "" if low_or_high == 'any' else "AND obsname LIKE '" + low_or_high + "%'"
-
-    eor_clause = ''
-
-    if eor != 'any':
-        if eor == 'EOR0':
-            eor_clause = "AND ra_phase_center = 0"
-        else:
-            eor_clause = "AND ra_phase_center = 60"
-
-    return (low_high_clause, eor_clause)
-
 def get_observation_counts(start_gps, end_gps, low_or_high, eor):
-    low_high_clause, eor_clause = get_lowhigh_and_eor_clauses(low_or_high, eor)
+    low_high_clause, eor_clause = db_utils.get_lowhigh_and_eor_clauses(low_or_high, eor)
 
     response = db_utils.send_query(g.eor_db, '''SELECT starttime
                 FROM mwa_setting

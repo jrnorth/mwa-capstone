@@ -44,7 +44,7 @@ def is_obs_flagged(obs_id, flagged_ranges):
 def get_data_hours_in_set(start, end, low_or_high, eor, flagged_ranges):
     total_data_hrs = flagged_data_hrs = 0
 
-    low_high_clause, eor_clause = histogram_utils.get_lowhigh_and_eor_clauses(low_or_high, eor)
+    low_high_clause, eor_clause = db_utils.get_lowhigh_and_eor_clauses(low_or_high, eor)
 
     all_obs_ids_tuples = db_utils.send_query(g.eor_db, '''SELECT starttime, stoptime
                             FROM mwa_setting

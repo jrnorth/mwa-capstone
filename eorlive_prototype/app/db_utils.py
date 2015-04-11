@@ -95,7 +95,7 @@ def build_query(data_source):
 
     return (query, columns)
 
-def get_graph_data(data_source_str, start_gps, end_gps):
+def get_graph_data(data_source_str, start_gps, end_gps, the_set):
     data_source = models.GraphDataSource.query.filter(models.GraphDataSource.name == data_source_str).first()
 
     query, columns = build_query(data_source)
@@ -114,6 +114,9 @@ def get_graph_data(data_source_str, start_gps, end_gps):
 
     GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = get_gps_utc_constants()
 
+    if the_set is not None:
+        results = join_with_obsids_from_set(results, the_set, data_source)
+
     for row in results:
                             # Actual UTC time of the observation (for the graph)
         utc_millis = int((row[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
@@ -122,3 +125,36 @@ def get_graph_data(data_source_str, start_gps, end_gps):
                 data[columns[column_index - 1].name].append([utc_millis, row[column_index]])
 
     return data
+
+def get_lowhigh_and_eor_clauses(low_or_high, eor):
+    low_high_clause = "" if low_or_high == 'any' else "AND obsname LIKE '" + low_or_high + "%'"
+
+    eor_clause = ''
+
+    if eor != 'any':
+        if eor == 'EOR0':
+            eor_clause = "AND ra_phase_center = 0"
+        else:
+            eor_clause = "AND ra_phase_center = 60"
+
+    return (low_high_clause, eor_clause)
+
+def join_with_obsids_from_set(data_source_results, the_set, data_source):
+    low_high_clause, eor_clause = get_lowhigh_and_eor_clauses(the_set.low_or_high, the_set.eor)
+
+    projectid_clause = "AND projectid='G0009'" if data_source.projectid else ""
+
+    response = send_query(g.eor_db, '''SELECT starttime
+                FROM mwa_setting
+                WHERE starttime >= {} AND starttime <= {}
+                {}
+                {}
+                {}
+                ORDER BY starttime ASC'''.format(the_set.start, the_set.end,
+                    projectid_clause, low_high_clause, eor_clause)).fetchall()
+
+    obs_id_list = [obs_tuple[0] for obs_tuple in response]
+
+    filtered_results = [obs_tuple for obs_tuple in data_source_results if obs_tuple[0] in obs_id_list]
+
+    return filtered_results

@@ -70,7 +70,7 @@ def get_graph():
             return histogram_utils.get_obs_err_histogram(start_gps, end_gps,
                 start_time_str, end_time_str)
         else:
-            graph_data = db_utils.get_graph_data(data_source_str, start_gps, end_gps)
+            graph_data = db_utils.get_graph_data(data_source_str, start_gps, end_gps, None)
             return render_template('graph.html', graph_type_str=graph_type_str.lower(),
                 data_source_str=data_source_str, graph_data=graph_data,
                 plot_bands=[], template_name=template_name)
@@ -94,7 +94,7 @@ def get_graph():
                 plot_bands=plot_bands, start_time_str_full=start_time_str_full,
                 end_time_str_full=end_time_str_full)
         else:
-            graph_data = db_utils.get_graph_data(data_source_str, the_set.start, the_set.end)
+            graph_data = db_utils.get_graph_data(data_source_str, the_set.start, the_set.end, the_set)
             return render_template('graph.html', graph_type_str=graph_type_str.lower(),
                 data_source_str=data_source_str, graph_data=graph_data, plot_bands=plot_bands,
                 template_name=template_name)
