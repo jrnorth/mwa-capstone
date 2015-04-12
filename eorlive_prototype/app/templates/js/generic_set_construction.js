@@ -140,8 +140,31 @@ var getCurrentObsIdSet = function() {
         return utc_obsid_map_h1;
 };
 
+var getVariableSuffix = function() {
+    if (currentData[0] === 'low' && currentData[1] === '0') {
+        return '_l0';
+    } else if (currentData[0] === 'low') {
+        return '_l1';
+    } else if (currentData[0] === 'high' && currentData[1] === '0') {
+        return '_h0';
+    } else {
+        return '_h1';
+    }
+}
+
 var dataSetChanged = function() {
-    _chart.series[0].setData(getCurrentDataSeries());
+    var suffix = getVariableSuffix();
+
+    for (var seriesIndex = 0; seriesIndex < _chart.series.length; ++seriesIndex) {
+        var thisSeries = _chart.series[seriesIndex];
+        if (seriesIndex < _chart.series.length - 1) {
+            thisSeries.setData(graph_data[thisSeries.name + suffix], false); // Don't redraw chart.
+        } else {
+            thisSeries.setData(graph_data[thisSeries.name + suffix]); // Redraw chart.
+        }
+    }
+
+    return;
 
     if (inConstructionMode) {
         removeAllPlotBands();

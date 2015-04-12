@@ -26,7 +26,7 @@
         {% for series in graph_data.h0 %}
         {
             name: "{{series}}",
-            data: {{series}}_h0
+            data: graph_data.{{series}}_h0
         },
         {% endfor %}
     ]
