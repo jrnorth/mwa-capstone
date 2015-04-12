@@ -23,10 +23,10 @@
         enabled: true
     },
     series: [
-        {% for series in graph_data %}
+        {% for series in graph_data.h0 %}
         {
             name: "{{series}}",
-            data: {{series}}
+            data: {{series}}_h0
         },
         {% endfor %}
     ]

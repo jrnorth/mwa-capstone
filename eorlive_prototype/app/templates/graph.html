@@ -26,8 +26,20 @@
 var {{data_source_str_nospace}} = (function($) {
     {% include 'js/generic_set_construction.js' %}
 
-    {% for series in graph_data %}
-        var {{ series }} = {{ graph_data[series] | tojson }};
+    {% for series in graph_data.h0 %}
+        var {{ series }}_h0 = {{ graph_data.h0[series] | tojson }};
+    {% endfor %}
+
+    {% for series in graph_data.h1 %}
+        var {{ series }}_h1 = {{ graph_data.h1[series] | tojson }};
+    {% endfor %}
+
+    {% for series in graph_data.l0 %}
+        var {{ series }}_l0 = {{ graph_data.l0[series] | tojson }};
+    {% endfor %}
+
+    {% for series in graph_data.l1 %}
+        var {{ series }}_l1 = {{ graph_data.l1[series] | tojson }};
     {% endfor %}
 
     var plotBands = {{ plot_bands | tojson }};

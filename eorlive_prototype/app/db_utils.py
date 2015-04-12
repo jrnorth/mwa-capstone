@@ -107,22 +107,85 @@ def get_graph_data(data_source_str, start_gps, end_gps, the_set):
 
     db_conn.close()
 
-    # Initialize empty data structure
     data = {}
-    for column in columns:
-        data[column.name] = []
+
+    if the_set is not None:
+        # Initialize empty data structure
+        for column in columns:
+            data[column.name] = []
+
+        GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = get_gps_utc_constants()
+
+        results = join_with_obsids_from_set(results, the_set, data_source)
+
+        for row in results:
+                                # Actual UTC time of the observation (for the graph)
+            utc_millis = int((row[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
+            for column_index in range(1, len(row)):
+                if row[column_index] is not None:
+                    data[columns[column_index - 1].name].append([utc_millis, row[column_index]])
+    else: #No set, so we need to separate the data into sets for low/high and EOR0/EOR1
+        data = separate_data_into_sets(data, results, columns, data_source, start_gps, end_gps)
+
+    return data
+
+def separate_data_into_sets(data, data_source_results, columns, data_source, start_gps, end_gps):
+    projectid_clause = "AND projectid='G0009'" if data_source.projectid else ""
+    obsid_results = send_query(g.eor_db, """SELECT starttime, obsname, ra_phase_center
+                                    FROM mwa_setting
+                                    WHERE starttime >= {} AND starttime <= {}
+                                    {}
+                                    AND (obsname LIKE 'low%' OR obsname LIKE 'high%')
+                                    AND (ra_phase_center = 0 OR ra_phase_center = 60)
+                                    ORDER BY starttime ASC""".format(start_gps,
+                                    end_gps, projectid_clause)).fetchall()
+
+    data['l0'] = {}
+    data['l1'] = {}
+    data['h0'] = {}
+    data['h1'] = {}
+
+    for key in data:
+        for column in columns:
+            data[key][column.name] = []
+
+    all_obsids = [obsid_tuple[0] for obsid_tuple in obsid_results]
 
     GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = get_gps_utc_constants()
 
-    if the_set is not None:
-        results = join_with_obsids_from_set(results, the_set, data_source)
+    for data_source_result_tuple in data_source_results:
+        obsid = data_source_result_tuple[0]
 
-    for row in results:
-                            # Actual UTC time of the observation (for the graph)
-        utc_millis = int((row[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
-        for column_index in range(1, len(row) - 1): # Each row is a tuple that has an empty element at the end.
-            if row[column_index] is not None:
-                data[columns[column_index - 1].name].append([utc_millis, row[column_index]])
+        try:
+            obsid_index = all_obsids.index(obsid)
+        except Exception as e:
+            continue
+
+        utc_millis = (obsid - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000
+
+        obsname = obsid_results[obsid_index][1]
+        ra_phase_center = obsid_results[obsid_index][2]
+
+        if obsname.startswith('low') and ra_phase_center == 0:
+            for column_index in range(1, len(data_source_result_tuple)):
+                column_name = columns[column_index - 1].name
+                column_data = data_source_result_tuple[column_index]
+                data['l0'][column_name].append([utc_millis, column_data])
+        elif obsname.startswith('low') and ra_phase_center == 60:
+            for column_index in range(1, len(data_source_result_tuple)):
+                column_name = columns[column_index - 1].name
+                column_data = data_source_result_tuple[column_index]
+                data['l1'][column_name].append([utc_millis, column_data])
+        elif obsname.startswith('high') and ra_phase_center == 0:
+            for column_index in range(1, len(data_source_result_tuple)):
+                column_name = columns[column_index - 1].name
+                column_data = data_source_result_tuple[column_index]
+                data['h0'][column_name].append([utc_millis, column_data])
+        elif obsname.startswith('high') and ra_phase_center == 60:
+            for column_index in range(1, len(data_source_result_tuple)):
+                column_name = columns[column_index - 1].name
+                column_data = data_source_result_tuple[column_index]
+                data['h1'][column_name].append([utc_millis, column_data])
 
     return data
 
