@@ -132,4 +132,5 @@ def get_obs_err_histogram(start_gps, end_gps, start_time_str, end_time_str):
         error_counts=error_counts, utc_obsid_map_l0=utc_obsid_map_l0,
         utc_obsid_map_l1=utc_obsid_map_l1, utc_obsid_map_h0=utc_obsid_map_h0,
         utc_obsid_map_h1=utc_obsid_map_h1, range_start=start_time_str,
-        range_end=end_time_str)
+        range_end=end_time_str, start_time_str_short=start_time_str.replace('T', ' ')[0:16],
+        end_time_str_short=end_time_str.replace('T', ' ')[0:16])

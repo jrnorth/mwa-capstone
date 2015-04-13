@@ -71,7 +71,7 @@
                     pointPadding: 0,
                     events: {
                         click: function(event) {
-                            if (this.name === 'Errors' && !$('#construction_mode_checkbox').is(':checked')) {
+                            if (this.name === 'Errors') {
                                 var columnLimits = getColumnRangeLimits(event, this.xAxis.series[1]);
                                 var startTime = columnLimits.startTime, endTime = columnLimits.endTime;
 
@@ -96,9 +96,6 @@
                                     },
                                     dataType: "html"
                                 });
-                            } else if ($('#construction_mode_checkbox').is(':checked')) {
-                                var series = this.name === 'Observations' ? this.xAxis.series[0] : this.xAxis.series[1];
-                                flagClickedRange(event, series);
                             }
                         }
                     }
@@ -179,7 +176,6 @@
             _chart = chart;
             flaggedRanges = highEOR0FlaggedRanges;
             $('#set_construction_panel').show();
-            updateRangeForConstruction();
         });
     });
 </script>

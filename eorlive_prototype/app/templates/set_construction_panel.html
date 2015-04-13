@@ -9,7 +9,7 @@
 </select>
 <span style="float:right;">Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
 <div id='construction_controls'>
-    Start:&nbsp;<span id="start_time_label"></span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp;<span id="end_time_label"></span>
+    Start:&nbsp;<span id="start_time_label">{{start_time_str_short}}</span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp;<span id="end_time_label">{{end_time_str_short}}</span>
     &nbsp;&nbsp;&nbsp;&nbsp;Click + drag:&nbsp;&nbsp;
     <select id="click_drag_dropdown" onchange="setClickDragMode(this)">
         <option value="zoom">Zooms</option>
@@ -56,9 +56,9 @@
             $('#save_set_button').prop('disabled', disabled);
         };
 
-        var currentObsIdSet = getCurrentObsIdSet();
+        var currentObsIdMap = getCurrentObsIdMap();
 
-        if (currentObsIdSet.length === 0) {
+        if (currentObsIdMap.length === 0) {
             alert("There aren't any obs ids in this set!");
             return;
         } else if ($('#set_name_textbox').val().length === 0) {
@@ -68,51 +68,45 @@
 
         setSaveButton("Working...", true);
 
-        var startUtcMillis = Date.parse($("#start_time_label").text());
-        var endUtcMillis = Date.parse($("#end_time_label").text());
+        var getFlaggedObsIdsMapIndices = function(start_millis, end_millis) {
+            var utc_obsid_map = getCurrentObsIdMap();
 
-        var getFlaggedObsIds = function(start, end) {
-            var utc_obsid_map = getCurrentObsIdSet();
-
-            var startObsIdIndex = -1;
-            var endObsIdIndex = utc_obsid_map.length - 1;
+            var startIndex = 0, endIndex = 0;
 
             for (var i = 0; i < utc_obsid_map.length; ++i) {
-                if (utc_obsid_map[i][0] >= start) {
-                    startObsIdIndex = i;
+                if (utc_obsid_map[i][0] >= start_millis) {
+                    startIndex = i;
                     break;
                 }
             }
 
-            if (startObsIdIndex > -1) {
-                for (var i = startObsIdIndex; i < utc_obsid_map.length; ++i) {
-                    if (utc_obsid_map[i][0] >= end) {
-                        endObsIdIndex = i - 1;
-                        break;
-                    }
+            for (var i = startIndex; i < utc_obsid_map.length; ++i) {
+                if (utc_obsid_map[i][0] > end_millis) {
+                    endIndex = i - 1;
+                    break;
+                } else if (i === utc_obsid_map.length - 1) {
+                    endIndex = i;
+                    break;
                 }
-            } else {
-                return {
-                    startObsId: -1,
-                    endObsId: -1
-                };
             }
 
             return {
-                startObsId: utc_obsid_map[startObsIdIndex][1],
-                endObsId: utc_obsid_map[endObsIdIndex][1],
-                startObsIdIndex: startObsIdIndex,
-                endObsIdIndex: endObsIdIndex
+                startObsIdMapIndex: startIndex,
+                endObsIdMapIndex: endIndex
             };
         };
 
-        var fullRange = getFlaggedObsIds(startUtcMillis, endUtcMillis);
-        var rangesOfObsIds = [];
+        var rangesOfFlaggedObsIds = [];
 
         for (var i = 0; i < flaggedRanges.length; ++i) {
             if (flaggedRanges[i].obs_count > 0) { // There are observations in this range!
-                var range = getFlaggedObsIds(flaggedRanges[i].from, flaggedRanges[i].to);
-                rangesOfObsIds.push(currentObsIdSet.slice(range.startObsIdIndex, range.endObsIdIndex + 1));
+                var indices = getFlaggedObsIdsMapIndices(flaggedRanges[i].from, flaggedRanges[i].to);
+                var rangeOfFlaggedObsIds = currentObsIdMap.slice(indices.startObsIdMapIndex, indices.endObsIdMapIndex + 1);
+                rangesOfFlaggedObsIds.push({
+                    start_millis: flaggedRanges[i].from,
+                    end_millis: flaggedRanges[i].to,
+                    flaggedRange: rangeOfFlaggedObsIds
+                });
             }
         }
 
@@ -121,9 +115,9 @@
             url: "/save_new_set",
             data: JSON.stringify({
                 name: $('#set_name_textbox').val(),
-                startObsId: fullRange.startObsId,
-                endObsId: fullRange.endObsId,
-                flaggedRanges: rangesOfObsIds,
+                startObsId: currentObsIdMap[0][1],
+                endObsId: currentObsIdMap[currentObsIdMap.length - 1][1],
+                flaggedRanges: rangesOfFlaggedObsIds,
                 lowOrHigh: currentData[0],
                 eor: currentData[1]
             }),
@@ -169,7 +163,7 @@
             return highEOR1FlaggedRanges;
     };
 
-    var getCurrentObsIdSet = function() {
+    var getCurrentObsIdMap = function() {
         if (currentData[0] === 'low' && currentData[1] === '0')
             return utc_obsid_map_l0;
         else if (currentData[0] === 'low')
@@ -192,7 +186,6 @@
             addAllPlotBands();
 
             // Update the information in the panel.
-            updateRangeForConstruction();
             updateSetConstructionTable();
         } else {
             // Set the correct flagged ranges.
@@ -224,37 +217,6 @@
         highEOR1FlaggedRanges = [];
     };
 
-    var updateRangeForConstruction = function() {
-        var obsAxisExtremes = _chart.xAxis[0].getExtremes(), errAxisExtremes = _chart.xAxis[1].getExtremes();
-        var obsMin = obsAxisExtremes.dataMin, obsMax = obsAxisExtremes.dataMax, errMin = errAxisExtremes.dataMin,
-            errMax = errAxisExtremes.dataMax;
-        var minimum, maximum;
-
-        if (obsMin > 0 && errMin > 0) {
-            minimum = Math.min(obsMin, errMin);
-        } else if (obsMin > 0) {
-            minimum = obsMin;
-        } else if (errMin > 0) {
-            minimum = errMin;
-        } else {
-            minimum = Date.parse("{{ range_start }}");
-        }
-
-        if (obsMax > 0 && errMax > 0) {
-            maximum = Math.max(obsMax, errMax);
-        } else if (obsMax > 0) {
-            maximum = obsMax;
-        } else if (errMax > 0) {
-            maximum = errMax;
-        } else {
-            maximum = Date.parse("{{ range_end }}");
-        }
-
-        var startDate = new Date(minimum), endDate = new Date(maximum);
-        $('#start_time_label').html(startDate.toISOString());
-        $('#end_time_label').html(endDate.toISOString());
-    };
-
     var getDataIndices = function(startTime, endTime, obsSeries, errSeries) {
         var obsStartIndex = 0, obsEndIndex = -1;
         var errStartIndex = 0, errEndIndex = -1;
@@ -268,7 +230,7 @@
         }
 
         for (var i = obsStartIndex; i < obsSeries.xData.length; ++i) {
-            if (obsSeries.xData[i] >= endTime) {
+            if (obsSeries.xData[i] > endTime) {
                 obsEndIndex = i - 1;
                 break;
             }
@@ -283,7 +245,7 @@
         }
 
         for (var i = errStartIndex; i < errSeries.xData.length; ++i) {
-            if (errSeries.xData[i] >= endTime) {
+            if (errSeries.xData[i] > endTime) {
                 errEndIndex = i - 1;
                 break;
             }
@@ -339,11 +301,6 @@
 
     var flagClickAndDraggedRange = function(event) {
         flagRangeInSet(event.xAxis[0].min, event.xAxis[0].max);
-    };
-
-    var flagClickedRange = function(event, series) {
-        var columnRange = getColumnRangeLimits(event, series);
-        flagRangeInSet(columnRange.startTime, columnRange.endTime);
     };
 
     var getObsAndErrorCountInRange = function(startTime, endTime) {
@@ -416,7 +373,6 @@
 
         addedNewFlaggedRange(plotBand);
 
-        updateRangeForConstruction();
         updateSetConstructionTable();
     };
 
@@ -452,7 +408,6 @@
             }
         }
 
-        updateRangeForConstruction();
         updateSetConstructionTable();
     };
 
@@ -464,7 +419,6 @@
             addAllPlotBands();
 
             // Update the information in the panel.
-            updateRangeForConstruction();
             updateSetConstructionTable();
         } else { // Exiting construction mode.
             $('#construction_controls').hide(); // Hide set construction controls.
