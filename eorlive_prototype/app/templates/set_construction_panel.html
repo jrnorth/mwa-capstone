@@ -1,3 +1,4 @@
+{% if g.user and g.user.is_authenticated() %}
 <input id="construction_mode_checkbox" type="checkbox" onclick="clickConstructionModeCheckbox(this)">Enable set construction mode
 <select id="eor_dropdown" style="float:right;" onchange="setEorData(this)">
     <option value="0">EOR0</option>
@@ -37,6 +38,7 @@
         </table>
     </div>
 </div>
+{% endif %}
 <script type="text/javascript">
     {% include "js/histogram_utils.js" %} <!-- Because there are functions that depend on Python variables -->
 </script>
