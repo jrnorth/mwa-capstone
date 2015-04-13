@@ -27,51 +27,45 @@ var saveSet = function() {
 
     setSaveButton("Working...", true);
 
-    var startUtcMillis = Date.parse($("#start_time_label_{{data_source_str_nospace}}").text());
-    var endUtcMillis = Date.parse($("#end_time_label_{{data_source_str_nospace}}").text());
-
-    var getFlaggedObsIds = function(start, end) {
+    var getFlaggedObsIdsMapIndices = function(start_millis, end_millis) {
         var utc_obsid_map = getCurrentObsIdMap();
 
-        var startObsIdIndex = -1;
-        var endObsIdIndex = utc_obsid_map.length - 1;
+        var startIndex = 0; endIndex = 0;
 
         for (var i = 0; i < utc_obsid_map.length; ++i) {
-            if (utc_obsid_map[i][0] >= start) {
-                startObsIdIndex = i;
+            if (utc_obsid_map[i][0] >= start_millis) {
+                startIndex = i;
                 break;
             }
         }
 
-        if (startObsIdIndex > -1) {
-            for (var i = startObsIdIndex; i < utc_obsid_map.length; ++i) {
-                if (utc_obsid_map[i][0] >= end) {
-                    endObsIdIndex = i - 1;
-                    break;
-                }
+        for (var i = startIndex; i < utc_obsid_map.length; ++i) {
+            if (utc_obsid_map[i][0] > end_millis) {
+                endIndex = i - 1;
+                break;
+            } else if (i === utc_obsid_map.length - 1) {
+                endIndex = i;
+                break;
             }
-        } else {
-            return {
-                startObsId: -1,
-                endObsId: -1
-            };
         }
 
         return {
-            startObsId: utc_obsid_map[startObsIdIndex][1],
-            endObsId: utc_obsid_map[endObsIdIndex][1],
-            startObsIdIndex: startObsIdIndex,
-            endObsIdIndex: endObsIdIndex
+            startObsIdMapIndex: startIndex,
+            endObsIdMapIndex: endIndex
         };
     };
 
-    var fullRange = getFlaggedObsIds(startUtcMillis, endUtcMillis);
-    var rangesOfObsIds = [];
+    var rangesOfFlaggedObsIds = [];
 
     for (var i = 0; i < flaggedRanges.length; ++i) {
         if (flaggedRanges[i].obs_count > 0) { // There are observations in this range!
-            var range = getFlaggedObsIds(flaggedRanges[i].from, flaggedRanges[i].to);
-            rangesOfObsIds.push(currentObsIdSet.slice(range.startObsIdIndex, range.endObsIdIndex + 1));
+            var indices = getFlaggedObsIdsMapIndices(flaggedRanges[i].from, flaggedRanges[i].to);
+            var rangeOfFlaggedObsIds = currentObsIdMap.slice(indices.startObsIdMapIndex, indices.endObsIdMapIndex + 1);
+            rangesOfFlaggedObsIds.push({
+                start_millis: flaggedRanges[i].from,
+                end_millis: flaggedRanges[i].to,
+                flaggedRange: rangeOfFlaggedObsIds
+            });
         }
     }
 
@@ -80,9 +74,9 @@ var saveSet = function() {
         url: "/save_new_set",
         data: JSON.stringify({
             name: $('#set_name_textbox_{{data_source_str_nospace}}').val(),
-            startObsId: fullRange.startObsId,
-            endObsId: fullRange.endObsId,
-            flaggedRanges: rangesOfObsIds,
+            startObsId: currentObsIdMap[0][1],
+            endObsId: currentObsIdMap[currentObsIdMap.length - 1][1],
+            flaggedRanges: rangesOfFlaggedObsIds,
             lowOrHigh: currentData[0],
             eor: currentData[1]
         }),

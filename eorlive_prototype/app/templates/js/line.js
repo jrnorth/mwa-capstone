@@ -23,11 +23,20 @@
         enabled: true
     },
     series: [
+    {% if is_set %}
+        {% for series in graph_data %}
+        {
+            name: "{{series}}",
+            data: {{series}}
+        },
+        {% endfor %}
+    {% else %}
         {% for series in graph_data.h0 %}
         {
             name: "{{series}}",
             data: graph_data.{{series}}_h0
         },
         {% endfor %}
+    {% endif %}
     ]
 }
