@@ -141,7 +141,7 @@ def unsubscribe_from_data_source():
 
 @app.route('/get_graph_types')
 def get_graph_types():
-    graph_types = models.GraphType.query.all()
+    graph_types = models.GraphType.query.filter(models.GraphType.name != 'Obs_Err').all()
     return render_template('graph_type_list.html', graph_types=graph_types)
 
 @app.route('/create_data_source', methods = ['POST'])
