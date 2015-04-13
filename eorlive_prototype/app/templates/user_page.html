@@ -3,7 +3,8 @@
 
 <script>
     function deleteHelper(action, username) {
-        $('#delete_user_button').html("Working");
+        var str = "#delete_user_button_" + username;
+        $(str).html("Working");
 
 
         $.ajax({
@@ -11,7 +12,7 @@
             url: "/delete_user",
             data: {'username': username, 'action': action},
             success: function(data) {
-                document.write(data);
+                location.reload();
             },
             dataType: "html"
         });
@@ -46,6 +47,7 @@
 </script>
 <h2>Users</h2>
 <br>
+<div id="full_page_div">
 <table class="table table-striped table-bordered">
     <tr class="rowClass userRow">
         <td class="cellClass userCell">Username</td>
@@ -71,7 +73,7 @@
                 </td>
                 {% if theUser.admin %}
                     {% if theUser.username != user.username %}
-                        <td class="cellClass userCell"> <button type="button" id="delete_user_button" onclick="deleteUser('{{ user.username }}')">Delete User</button></td>
+                        <td class="cellClass userCell"> <button type="button" id="delete_user_button_{{ user.username }}" onclick="deleteUser('{{ user.username }}')">Delete User</button></td>
                     {% else %}
                         <td class="cellClass userCell"> </td>
                     {% endif %}
@@ -81,7 +83,7 @@
     {% endfor %}
     <div id="dialog-confirm"></div>
 </table>
-
+</div>
 
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>

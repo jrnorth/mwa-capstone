@@ -9,6 +9,7 @@ from sqlalchemy import and_
 from datetime import datetime, timedelta
 import psycopg2
 import os
+import re
 
 @app.route('/')
 @app.route('/index')
@@ -211,6 +212,8 @@ def signup():
             error = "Passwords must be the same."
         elif testU is not None:
             error = "That username is already in use."
+        elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            error = "That email address is not correct."
         else:
             real_pass = password.encode('UTF-8')
 
@@ -325,14 +328,11 @@ def get_sets():
 def delete_set():
     if (g.user is not None and g.user.is_authenticated()):
         set_name = request.form['set_name']
-        user = models.User.query.get(g.user.username)
 
         theSet = models.Set.query.filter(models.Set.name == set_name).first()
 
         db.session.delete(theSet)
         db.session.commit()
-
-        setList = models.Set.query.filter(models.Set.username == g.user.username)
-        return render_template('profile.html', user=user, sets=setList)
+        return render_template('index.html')
     else:
         return redirect(url_for('login'))

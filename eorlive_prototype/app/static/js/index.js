@@ -128,9 +128,8 @@ function getObservations(loadTab) {
         return;
     }
 
-    // Load the first tab if it's not already being loaded.
+    // Load the currently selected tab if it's not already being loaded.
     if (loadTab) {
-        $("#tabs").tabs("option", "active", 0);
         $("#tabs > ul > li").each(function(index) {
             $(this).data("loaded", false);
         });
@@ -139,7 +138,7 @@ function getObservations(loadTab) {
             var shortUrl = url.split("&").slice(0, 2).join("&");
             $(this).attr("href", shortUrl);
         });
-        $("#tabs").tabs("load", 0);
+        $("#tabs").tabs("load", $("#tabs").tabs('option', 'active'));
     }
 
     if (loadTab) { // The user pressed the "Get observations" button, so they're viewing a date range now.
