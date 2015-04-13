@@ -21,6 +21,11 @@
     width: 100%;
 }
 
+.scrolledList {
+    max-height: 800px;
+    overflow: auto;
+}
+
 .set_list {
     max-height: 800px;
     max-width: 100%;
