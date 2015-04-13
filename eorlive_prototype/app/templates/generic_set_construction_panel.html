@@ -9,7 +9,7 @@
 </select>
 <span style="float:right;">Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
 <div id='construction_controls_{{data_source_str_nospace}}'>
-    Start:&nbsp;<span id="start_time_label_{{data_source_str_nospace}}"></span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp;<span id="end_time_label_{{data_source_str_nospace}}"></span>
+    Start:&nbsp;<span id="start_time_label_{{data_source_str_nospace}}">{{start_time_str}}</span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp;<span id="end_time_label_{{data_source_str_nospace}}">{{end_time_str}}</span>
     &nbsp;&nbsp;&nbsp;&nbsp;Click + drag:&nbsp;&nbsp;
     <select id="click_drag_dropdown_{{data_source_str_nospace}}" onchange="{{data_source_str_nospace}}.setClickDragMode(this)">
         <option value="zoom">Zooms</option>

@@ -149,6 +149,11 @@ def separate_data_into_sets(data, data_source_results, columns, data_source, sta
         for column in columns:
             data[key][column.name] = []
 
+    data['utc_obsid_map_l0'] = []
+    data['utc_obsid_map_l1'] = []
+    data['utc_obsid_map_h0'] = []
+    data['utc_obsid_map_h1'] = []
+
     all_obsids = [obsid_tuple[0] for obsid_tuple in obsid_results]
 
     GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = get_gps_utc_constants()
@@ -171,21 +176,25 @@ def separate_data_into_sets(data, data_source_results, columns, data_source, sta
                 column_name = columns[column_index - 1].name
                 column_data = data_source_result_tuple[column_index]
                 data['l0'][column_name].append([utc_millis, column_data])
+            data['utc_obsid_map_l0'].append([utc_millis, obsid])
         elif obsname.startswith('low') and ra_phase_center == 60:
             for column_index in range(1, len(data_source_result_tuple)):
                 column_name = columns[column_index - 1].name
                 column_data = data_source_result_tuple[column_index]
                 data['l1'][column_name].append([utc_millis, column_data])
+            data['utc_obsid_map_l1'].append([utc_millis, obsid])
         elif obsname.startswith('high') and ra_phase_center == 0:
             for column_index in range(1, len(data_source_result_tuple)):
                 column_name = columns[column_index - 1].name
                 column_data = data_source_result_tuple[column_index]
                 data['h0'][column_name].append([utc_millis, column_data])
+            data['utc_obsid_map_h0'].append([utc_millis, obsid])
         elif obsname.startswith('high') and ra_phase_center == 60:
             for column_index in range(1, len(data_source_result_tuple)):
                 column_name = columns[column_index - 1].name
                 column_data = data_source_result_tuple[column_index]
                 data['h1'][column_name].append([utc_millis, column_data])
+            data['utc_obsid_map_h1'].append([utc_millis, obsid])
 
     return data
 

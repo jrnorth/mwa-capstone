@@ -75,7 +75,9 @@ def get_graph():
             return render_template('graph.html', graph_type_str=graph_type_str.lower(),
                 data_source_str=data_source_str, graph_data=graph_data,
                 plot_bands=[], template_name=template_name, is_set=False,
-                data_source_str_nospace=data_source_str_nospace)
+                data_source_str_nospace=data_source_str_nospace,
+                start_time_str=start_datetime.strftime('%Y-%m-%d %H:%M'),
+                end_time_str=end_datetime.strftime('%Y-%m-%d %H:%M'))
     else:
         the_set = models.Set.query.filter(models.Set.name == set_str).first()
         if the_set is None:

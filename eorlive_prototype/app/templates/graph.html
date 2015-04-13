@@ -44,15 +44,15 @@ var {{data_source_str_nospace}} = (function($) {
         graph_data.{{ series }}_l1 = {{ graph_data.l1[series] | tojson }};
     {% endfor %}
 
-    var plotBands = {{ plot_bands | tojson }};
+    var utc_obsid_map_l0 = {{ graph_data.utc_obsid_map_l0 | tojson }};
+    var utc_obsid_map_l1 = {{ graph_data.utc_obsid_map_l1 | tojson }};
+    var utc_obsid_map_h0 = {{ graph_data.utc_obsid_map_h0 | tojson }};
+    var utc_obsid_map_h1 = {{ graph_data.utc_obsid_map_h1 | tojson }};
 
     $("#{{data_source_str_nospace}}").highcharts('StockChart',
         {% include template_name %}
     , function (chart) {
         _chart = chart;
-        for (var i = 0; i < plotBands.length; ++i) {
-            chart.xAxis[0].addPlotBand(plotBands[i]);
-        }
     });
 
     return dataSourceObj;

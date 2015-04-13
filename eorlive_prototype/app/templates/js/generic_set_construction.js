@@ -1,8 +1,8 @@
-{% include "js/histogram_utils.js" %} // Because there are functions that depend on Python variables
 var _chart;
 var inConstructionMode = false;
-var flaggedRanges = [], lowEOR0FlaggedRanges = [], highEOR0FlaggedRanges = [];
+var lowEOR0FlaggedRanges = [], highEOR0FlaggedRanges = [];
 var lowEOR1FlaggedRanges = [], highEOR1FlaggedRanges = [];
+var flaggedRanges = highEOR0FlaggedRanges;
 var currentData = ['high', '0'];
 var clickDragMode = 'zoom';
 var dataSourceObj = {};
@@ -15,9 +15,9 @@ var saveSet = function() {
         $('#save_set_button_{{data_source_str_nospace}}').prop('disabled', disabled);
     };
 
-    var currentObsIdSet = getCurrentObsIdSet();
+    var currentObsIdMap = getCurrentObsIdMap();
 
-    if (currentObsIdSet.length === 0) {
+    if (currentObsIdMap.length === 0) {
         alert("There aren't any obs ids in this set!");
         return;
     } else if ($('#set_name_textbox_{{data_source_str_nospace}}').val().length === 0) {
@@ -31,7 +31,7 @@ var saveSet = function() {
     var endUtcMillis = Date.parse($("#end_time_label_{{data_source_str_nospace}}").text());
 
     var getFlaggedObsIds = function(start, end) {
-        var utc_obsid_map = getCurrentObsIdSet();
+        var utc_obsid_map = getCurrentObsIdMap();
 
         var startObsIdIndex = -1;
         var endObsIdIndex = utc_obsid_map.length - 1;
@@ -107,17 +107,6 @@ var saveSet = function() {
 };
 dataSourceObj.saveSet = saveSet;
 
-var getCurrentDataSeries = function() {
-    if (currentData[0] === 'low' && currentData[1] === '0')
-        return low_eor0_counts;
-    else if (currentData[0] === 'low')
-        return low_eor1_counts;
-    else if (currentData[0] === 'high' && currentData[1] === '0')
-        return high_eor0_counts;
-    else
-        return high_eor1_counts;
-};
-
 var getCurrentFlaggedSet = function() {
     if (currentData[0] === 'low' && currentData[1] === '0')
         return lowEOR0FlaggedRanges;
@@ -129,7 +118,7 @@ var getCurrentFlaggedSet = function() {
         return highEOR1FlaggedRanges;
 };
 
-var getCurrentObsIdSet = function() {
+var getCurrentObsIdMap = function() {
     if (currentData[0] === 'low' && currentData[1] === '0')
         return utc_obsid_map_l0;
     else if (currentData[0] === 'low')
@@ -164,8 +153,6 @@ var dataSetChanged = function() {
         }
     }
 
-    return;
-
     if (inConstructionMode) {
         removeAllPlotBands();
 
@@ -175,7 +162,6 @@ var dataSetChanged = function() {
         addAllPlotBands();
 
         // Update the information in the panel.
-        updateRangeForConstruction();
         updateSetConstructionTable();
     } else {
         // Set the correct flagged ranges.
@@ -210,79 +196,6 @@ var clearSetConstructionData = function() {
     highEOR1FlaggedRanges = [];
 };
 
-var updateRangeForConstruction = function() {
-    var obsAxisExtremes = _chart.xAxis[0].getExtremes(), errAxisExtremes = _chart.xAxis[1].getExtremes();
-    var obsMin = obsAxisExtremes.dataMin, obsMax = obsAxisExtremes.dataMax, errMin = errAxisExtremes.dataMin,
-        errMax = errAxisExtremes.dataMax;
-    var minimum, maximum;
-
-    if (obsMin > 0 && errMin > 0) {
-        minimum = Math.min(obsMin, errMin);
-    } else if (obsMin > 0) {
-        minimum = obsMin;
-    } else if (errMin > 0) {
-        minimum = errMin;
-    } else {
-        minimum = Date.parse("{{ range_start }}");
-    }
-
-    if (obsMax > 0 && errMax > 0) {
-        maximum = Math.max(obsMax, errMax);
-    } else if (obsMax > 0) {
-        maximum = obsMax;
-    } else if (errMax > 0) {
-        maximum = errMax;
-    } else {
-        maximum = Date.parse("{{ range_end }}");
-    }
-
-    var startDate = new Date(minimum), endDate = new Date(maximum);
-    $('#start_time_label_{{data_source_str_nospace}}').html(startDate.toISOString());
-    $('#end_time_label_{{data_source_str_nospace}}').html(endDate.toISOString());
-    };
-
-    var getDataIndices = function(startTime, endTime, obsSeries, errSeries) {
-    var obsStartIndex = 0, obsEndIndex = -1;
-    var errStartIndex = 0, errEndIndex = -1;
-
-    for (var i = 0; i < obsSeries.xData.length; ++i) {
-        if (obsSeries.xData[i] >= startTime) {
-            obsStartIndex = i;
-            obsEndIndex = obsSeries.xData.length - 1;
-            break;
-        }
-    }
-
-    for (var i = obsStartIndex; i < obsSeries.xData.length; ++i) {
-        if (obsSeries.xData[i] >= endTime) {
-            obsEndIndex = i - 1;
-            break;
-        }
-    }
-
-    for (var i = 0; i < errSeries.xData.length; ++i) {
-        if (errSeries.xData[i] >= startTime) {
-            errStartIndex = i;
-            errEndIndex = errSeries.xData.length - 1;
-            break;
-        }
-    }
-
-    for (var i = errStartIndex; i < errSeries.xData.length; ++i) {
-        if (errSeries.xData[i] >= endTime) {
-            errEndIndex = i - 1;
-            break;
-        }
-    }
-
-    return {
-        obsStartIndex: obsStartIndex,
-        obsEndIndex: obsEndIndex,
-        errStartIndex: errStartIndex,
-        errEndIndex: errEndIndex
-    };
-};
-
 var mergeOverlappingRanges = function() {
     if (flaggedRanges.length === 0)
         return;
@@ -314,9 +227,8 @@ var mergeOverlappingRanges = function() {
             lowerRange.to = Math.max(lowerRange.to, higherRange.to);
 
             // Since we merged two intervals, we have to update the observation & error counts.
-            var counts = getObsAndErrorCountInRange(lowerRange.from, lowerRange.to);
-            lowerRange.obs_count = counts.obsCount;
-            lowerRange.err_count = counts.errCount;
+            var obsCount = getObsCountInRange(lowerRange.from, lowerRange.to);
+            lowerRange.obs_count = obsCount;
         } else { // No overlap.
             flaggedRanges.push(higherRange);
         }
@@ -327,34 +239,30 @@ var flagClickAndDraggedRange = function(event) {
     flagRangeInSet(event.xAxis[0].min, event.xAxis[0].max);
 };
 
-var flagClickedRange = function(event, series) {
-    var columnRange = getColumnRangeLimits(event, series);
-    flagRangeInSet(columnRange.startTime, columnRange.endTime);
-};
+var getObsCountInRange = function(startTime, endTime) {
+    var currentObsIdMap = getCurrentObsIdMap();
+    var startIndex = 0, endIndex = 0;
 
-var getObsAndErrorCountInRange = function(startTime, endTime) {
-    var obsSeries = _chart.series[0], errSeries = _chart.series[1];
-
-    var dataIndices = getDataIndices(startTime, endTime, obsSeries, errSeries);
-
-    var flaggedObs = getCurrentDataSeries().slice(dataIndices.obsStartIndex, dataIndices.obsEndIndex + 1);
-
-    var flaggedErr = error_counts.slice(dataIndices.errStartIndex, dataIndices.errEndIndex + 1);
-
-    var obsCount = 0, errCount = 0;
-
-    for (var i = 0; i < flaggedObs.length; ++i) {
-        obsCount += flaggedObs[i][1];
+    for (var i = 0; i < currentObsIdMap.length; ++i) {
+        if (currentObsIdMap[i][0] >= startTime) {
+            startIndex = i;
+            break;
+        }
     }
 
-    for (var i = 0; i < flaggedErr.length; ++i) {
-        errCount += flaggedErr[i][1];
+    for (var i = 0; i < currentObsIdMap.length; ++i) {
+        if (currentObsIdMap[i][0] > endTime) {
+            endIndex = i - 1;
+            break;
+        } else if (i === currentObsIdMap.length - 1) { // At end of list but haven't found range end yet.
+            endIndex = i;
+            break;
+        }
     }
 
-    return {
-        obsCount: obsCount,
-        errCount: errCount
-    };
+    var obsCount = endIndex - startIndex + 1;
+
+    return obsCount;
 };
 
 var updateFlaggedRangeIdsAndLabels = function() {
@@ -389,20 +297,18 @@ var addedNewFlaggedRange = function(plotBand) {
 };
 
 var flagRangeInSet = function(startTime, endTime) {
-    var counts = getObsAndErrorCountInRange(startTime, endTime);
+    var obs_count = getObsCountInRange(startTime, endTime);
 
     var plotBand = {
         id: "",         // The id will be determined later.
         color: 'yellow',
         from: startTime,
         to: endTime,
-        obs_count: counts.obsCount,
-        err_count: counts.errCount
+        obs_count: obs_count
     };
 
     addedNewFlaggedRange(plotBand);
 
-    updateRangeForConstruction();
     updateSetConstructionTable();
 };
 
@@ -415,7 +321,6 @@ var updateSetConstructionTable = function() {
         '<td>' + new Date(flaggedRange.from).toISOString() + '</td>' +
         '<td>' + new Date(flaggedRange.to).toISOString() + '</td>' +
         '<td>' + flaggedRange.obs_count + '</td>' +
-        '<td>' + flaggedRange.err_count + '</td>' +
         '<td><button onclick=\'{{data_source_str_nospace}}.unflagRange("' + flaggedRange.id +
         '")\'>Unflag range</button></td></tr>';
     }
@@ -438,7 +343,6 @@ var unflagRange = function(flaggedRangeId) {
         }
     }
 
-    updateRangeForConstruction();
     updateSetConstructionTable();
 };
 dataSourceObj.unflagRange = unflagRange;
@@ -451,7 +355,6 @@ var clickConstructionModeCheckbox = function(checkbox) {
         addAllPlotBands();
 
         // Update the information in the panel.
-        updateRangeForConstruction();
         updateSetConstructionTable();
     } else { // Exiting construction mode.
         $('#construction_controls_{{data_source_str_nospace}}').hide(); // Hide set construction controls.
