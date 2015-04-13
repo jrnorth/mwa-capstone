@@ -3,13 +3,6 @@
     <button id='backbutton' onclick="backToHistogram()">Back to histogram</button>
     <div id='error_table'></div>
     <div id="obs_err"></div>
-    <h3>Set Details</h3>
-    <p>Creator: {{ the_set.username }}</p>
-    <p>High/Low: {{ the_set.low_or_high }}</p>
-    <p>EOR0/EOR1: {{ the_set.eor }}</p>
-    <p>Data hours: {{ the_set.total_data_hrs | round(2) }} ({{ the_set.flagged_data_hrs | round(2) }} flagged)</p>
-    <button type="button" onclick="downloadSet()">Download set</button>
-    <button type="button" onclick="goToNGAS()">NGAS Observations</button>
 </div>
 <script type="text/javascript">
     {% include "js/histogram_utils.js" %} <!-- Because there are functions that depend on Python variables -->

@@ -63,7 +63,10 @@
                     {% endif %}
                     </ul>
                 </div>
-                <span style="font-size:30px;">Comments</span>
+                {% if the_set %}
+                    {% include 'set_details.html' %}
+                {% endif %}
+                <span style="font-size:25px;">Comments</span>
                 {% if g.user and g.user.is_authenticated() %}
                 <button type="button" onclick="newThread()" class="replyButton" style="margin-top:12px;">New thread</button>
                 {% endif %}

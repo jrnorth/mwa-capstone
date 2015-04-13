@@ -144,6 +144,7 @@ function getObservations(loadTab) {
 
     if (loadTab) { // The user pressed the "Get observations" button, so they're viewing a date range now.
         $("#set_or_date_range_label").html("date range");
+        $("#set_details").hide();
     }
 
     $("#summary_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
