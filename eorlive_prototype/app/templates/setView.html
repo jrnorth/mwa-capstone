@@ -166,24 +166,5 @@
     function downloadSet() {
         window.open("/download_set?set_id={{the_set.id}}", '_blank');
     };
-
-    function deleteSet() {
-        var conf = confirm("Are you sure you wish to delete the set?");
-        if (conf == true)
-        {
-            $("#delete_set_button").html("Working");
-            $.ajax({
-                type: "POST",
-                url: "/delete_set",
-                data: {
-                    'set_name': '{{ the_set.name }}'
-                },
-                success: function(data) {
-                    document.write(data);
-                },
-                dataType: "html"
-            });
-        }
-    };
 </script>
 {% endblock %}

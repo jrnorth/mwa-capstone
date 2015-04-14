@@ -317,22 +317,22 @@ def get_sets():
 
         setList = query.all()
 
-        if setList is not None:
-            return render_template('setList.html', sets=setList)
-        else:
-            return render_template('setList.html')
+        include_delete_buttons = request_content['includeDeleteButtons']
+
+        return render_template('setList.html', sets=setList,
+            include_delete_buttons=include_delete_buttons)
     else:
         return render_template('setList.html', logged_out=True)
 
 @app.route('/delete_set', methods = ['POST'])
 def delete_set():
     if (g.user is not None and g.user.is_authenticated()):
-        set_name = request.form['set_name']
+        set_id = request.form['set_id']
 
-        theSet = models.Set.query.filter(models.Set.name == set_name).first()
+        theSet = models.Set.query.filter(models.Set.id == set_id).first()
 
         db.session.delete(theSet)
         db.session.commit()
-        return render_template('index.html')
+        return "Success"
     else:
         return redirect(url_for('login'))

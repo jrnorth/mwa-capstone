@@ -215,5 +215,5 @@ var applyFiltersAndSort = function() {
     var startUTC = startDate.toISOString().slice(0, 19) + "Z";
     var endUTC = endDate.toISOString().slice(0, 19) + "Z";
 
-    renderSets(set_controls, startUTC, endUTC);
+    renderSets(set_controls, startUTC, endUTC, false);
 };

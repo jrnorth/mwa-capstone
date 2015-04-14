@@ -75,11 +75,40 @@
     };
 
     $(function() {
-        renderSets(set_controls, '', '');
+        renderSets(set_controls, '', '', true);
         getGraphTypes();
         getUsersDataSources();
         getUnsubscribedDataSources();
     });
+
+
+    function deleteSet(setId, setName) {
+        var conf = confirm("Are you sure you wish to delete " + setName + "?");
+        if (conf == true) {
+            var setDeleteButton = function(setId, text, disabled) {
+                var deleteSetButton = $("#delete_set_button_" + setId);
+                deleteSetButton.html(text);
+                deleteSetButton.prop('disabled', disabled);
+            }
+
+            setDeleteButton(setId, "Working...", true);
+            $.ajax({
+                type: "POST",
+                url: "/delete_set",
+                data: {
+                    'set_id': setId
+                },
+                success: function(data) {
+                    renderSets(set_controls, '', '', true);
+                },
+                error: function(xhr, status, error) {
+                    alert("An error occurred.");
+                    setDeleteButton(setId, "Delete", false);
+                },
+                dataType: "html"
+            });
+        }
+    };
 
     function getGraphTypes() {
         $("#graph_type_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
