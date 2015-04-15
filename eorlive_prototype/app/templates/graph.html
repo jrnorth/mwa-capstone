@@ -28,7 +28,7 @@ var {{data_source_str_nospace}} = (function($) {
     });
 
     {% if width_slider %}
-        {% include 'width_slider.js' %}
+        {% include 'js/width_slider.js' %}
         dataSourceObj.sliderChanged = sliderChanged;
     {% endif %}
     return dataSourceObj;
@@ -70,6 +70,11 @@ var {{data_source_str_nospace}} = (function($) {
     , function (chart) {
         _chart = chart;
     });
+
+    {% if width_slider %}
+        {% include 'js/width_slider.js' %}
+        dataSourceObj.sliderChanged = sliderChanged;
+    {% endif %}
 
     return dataSourceObj;
 }(jQuery));
