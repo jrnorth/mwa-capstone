@@ -262,7 +262,8 @@
                 table: table,
                 columns: columns,
                 obs_column: obs_column,
-                data_source_name: data_source_name
+                data_source_name: data_source_name,
+                include_width_slider: $("#include_width_slider").is(":checked")
             }),
             success: function(data) {
                 if (data.error) {

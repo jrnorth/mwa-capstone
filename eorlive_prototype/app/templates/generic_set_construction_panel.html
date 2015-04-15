@@ -1,13 +1,23 @@
-<input id="construction_mode_checkbox_{{data_source_str_nospace}}" type="checkbox" onclick="{{data_source_str_nospace}}.clickConstructionModeCheckbox(this)">Enable set construction mode
-<select id="eor_dropdown_{{data_source_str_nospace}}" style="float:right;" onchange="{{data_source_str_nospace}}.setEorData(this)">
-    <option value="0">EOR0</option>
-    <option value="1">EOR1</option>
-</select>
-<select id="low_high_dropdown_{{data_source_str_nospace}}" style="float:right;" onchange="{{data_source_str_nospace}}.setLowOrHighData(this)">
-    <option value="high">High</option>
-    <option value="low">Low</option>
-</select>
-<span style="float:right;">Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<table style="width:100%">
+    <tr>
+        <td style="text-align:left">
+            <input id="construction_mode_checkbox_{{data_source_str_nospace}}" type="checkbox" onclick="{{data_source_str_nospace}}.clickConstructionModeCheckbox(this)">Enable set construction mode
+        </td>
+        {% if width_slider %}
+            {% include 'width_slider.html' %}
+        {% endif %}
+        <td style="text-align:right">
+            <span>Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <select id="low_high_dropdown_{{data_source_str_nospace}}" onchange=       "{{data_source_str_nospace}}.setLowOrHighData(this)">
+                <option value="high">High</option>
+                <option value="low">Low</option>
+            </select>
+            <select id="eor_dropdown_{{data_source_str_nospace}}" onchange="{{data_source_str_nospace}}.setEorData(this)">
+                <option value="0">EOR0</option>
+                <option value="1">EOR1</option>
+            </select>
+        </td>
+</table>
 <div id='construction_controls_{{data_source_str_nospace}}'>
     Start:&nbsp;<span id="start_time_label_{{data_source_str_nospace}}">{{start_time_str}}</span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp;<span id="end_time_label_{{data_source_str_nospace}}">{{end_time_str}}</span>
     &nbsp;&nbsp;&nbsp;&nbsp;Click + drag:&nbsp;&nbsp;

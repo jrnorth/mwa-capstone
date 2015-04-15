@@ -3,11 +3,20 @@
     <button id='backbutton' onclick="backToHistogram()">Back to histogram</button>
     <div id='error_table'></div>
     <div id="obs_err"></div>
+    <table style="width:50%;margin:auto;">
+        <tr>
+            <td style="text-align:center">
+                Column width
+                <input type="range" min="5" max="155" value="80" step="25" onchange="sliderChanged(this)"/>
+            </td>
+        </tr>
+    </table>
 </div>
 <script type="text/javascript">
     {% include "js/histogram_utils.js" %} <!-- Because there are functions that depend on Python variables -->
 </script>
 <script>
+    var _chart;
     var observation_counts = {{ observation_counts | tojson }};
     var error_counts = {{ error_counts | tojson }};
     var plot_bands = {{ plot_bands | tojson }};
@@ -156,6 +165,8 @@
                 name: 'Errors',
                 data: error_counts
             }]
+        }, function(chart) {
+            _chart = chart;
         });
     });
 
@@ -165,6 +176,17 @@
 
     function downloadSet() {
         window.open("/download_set?set_id={{the_set.id}}", '_blank');
+    };
+
+    var sliderChanged = function(slider) {
+        var newOptions = {
+            dataGrouping: {
+                groupPixelWidth: slider.value
+            }
+        };
+
+        _chart.series[0].update(newOptions, false); // Don't redraw chart.
+        _chart.series[1].update(newOptions);
     };
 </script>
 {% endblock %}

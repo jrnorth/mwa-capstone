@@ -156,6 +156,7 @@ def create_data_source():
         columns = request_content['columns']
         obs_column = request_content['obs_column']
         data_source_name = request_content['data_source_name']
+        include_width_slider = request_content['include_width_slider']
 
         if not graph_type or not host or not database or not table or not columns\
             or not obs_column or not data_source_name:
@@ -218,6 +219,7 @@ def create_data_source():
         graph_data_source.table = table
         graph_data_source.obs_column = obs_column
         graph_data_source.projectid = projectid
+        graph_data_source.width_slider = include_width_slider
         db.session.add(graph_data_source)
         db.session.flush()
 

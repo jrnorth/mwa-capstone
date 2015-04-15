@@ -51,6 +51,8 @@ def get_graph():
     if data_source_str is None:
         return make_response('No data source', 500)
 
+    data_source = models.GraphDataSource.query.filter(models.GraphDataSource.name == data_source_str).first()
+
     set_str = request.args.get('set')
 
     template_name = "js/" + graph_type_str.lower() + ".js"
@@ -78,7 +80,8 @@ def get_graph():
                 plot_bands=[], template_name=template_name, is_set=False,
                 data_source_str_nospace=data_source_str_nospace,
                 start_time_str=start_datetime.strftime('%Y-%m-%d %H:%M'),
-                end_time_str=end_datetime.strftime('%Y-%m-%d %H:%M'))
+                end_time_str=end_datetime.strftime('%Y-%m-%d %H:%M'),
+                width_slider=data_source.width_slider)
     else:
         the_set = models.Set.query.filter(models.Set.name == set_str).first()
         if the_set is None:
@@ -103,7 +106,8 @@ def get_graph():
             data_source_str_nospace = data_source_str.replace(' ', '_')
             return render_template('graph.html', graph_type_str=graph_type_str.lower(),
                 data_source_str=data_source_str, graph_data=graph_data, plot_bands=plot_bands,
-                template_name=template_name, is_set=True, data_source_str_nospace=data_source_str_nospace)
+                template_name=template_name, is_set=True, data_source_str_nospace=data_source_str_nospace,
+                width_slider=data_source.width_slider)
 
 @app.route('/data_amount', methods = ['GET'])
 def data_amount():

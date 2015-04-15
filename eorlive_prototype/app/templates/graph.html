@@ -1,8 +1,17 @@
 {% block content %}
 <div id="{{data_source_str_nospace}}"></div>
 {% if is_set %}
+    {% if width_slider %}
+        <table style="width:50%;margin:auto;">
+            <tr>
+                {% include 'width_slider.html' %}
+            </tr>
+        </table>
+    {% endif %}
 <script>
-(function($) {
+var {{data_source_str_nospace}} = (function($) {
+    var _chart, dataSourceObj;
+
     {% for series in graph_data %}
         var {{ series }} = {{ graph_data[series] | tojson }};
     {% endfor %}
@@ -15,7 +24,14 @@
         for (var i = 0; i < plotBands.length; ++i) {
             chart.xAxis[0].addPlotBand(plotBands[i]);
         }
+        _chart = chart;
     });
+
+    {% if width_slider %}
+        {% include 'width_slider.js' %}
+        dataSourceObj.sliderChanged = sliderChanged;
+    {% endif %}
+    return dataSourceObj;
 }(jQuery));
 </script>
 {% else %}

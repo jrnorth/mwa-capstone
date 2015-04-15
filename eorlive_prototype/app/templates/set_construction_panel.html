@@ -1,13 +1,26 @@
-<input id="construction_mode_checkbox" type="checkbox" onclick="clickConstructionModeCheckbox(this)">Enable set construction mode
-<select id="eor_dropdown" style="float:right;" onchange="setEorData(this)">
-    <option value="0">EOR0</option>
-    <option value="1">EOR1</option>
-</select>
-<select id="low_high_dropdown" style="float:right;" onchange="setLowOrHighData(this)">
-    <option value="high">High</option>
-    <option value="low">Low</option>
-</select>
-<span style="float:right;">Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<table style="width:100%">
+    <tr>
+        <td style="text-align:left">
+            <input id="construction_mode_checkbox" type="checkbox" onclick="clickConstructionModeCheckbox(this)">
+            Enable set construction mode
+        </td>
+        <td style="text-align:center">
+            Column width
+            <input type="range" min="5" max="155" value="80" step="25" onchange="sliderChanged(this)"/>
+        </td>
+        <td style="text-align:right">
+            <span>Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <select id="low_high_dropdown" onchange="setLowOrHighData(this)">
+                <option value="high">High</option>
+                <option value="low">Low</option>
+            </select>
+            <select id="eor_dropdown" onchange="setEorData(this)">
+                <option value="0">EOR0</option>
+                <option value="1">EOR1</option>
+            </select>
+        </td>
+    </tr>
+</table>
 <div id='construction_controls'>
     Start:&nbsp;<span id="start_time_label">{{start_time_str_short}}</span>&nbsp;&nbsp;&nbsp;&nbsp;End:&nbsp;<span id="end_time_label">{{end_time_str_short}}</span>
     &nbsp;&nbsp;&nbsp;&nbsp;Click + drag:&nbsp;&nbsp;
@@ -425,5 +438,16 @@
 
             removeAllPlotBands();
         }
+    };
+
+    var sliderChanged = function(slider) {
+        var newOptions = {
+            dataGrouping: {
+                groupPixelWidth: slider.value
+            }
+        };
+
+        _chart.series[0].update(newOptions, false); // Don't redraw chart.
+        _chart.series[1].update(newOptions);
     };
 </script>
