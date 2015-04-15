@@ -1,21 +1,22 @@
 {% block body %}
 <div id="main_content_div">
-    <button id='backbutton' onclick="backToHistogram()">Back to histogram</button>
+    <button id='backbutton' onclick="obs_err.backToHistogram()">Back to histogram</button>
     <div id='error_table'></div>
     <div id="obs_err"></div>
-    <table style="width:50%;margin:auto;">
+    <table id="width_slider" style="width:50%;margin:auto;">
         <tr>
             <td style="text-align:center">
                 Column width
-                <input type="range" min="5" max="155" value="80" step="25" onchange="sliderChanged(this)"/>
+                <input type="range" min="5" max="155" value="80" step="25" onchange="obs_err.sliderChanged(this)"/>
             </td>
         </tr>
     </table>
 </div>
 <script type="text/javascript">
+var obs_err = (function($) {
     {% include "js/histogram_utils.js" %} <!-- Because there are functions that depend on Python variables -->
-</script>
-<script>
+
+    var dataSourceObj = {};
     var _chart;
     var observation_counts = {{ observation_counts | tojson }};
     var error_counts = {{ error_counts | tojson }};
@@ -24,8 +25,10 @@
     var backToHistogram = function() {
         $('#backbutton').hide();
         $('#error_table').hide();
-        $('#set_histogram').show();
+        $('#obs_err').show();
+        $('#width_slider').show();
     };
+    dataSourceObj.backToHistogram = backToHistogram;
 
     $(function() {
         $('#backbutton').hide();
@@ -69,6 +72,7 @@
                                 var startTime = columnLimits.startTime, endTime = columnLimits.endTime;
 
                                 $('#obs_err').hide();
+                                $('#width_slider').hide();
                                 $('#error_table').html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
                                 $('#error_table').show();
 
@@ -170,14 +174,6 @@
         });
     });
 
-    function goToNGAS() {
-        window.open("http://ngas01.ivec.org/admin/observation/observationsetting?projectid=G0009&startTime={{start_time_str_full}}&endTime={{end_time_str_full}}", '_blank');
-    };
-
-    function downloadSet() {
-        window.open("/download_set?set_id={{the_set.id}}", '_blank');
-    };
-
     var sliderChanged = function(slider) {
         var newOptions = {
             dataGrouping: {
@@ -188,5 +184,17 @@
         _chart.series[0].update(newOptions, false); // Don't redraw chart.
         _chart.series[1].update(newOptions);
     };
+    dataSourceObj.sliderChanged = sliderChanged;
+
+    return dataSourceObj;
+}(jQuery));
+
+function goToNGAS() {
+    window.open("http://ngas01.ivec.org/admin/observation/observationsetting?projectid=G0009&startTime={{start_time_str_full}}&endTime={{end_time_str_full}}", '_blank');
+};
+
+function downloadSet() {
+    window.open("/download_set?set_id={{the_set.id}}", '_blank');
+};
 </script>
 {% endblock %}

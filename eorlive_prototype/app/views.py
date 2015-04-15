@@ -95,12 +95,13 @@ def get_graph():
             error_counts = histogram_utils.get_error_counts(the_set.start, the_set.end)[0]
             start_datetime, end_datetime = db_utils.get_datetime_from_gps(
                 the_set.start, the_set.end)
-            start_time_str_full = start_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
-            end_time_str_full = end_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+            range_end = end_datetime.strftime('%Y-%m-%dT%H:%M:%SZ') # For the function in histogram_utils.js
+            start_time_str_full = start_datetime.strftime('%Y-%m-%d %H:%M:%S') # For the NGAS link
+            end_time_str_full = end_datetime.strftime('%Y-%m-%d %H:%M:%S') # For the NGAS link
             return render_template('setView.html', the_set=the_set,
                 observation_counts=observation_counts, error_counts=error_counts,
                 plot_bands=plot_bands, start_time_str_full=start_time_str_full,
-                end_time_str_full=end_time_str_full)
+                end_time_str_full=end_time_str_full, range_end=range_end)
         else:
             graph_data = db_utils.get_graph_data(data_source_str, the_set.start, the_set.end, the_set)
             data_source_str_nospace = data_source_str.replace(' ', '_')
