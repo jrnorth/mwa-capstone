@@ -74,7 +74,7 @@ def get_graph():
                 start_time_str, end_time_str)
         else:
             graph_data = db_utils.get_graph_data(data_source_str, start_gps, end_gps, None)
-            data_source_str_nospace = data_source_str.replace(' ', '_')
+            data_source_str_nospace = data_source_str.replace(' ', 'ಠ_ಠ')
             return render_template('graph.html', graph_type_str=graph_type_str.lower(),
                 data_source_str=data_source_str, graph_data=graph_data,
                 plot_bands=[], template_name=template_name, is_set=False,
@@ -104,7 +104,7 @@ def get_graph():
                 end_time_str_full=end_time_str_full, range_end=range_end)
         else:
             graph_data = db_utils.get_graph_data(data_source_str, the_set.start, the_set.end, the_set)
-            data_source_str_nospace = data_source_str.replace(' ', '_')
+            data_source_str_nospace = data_source_str.replace(' ', 'ಠ_ಠ')
             return render_template('graph.html', graph_type_str=graph_type_str.lower(),
                 data_source_str=data_source_str, graph_data=graph_data, plot_bands=plot_bands,
                 template_name=template_name, is_set=True, data_source_str_nospace=data_source_str_nospace,
