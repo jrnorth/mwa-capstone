@@ -89,15 +89,17 @@ def get_graph():
 
         plot_bands = histogram_utils.get_plot_bands(the_set)
 
+        start_datetime, end_datetime = db_utils.get_datetime_from_gps(
+                the_set.start, the_set.end)
+
+        start_time_str_full = start_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        end_time_str_full = end_datetime.strftime('%Y-%m-%d %H:%M:%S')
+
         if graph_type_str == 'Obs_Err':
             observation_counts = histogram_utils.get_observation_counts(
                 the_set.start, the_set.end, the_set.low_or_high, the_set.eor)
             error_counts = histogram_utils.get_error_counts(the_set.start, the_set.end)[0]
-            start_datetime, end_datetime = db_utils.get_datetime_from_gps(
-                the_set.start, the_set.end)
             range_end = end_datetime.strftime('%Y-%m-%dT%H:%M:%SZ') # For the function in histogram_utils.js
-            start_time_str_full = start_datetime.strftime('%Y-%m-%d %H:%M:%S') # For the NGAS link
-            end_time_str_full = end_datetime.strftime('%Y-%m-%d %H:%M:%S') # For the NGAS link
             return render_template('setView.html', the_set=the_set,
                 observation_counts=observation_counts, error_counts=error_counts,
                 plot_bands=plot_bands, start_time_str_full=start_time_str_full,
@@ -105,10 +107,13 @@ def get_graph():
         else:
             graph_data = db_utils.get_graph_data(data_source_str, the_set.start, the_set.end, the_set)
             data_source_str_nospace = data_source_str.replace(' ', 'ಠ_ಠ')
+            which_data_set = db_utils.which_data_set(the_set)
             return render_template('graph.html',
                 data_source_str=data_source_str, graph_data=graph_data, plot_bands=plot_bands,
                 template_name=template_name, is_set=True, data_source_str_nospace=data_source_str_nospace,
-                width_slider=data_source.width_slider)
+                width_slider=data_source.width_slider, the_set=the_set,
+                which_data_set=which_data_set, start_time_str=start_time_str_full,
+                end_time_str=end_time_str_full)
 
 @app.route('/data_amount', methods = ['GET'])
 def data_amount():

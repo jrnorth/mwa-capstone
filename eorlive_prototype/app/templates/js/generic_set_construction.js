@@ -1,13 +1,43 @@
 var _chart;
 var inConstructionMode = false;
+{% if is_set %}
+var flaggedRanges = {{ plot_bands | tojson }};
+    {% if which_data_set == 'any' %}
+        var currentData = ['any', 'any'];
+    {% else %}
+        var currentData = ['{{the_set.low_or_high}}', '{{the_set.eor[3]}}'];
+    {% endif %}
+{% else %}
 var lowEOR0FlaggedRanges = [], highEOR0FlaggedRanges = [];
 var lowEOR1FlaggedRanges = [], highEOR1FlaggedRanges = [];
 var flaggedRanges = highEOR0FlaggedRanges;
 var currentData = ['high', '0'];
+{% endif %}
 var clickDragMode = 'zoom';
 var dataSourceObj = {};
 
-$('#construction_controls_{{data_source_str_nospace}}').hide();
+var setup = function() {
+    $('#construction_controls_{{data_source_str_nospace}}').hide();
+    {% if is_set %}
+        // Hide data set selectors (i.e. EOR0/EOR1 and low/high) because
+        // the user is modifying an existing set that already has low/high
+        // and EOR0/EOR1 associated with it.
+        $('#data_set_span_{{data_source_str_nospace}}').hide();
+        $('#low_high_dropdown_{{data_source_str_nospace}}').hide();
+        $('#eor_dropdown_{{data_source_str_nospace}}').hide();
+        // The flagged ranges don't have ids or labels yet.
+        updateFlaggedRangeIdsAndLabels();
+        // Draw the plot bands.
+        addAllPlotBands();
+        // Count the # of observations in each band.
+        for (var i = 0; i < flaggedRanges.length; ++i) {
+            var thisRange = flaggedRanges[i];
+            thisRange.obs_count = getObsCountInRange(thisRange.from, thisRange.to);
+        }
+        // Update the information in the panel.
+        updateSetConstructionTable();
+    {% endif %}
+};
 
 var saveSet = function() {
     var setSaveButton = function(text, disabled) {
@@ -104,33 +134,35 @@ dataSourceObj.saveSet = saveSet;
 var getCurrentFlaggedSet = function() {
     if (currentData[0] === 'low' && currentData[1] === '0')
         return lowEOR0FlaggedRanges;
-    else if (currentData[0] === 'low')
+    else if (currentData[0] === 'low' && currentData[1] === '1')
         return lowEOR1FlaggedRanges;
     else if (currentData[0] === 'high' && currentData[1] === '0')
         return highEOR0FlaggedRanges;
-    else
+    else if (currentData[0] === 'high' && currentData[1] === '1')
         return highEOR1FlaggedRanges;
 };
 
 var getCurrentObsIdMap = function() {
     if (currentData[0] === 'low' && currentData[1] === '0')
         return utc_obsid_map_l0;
-    else if (currentData[0] === 'low')
+    else if (currentData[0] === 'low' && currentData[1] === '1')
         return utc_obsid_map_l1;
     else if (currentData[0] === 'high' && currentData[1] === '0')
         return utc_obsid_map_h0;
-    else
+    else if (currentData[0] === 'high' && currentData[1] === '1')
         return utc_obsid_map_h1;
+    else
+        return utc_obsid_map_any;
 };
 
 var getVariableSuffix = function() {
     if (currentData[0] === 'low' && currentData[1] === '0') {
         return '_l0';
-    } else if (currentData[0] === 'low') {
+    } else if (currentData[0] === 'low' && currentData[1] === '1') {
         return '_l1';
     } else if (currentData[0] === 'high' && currentData[1] === '0') {
         return '_h0';
-    } else {
+    } else if (currentData[0] === 'high' && currentData[1] === '1') {
         return '_h1';
     }
 }
@@ -346,14 +378,23 @@ var clickConstructionModeCheckbox = function(checkbox) {
     if (inConstructionMode) { // Entering construction mode.
         $('#construction_controls_{{data_source_str_nospace}}').show(); // Show set construction controls.
 
-        addAllPlotBands();
+        {% if not is_set %} // If we're looking at a set, the plot bands will always be on the graph.
+            addAllPlotBands(); // Also, because the user can't change the data set, the table doesn't need to be updated.
 
-        // Update the information in the panel.
-        updateSetConstructionTable();
+            // Update the information in the table.
+            updateSetConstructionTable();
+        {% endif %}
     } else { // Exiting construction mode.
         $('#construction_controls_{{data_source_str_nospace}}').hide(); // Hide set construction controls.
 
-        removeAllPlotBands();
+        {% if not is_set %} // If we're looking at a set, the plot bands will always be on the graph.
+            removeAllPlotBands();
+        {% endif %}
     }
 };
 dataSourceObj.clickConstructionModeCheckbox = clickConstructionModeCheckbox;
+
+{% if width_slider %}
+    {% include 'js/width_slider.js' %}
+    dataSourceObj.sliderChanged = sliderChanged;
+{% endif %}

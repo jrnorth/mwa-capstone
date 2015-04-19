@@ -7,7 +7,7 @@
             {% include 'width_slider.html' %}
         {% endif %}
         <td style="text-align:right">
-            <span>Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span id="data_set_span_{{data_source_str_nospace}}">Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
             <select id="low_high_dropdown_{{data_source_str_nospace}}" onchange=       "{{data_source_str_nospace}}.setLowOrHighData(this)">
                 <option value="high">High</option>
                 <option value="low">Low</option>
