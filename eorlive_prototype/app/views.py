@@ -79,8 +79,8 @@ def get_graph():
                 data_source_str=data_source_str, graph_data=graph_data,
                 plot_bands=[], template_name=template_name, is_set=False,
                 data_source_str_nospace=data_source_str_nospace,
-                start_time_str=start_datetime.strftime('%Y-%m-%d %H:%M'),
-                end_time_str=end_datetime.strftime('%Y-%m-%d %H:%M'),
+                start_time_str_short=start_datetime.strftime('%Y-%m-%d %H:%M'),
+                end_time_str_short=end_datetime.strftime('%Y-%m-%d %H:%M'),
                 width_slider=data_source.width_slider)
     else:
         the_set = models.Set.query.filter(models.Set.name == set_str).first()
@@ -92,8 +92,8 @@ def get_graph():
         start_datetime, end_datetime = db_utils.get_datetime_from_gps(
                 the_set.start, the_set.end)
 
-        start_time_str_full = start_datetime.strftime('%Y-%m-%d %H:%M:%S')
-        end_time_str_full = end_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        start_time_str_short = start_datetime.strftime('%Y-%m-%d %H:%M')
+        end_time_str_short = end_datetime.strftime('%Y-%m-%d %H:%M')
 
         if graph_type_str == 'Obs_Err':
             observation_counts, utc_obsid_map = histogram_utils.get_observation_counts(
@@ -103,8 +103,8 @@ def get_graph():
             which_data_set = db_utils.which_data_set(the_set)
             return render_template('setView.html', the_set=the_set,
                 observation_counts=observation_counts, error_counts=error_counts,
-                plot_bands=plot_bands, start_time_str_full=start_time_str_full,
-                end_time_str_full=end_time_str_full, range_end=range_end,
+                plot_bands=plot_bands, start_time_str_short=start_time_str_short,
+                end_time_str_short=end_time_str_short, range_end=range_end,
                 which_data_set=which_data_set, is_set=True,
                 utc_obsid_map=utc_obsid_map)
         else:
@@ -115,8 +115,8 @@ def get_graph():
                 data_source_str=data_source_str, graph_data=graph_data, plot_bands=plot_bands,
                 template_name=template_name, is_set=True, data_source_str_nospace=data_source_str_nospace,
                 width_slider=data_source.width_slider, the_set=the_set,
-                which_data_set=which_data_set, start_time_str=start_time_str_full,
-                end_time_str=end_time_str_full)
+                which_data_set=which_data_set, start_time_str_short=start_time_str_short,
+                end_time_str_short=end_time_str_short)
 
 @app.route('/data_amount', methods = ['GET'])
 def data_amount():
