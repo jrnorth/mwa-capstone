@@ -99,9 +99,6 @@ def save_new_set():
         low_or_high = request_content['lowOrHigh']
         eor = request_content['eor']
 
-        if eor == '0' or eor == '1': # If it's not '0' or '1', it's 'any'
-            eor = 'EOR' + eor
-
         total_data_hrs, flagged_data_hrs = get_data_hours_in_set(
             start_gps, end_gps, low_or_high, eor, flagged_range_dicts)
 

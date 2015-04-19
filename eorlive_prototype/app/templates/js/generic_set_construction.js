@@ -2,16 +2,12 @@ var _chart;
 var inConstructionMode = false;
 {% if is_set %}
 var flaggedRanges = {{ plot_bands | tojson }};
-    {% if which_data_set == 'any' %}
-        var currentData = ['any', 'any'];
-    {% else %}
-        var currentData = ['{{the_set.low_or_high}}', '{{the_set.eor[3]}}'];
-    {% endif %}
+var currentData = ['{{the_set.low_or_high}}', '{{the_set.eor}}'];
 {% else %}
 var lowEOR0FlaggedRanges = [], highEOR0FlaggedRanges = [];
 var lowEOR1FlaggedRanges = [], highEOR1FlaggedRanges = [];
 var flaggedRanges = highEOR0FlaggedRanges;
-var currentData = ['high', '0'];
+var currentData = ['high', 'EOR0'];
 {% endif %}
 var clickDragMode = 'zoom';
 var dataSourceObj = {};
@@ -132,37 +128,37 @@ var saveSet = function() {
 dataSourceObj.saveSet = saveSet;
 
 var getCurrentFlaggedSet = function() {
-    if (currentData[0] === 'low' && currentData[1] === '0')
+    if (currentData[0] === 'low' && currentData[1] === 'EOR0')
         return lowEOR0FlaggedRanges;
-    else if (currentData[0] === 'low' && currentData[1] === '1')
+    else if (currentData[0] === 'low' && currentData[1] === 'EOR1')
         return lowEOR1FlaggedRanges;
-    else if (currentData[0] === 'high' && currentData[1] === '0')
+    else if (currentData[0] === 'high' && currentData[1] === 'EOR0')
         return highEOR0FlaggedRanges;
-    else if (currentData[0] === 'high' && currentData[1] === '1')
+    else if (currentData[0] === 'high' && currentData[1] === 'EOR1')
         return highEOR1FlaggedRanges;
 };
 
 var getCurrentObsIdMap = function() {
-    if (currentData[0] === 'low' && currentData[1] === '0')
+    if (currentData[0] === 'low' && currentData[1] === 'EOR0')
         return utc_obsid_map_l0;
-    else if (currentData[0] === 'low' && currentData[1] === '1')
+    else if (currentData[0] === 'low' && currentData[1] === 'EOR1')
         return utc_obsid_map_l1;
-    else if (currentData[0] === 'high' && currentData[1] === '0')
+    else if (currentData[0] === 'high' && currentData[1] === 'EOR0')
         return utc_obsid_map_h0;
-    else if (currentData[0] === 'high' && currentData[1] === '1')
+    else if (currentData[0] === 'high' && currentData[1] === 'EOR1')
         return utc_obsid_map_h1;
     else
         return utc_obsid_map_any;
 };
 
 var getVariableSuffix = function() {
-    if (currentData[0] === 'low' && currentData[1] === '0') {
+    if (currentData[0] === 'low' && currentData[1] === 'EOR0') {
         return '_l0';
-    } else if (currentData[0] === 'low' && currentData[1] === '1') {
+    } else if (currentData[0] === 'low' && currentData[1] === 'EOR1') {
         return '_l1';
-    } else if (currentData[0] === 'high' && currentData[1] === '0') {
+    } else if (currentData[0] === 'high' && currentData[1] === 'EOR0') {
         return '_h0';
-    } else if (currentData[0] === 'high' && currentData[1] === '1') {
+    } else if (currentData[0] === 'high' && currentData[1] === 'EOR1') {
         return '_h1';
     }
 }
