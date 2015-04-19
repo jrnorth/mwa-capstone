@@ -10,9 +10,19 @@
             <br>
             Email: {{user.email}}
         </td>
-        <td class="cellClass profileCell" rowspan="2">
+        <td class="cellClass profileCell" rowspan="3">
             <h3>Your Sets</h3>
             <div id='set_list_div' class='set_list'></div>
+        </td>
+        <td class="cellClass profileCell" rowspan="3">
+            <h3>Your Data Sources</h3>
+            <button type="button" id="change_active_data_sources"
+                onclick="changeActiveDataSources()">Update active</button>
+            <div id='data_source_list' class='set_list'></div>
+        </td>
+        <td class="cellClass profileCell" rowspan="3">
+            <h3>Available Data Sources</h3>
+            <div id='unsubscribed_data_source_list' class='set_list'></div>
         </td>
     </tr>
     <tr class="rowClass">
@@ -36,12 +46,25 @@
             <button type="button" id="upload_set_button" onclick="uploadSet()">Upload set</button>
         </td>
     </tr>
+    <tr class="rowClass">
+        <td class="cellClass profileCell">
+            <h3>Create New Data Source</h3>
+            <div id="graph_type_div"></div>
+            <input type="text" id="hostname" placeholder="Enter host URL..." maxlength="100">
+            <input type="text" id="database" placeholder="Enter database name..." maxlength="100">
+            <button type="button" id="get_tables_button" onclick="getTables()">View tables</button>
+            <br>
+            <div id="table_list" style="display:hidden;"></div>
+            <div id="column_list" style="display:hidden;"></div>
+        </td>
+    </tr>
 </table>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="../static/js/setsAndComments.js"></script>
 <script>
     var low_or_high = 'high';
     var eor = 'EOR0';
+    var hostname, database, table;
 
     var set_controls = {
         'user': '{{user.username}}',
@@ -51,7 +74,216 @@
         'ranged': false
     };
 
-    $(renderSets(set_controls, '', ''));
+    $(function() {
+        renderSets(set_controls, '', '', true);
+        getGraphTypes();
+        getUsersDataSources();
+        getUnsubscribedDataSources();
+    });
+
+
+    function deleteSet(setId, setName) {
+        var conf = confirm("Are you sure you wish to delete " + setName + "?");
+        if (conf == true) {
+            var setDeleteButton = function(setId, text, disabled) {
+                var deleteSetButton = $("#delete_set_button_" + setId);
+                deleteSetButton.html(text);
+                deleteSetButton.prop('disabled', disabled);
+            }
+
+            setDeleteButton(setId, "Working...", true);
+            $.ajax({
+                type: "POST",
+                url: "/delete_set",
+                data: {
+                    'set_id': setId
+                },
+                success: function(data) {
+                    renderSets(set_controls, '', '', true);
+                },
+                error: function(xhr, status, error) {
+                    alert("An error occurred.");
+                    setDeleteButton(setId, "Delete", false);
+                },
+                dataType: "html"
+            });
+        }
+    };
+
+    function getGraphTypes() {
+        $("#graph_type_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+        $.ajax({
+            type: "GET",
+            url: "/get_graph_types",
+            success: function(data) {
+                $("#graph_type_div").html(data);
+            },
+            error: function(xhr, status, error) {
+                $("#graph_type_div").html("An error occurred");
+            },
+            dataType: "html"
+        });
+    };
+
+    function getUsersDataSources() {
+        $("#change_active_data_sources").prop('disabled', true);
+        $("#data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $.ajax({
+            type: "GET",
+            url: "/get_users_data_sources",
+            success: function(data) {
+                $("#change_active_data_sources").prop('disabled', false);
+                $("#data_source_list").html(data);
+            },
+            error: function(xhr, status, error) {
+                $("#data_source_list").html("An error occurred");
+            },
+            dataType: "html"
+        });
+    };
+
+    function changeActiveDataSources() {
+        $("#change_active_data_sources").prop('disabled', true);
+
+        var activeDataSources = [];
+        $("#data_source_list input:checked").each(function() {
+            activeDataSources.push($(this).attr('value'));
+        });
+
+        $("#data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+        $.ajax({
+            type: "POST",
+            url: "/update_active_data_sources",
+            data: JSON.stringify({
+                activeDataSources: activeDataSources
+            }),
+            success: function(data) {
+                getUsersDataSources();
+            },
+            error: function(xhr, status, error) {
+                alert("An error occurred");
+                $("#change_active_data_sources").prop('disabled', false);
+            },
+            contentType: "application/json"
+        });
+    };
+
+    function getUnsubscribedDataSources() {
+        $("#unsubscribed_data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+
+        $.ajax({
+            type: "GET",
+            url: "/get_unsubscribed_data_sources",
+            success: function(data) {
+                $("#unsubscribed_data_source_list").html(data);
+            },
+            error: function(xhr, status, error) {
+                $("#unsubscribed_data_source_list").html("An error occurred");
+            },
+            dataType: "html"
+        });
+    };
+
+    function subscribeToDataSource(button) {
+        $("#unsubscribed_data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#change_active_data_sources").prop('disabled', true);
+
+        var dataSource = button.value;
+
+        $.ajax({
+            type: "POST",
+            url: "/subscribe_to_data_source",
+            data: {
+                dataSource: dataSource
+            },
+            success: function(data) {
+                getUnsubscribedDataSources();
+                getUsersDataSources();
+            },
+            error: function(xhr, status, error) {
+                alert("An error occurred");
+            }
+        });
+    };
+
+    function unsubscribeFromDataSource(button) {
+        $("#unsubscribed_data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#data_source_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#change_active_data_sources").prop('disabled', true);
+
+        var dataSource = button.value;
+
+        $.ajax({
+            type: "POST",
+            url: "/unsubscribe_from_data_source",
+            data: {
+                dataSource: dataSource
+            },
+            success: function(data) {
+                getUnsubscribedDataSources();
+                getUsersDataSources();
+            },
+            error: function(xhr, status, error) {
+                alert("An error occurred");
+            }
+        });
+    };
+
+    function setDataSourceCreationControlsDisabled(disabled, text) {
+        $("#graph_type_select").prop('disabled', disabled);
+        $("#get_tables_button").prop('disabled', disabled);
+        $("#table_select").prop('disabled', disabled);
+        $("#create_data_source_button").prop('disabled', disabled);
+        $("#create_data_source_button").html(text);
+    };
+
+    function createDataSource() {
+        setDataSourceCreationControlsDisabled(true, "Working...");
+        $("#error_message").hide();
+
+        var graph_type = $("#graph_type_select").val();
+        var obs_column = $("#obs_column_name_box").val();
+        var data_source_name = $("#data_source_name_box").val();
+        var columns = [];
+        $("#column_checkbox_list input:checked").each(function() {
+            columns.push($(this).attr('name'));
+        });
+
+        $.ajax({
+            type: "POST",
+            url: "/create_data_source",
+            data: JSON.stringify({
+                graph_type: graph_type,
+                host: hostname,
+                database: database,
+                table: table,
+                columns: columns,
+                obs_column: obs_column,
+                data_source_name: data_source_name,
+                include_width_slider: $("#include_width_slider").is(":checked")
+            }),
+            success: function(data) {
+                if (data.error) {
+                    $("#error_message").html(data.message);
+                    $("#error_message").show();
+                } else {
+                    getUsersDataSources();
+                    $("#error_message").hide();
+                }
+                setDataSourceCreationControlsDisabled(false, "Create data source");
+            },
+            error: function(xhr, status, error) {
+                $("#error_message").html("An error occurred");
+                $("#error_message").show();
+                setDataSourceCreationControlsDisabled(false, "Create data source");
+            },
+            dataType: "json",
+            contentType: "application/json"
+        });
+    };
 
     function deleteSetHelper(setName) {
         if (confirm('Are you sure you want to delete ' + setName + '?')) {
@@ -102,11 +334,8 @@
             processData: false,
             contentType: false,
             success: function(data) {
-                if (data.duplicate_name) {
-                    alert("Your set name must be unique!");
-                    setUploadButton("Upload set", false);
-                } else if (data.data_error) {
-                    alert(data.data_error);
+                if (data.error) {
+                    alert(data.message);
                     setUploadButton("Upload set", false);
                 } else { // The set upload was successful.
                     location.reload(true); // Don't get cached copy.
@@ -116,6 +345,76 @@
                 alert("An error occurred: " + status);
                 setUploadButton("Upload set", false);
             }
+        });
+    };
+
+    var setTablesButton = function(text, disabled) {
+        $("#get_tables_button").html(text);
+        $("#get_tables_button").prop('disabled', disabled);
+    };
+
+    var getTables = function() {
+        hostname = $("#hostname").val();
+        database = $("#database").val();
+
+        setTablesButton("Working...", true);
+        $("#table_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#column_list").hide();
+
+        $.ajax({
+            type: "POST",
+            url: "/get_tables",
+            data: {
+                hostname: hostname,
+                database: database
+            },
+            success: function(data) {
+                setTablesButton("View tables", false);
+                $("#table_list").html(data);
+                $("#table_list").show();
+                // Automatically load the columns in the first table.
+                $("#table_select").change();
+            },
+            error: function(xhr, status, error) {
+                setTablesButton("View tables", false);
+                $("#table_list").html("An error occurred");
+                $("#table_list").show();
+            },
+            dataType: "html"
+        });
+    };
+
+    var getColumns = function(select) {
+        table = select.value;
+
+        var setTableListDisabled = function(disabled) {
+            $("#table_select").prop('disabled', disabled);
+        };
+
+        setTablesButton("View tables", true);
+        setTableListDisabled(true);
+        $("#column_list").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
+        $("#column_list").show();
+
+        $.ajax({
+            type: "POST",
+            url: "/get_columns",
+            data: {
+                hostname: hostname,
+                database: database,
+                table: table
+            },
+            success: function(data) {
+                setTablesButton("View tables", false);
+                setTableListDisabled(false);
+                $("#column_list").html(data);
+            },
+            error: function(xhr, status, error) {
+                setTablesButton("View tables", false);
+                setTableListDisabled(false);
+                $("#column_list").html("An error occurred");
+            },
+            dataType: "html"
         });
     };
 </script>

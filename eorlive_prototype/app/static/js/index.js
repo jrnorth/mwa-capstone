@@ -10,7 +10,10 @@ $(function() {
     startDatePicker.datetimepicker();
     endDatePicker.datetimepicker();
 
-    if (sessionStorage.startDate && sessionStorage.endDate) {
+    if (startDatePicker.val().length > 0 && endDatePicker.val().length > 0) {
+        // The date pickers have already been filled with values, which means we're viewing a set.
+        // Nothing needs to be done.
+    } else if (sessionStorage.startDate && sessionStorage.endDate) {
         startDatePicker.val(sessionStorage.startDate);
         endDatePicker.val(sessionStorage.endDate);
     } else {
@@ -54,20 +57,11 @@ $(function() {
 
             ui.panel.html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
-            var startTimeStr = $("#datepicker_start").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
-            var endTimeStr = $("#datepicker_end").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
-
-            var index = ui.tab.index();
-            switch (index) {
-                case 0:
-                    var url = "/histogram_data?starttime=" + startTimeStr + "&endtime=" + endTimeStr;
-                    ui.ajaxSettings.url = url;
-                    break;
-                case 1:
-                    var url = "/qs_data?starttime=" + startTimeStr + "&endtime=" + endTimeStr;
-                    ui.ajaxSettings.url = url;
-                    break;
-            };
+            if (ui.ajaxSettings.url.search("&set=") === -1) { // There is no set, so we need to add the date range.
+                var startTimeStr = $("#datepicker_start").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
+                var endTimeStr = $("#datepicker_end").val().replaceAll("/", "-").replaceAll(" ", "T") + ":00Z";
+                ui.ajaxSettings.url += "&start=" + startTimeStr + "&end=" + endTimeStr;
+            }
 
             ui.jqXHR.success(function() {
                 ui.tab.data("loaded", true);
@@ -139,7 +133,17 @@ function getObservations(loadTab) {
         $("#tabs > ul > li").each(function(index) {
             $(this).data("loaded", false);
         });
+        $("#tabs > ul > li > a").each(function(index) {
+            var url = $(this).attr("href");
+            var shortUrl = url.split("&").slice(0, 2).join("&");
+            $(this).attr("href", shortUrl);
+        });
         $("#tabs").tabs("load", $("#tabs").tabs('option', 'active'));
+    }
+
+    if (loadTab) { // The user pressed the "Get observations" button, so they're viewing a date range now.
+        $("#set_or_date_range_label").html("date range");
+        $("#set_details").hide();
     }
 
     $("#summary_table").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
@@ -211,5 +215,5 @@ var applyFiltersAndSort = function() {
     var startUTC = startDate.toISOString().slice(0, 19) + "Z";
     var endUTC = endDate.toISOString().slice(0, 19) + "Z";
 
-    renderSets(set_controls, startUTC, endUTC);
+    renderSets(set_controls, startUTC, endUTC, false);
 };

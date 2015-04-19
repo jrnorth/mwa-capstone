@@ -1,4 +1,4 @@
-function renderSets(set_controls, startUTC, endUTC) {
+function renderSets(set_controls, startUTC, endUTC, includeDeleteButtons) {
     $("#set_list_div").html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
 
     window.setRequest = $.ajax({
@@ -7,7 +7,8 @@ function renderSets(set_controls, startUTC, endUTC) {
         data: JSON.stringify({
             'set_controls': set_controls,
             'starttime': startUTC,
-            'endtime': endUTC
+            'endtime': endUTC,
+            'includeDeleteButtons': includeDeleteButtons
         }),
         success: function(data) {
             $("#set_list_div").html(data);

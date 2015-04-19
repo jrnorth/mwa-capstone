@@ -6,6 +6,16 @@ set_subscriptions = db.Table('set_subscriptions',
     db.Column('set_id', db.Integer, db.ForeignKey('set.id'))
 )
 
+data_source_subscriptions = db.Table('data_source_subscriptions',
+    db.Column('username', db.String(32), db.ForeignKey('user.username')),
+    db.Column('data_source', db.String(100), db.ForeignKey('graph_data_source.name'))
+)
+
+active_data_sources = db.Table('active_data_sources',
+    db.Column('username', db.String(32), db.ForeignKey('user.username')),
+    db.Column('data_source', db.String(100), db.ForeignKey('graph_data_source.name'))
+)
+
 class User(db.Model):
     username = db.Column(db.String(32), primary_key=True)
     # SHA-512 returns a 512-bit hash, which is 512 bits / 8 bits per byte * 2 hex digits per byte = 128 hex digits.
@@ -16,6 +26,8 @@ class User(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     owned_sets = db.relationship('Set', backref='user')
     subscribed_sets = db.relationship('Set', secondary=set_subscriptions)
+    subscribed_data_sources = db.relationship('GraphDataSource', secondary=data_source_subscriptions)
+    active_data_sources = db.relationship('GraphDataSource', secondary=active_data_sources)
     admin = db.Column(db.Boolean, default=False)
 
     def __init__(self, username, password, email, first_name, last_name):
@@ -99,3 +111,21 @@ class Comment(db.Model):
     text = db.Column(db.String(1000), nullable=False)
     username = db.Column(db.String(32), db.ForeignKey('user.username'))
     created_on = db.Column(db.DateTime, default=datetime.utcnow)
+
+class GraphType(db.Model):
+    name = db.Column(db.String(100), primary_key=True)
+
+class GraphDataSource(db.Model):
+    name = db.Column(db.String(100), primary_key=True)
+    graph_type = db.Column(db.String(100), db.ForeignKey('graph_type.name'))
+    host = db.Column(db.String(100))
+    database = db.Column(db.String(100))
+    table = db.Column(db.String(100))
+    obs_column = db.Column(db.String(100)) # Which column has the observation ids.
+    projectid = db.Column(db.Boolean) # Whether the table has a projectid field.
+    width_slider = db.Column(db.Boolean) # Whether the graph should come with a column width slider.
+
+class GraphDataSourceColumn(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    graph_data_source = db.Column(db.String(100), db.ForeignKey('graph_data_source.name'))
+    name = db.Column(db.String(100))

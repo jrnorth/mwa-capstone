@@ -3,7 +3,7 @@ from app.flask_app import app, db
 from flask import request, g, make_response, jsonify, render_template
 from datetime import datetime
 
-def insert_set_into_db(name, start, end, flagged_ranges, low_or_high,
+def insert_set_into_db(name, start, end, flagged_range_dicts, low_or_high,
         eor, total_data_hrs, flagged_data_hrs):
     new_set = models.Set()
     new_set.username = g.user.username
@@ -18,16 +18,16 @@ def insert_set_into_db(name, start, end, flagged_ranges, low_or_high,
     db.session.flush()
     db.session.refresh(new_set) # So we can get the set's id
 
-    for range in flagged_ranges:
+    for flagged_range_dict in flagged_range_dicts:
         flagged_subset = models.FlaggedSubset()
         flagged_subset.set_id = new_set.id
-        flagged_subset.start = range[0]
-        flagged_subset.end = range[len(range) - 1]
+        flagged_subset.start = flagged_range_dict['start_gps']
+        flagged_subset.end = flagged_range_dict['end_gps']
         db.session.add(flagged_subset)
         db.session.flush()
         db.session.refresh(flagged_subset) # So we can get the id
 
-        for obs_id in range:
+        for obs_id in flagged_range_dict['flaggedRange']:
             flagged_obs_id = models.FlaggedObsIds()
             flagged_obs_id.obs_id = obs_id
             flagged_obs_id.flagged_subset_id = flagged_subset.id
@@ -35,16 +35,16 @@ def insert_set_into_db(name, start, end, flagged_ranges, low_or_high,
 
     db.session.commit()
 
-def is_obs_flagged(obs_id, flagged_ranges):
-    for flagged_range in flagged_ranges:
-        if obs_id >= flagged_range[0] and obs_id <= flagged_range[len(flagged_range) - 1]:
+def is_obs_flagged(obs_id, flagged_range_dicts):
+    for flagged_range_dict in flagged_range_dicts:
+        if obs_id >= flagged_range_dict['start_gps'] and obs_id <= flagged_range_dict['end_gps']:
             return True
     return False
 
-def get_data_hours_in_set(start, end, low_or_high, eor, flagged_ranges):
+def get_data_hours_in_set(start, end, low_or_high, eor, flagged_range_dicts):
     total_data_hrs = flagged_data_hrs = 0
 
-    low_high_clause, eor_clause = histogram_utils.get_lowhigh_and_eor_clauses(low_or_high, eor)
+    low_high_clause, eor_clause = db_utils.get_lowhigh_and_eor_clauses(low_or_high, eor)
 
     all_obs_ids_tuples = db_utils.send_query(g.eor_db, '''SELECT starttime, stoptime
                             FROM mwa_setting
@@ -58,7 +58,7 @@ def get_data_hours_in_set(start, end, low_or_high, eor, flagged_ranges):
         obs_id = obs[0]
         data_hrs = (obs[1] - obs_id) / 3600
         total_data_hrs += data_hrs
-        if is_obs_flagged(obs_id, flagged_ranges):
+        if is_obs_flagged(obs_id, flagged_range_dicts):
             flagged_data_hrs += data_hrs
 
     return (total_data_hrs, flagged_data_hrs)
@@ -70,18 +70,29 @@ def save_new_set():
 
         name = request_content['name']
 
+        if name is None:
+            return jsonify(error=True, message="Name cannot be empty.")
+
+        name = name.strip()
+
+        if len(name) == 0:
+            return jsonify(error=True, message="Name cannot be empty.")
+
         if models.Set.query.filter(models.Set.name == name).count() > 0:
-            return jsonify(duplicate_name=True)
+            return jsonify(error=True, message="Name must be unique.")
 
-        flagged_ranges = []
+        flagged_range_dicts = []
 
-        i = 0
+        GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = db_utils.get_gps_utc_constants()
 
-        for range in request_content['flaggedRanges']:
-            flagged_ranges.append([])
-            for pair in range:
-                flagged_ranges[i].append(pair[1])
-            i += 1
+        for flagged_range_dict in request_content['flaggedRanges']:
+            flagged_gps_dict = {}
+            flagged_gps_dict['flaggedRange'] = [pair[1] for pair in flagged_range_dict['flaggedRange']]
+            flagged_gps_dict['start_gps'] = int(flagged_range_dict['start_millis'] / 1000) +\
+                GPS_LEAP_SECONDS_OFFSET - GPS_UTC_DELTA
+            flagged_gps_dict['end_gps'] = int(flagged_range_dict['end_millis'] / 1000) +\
+                GPS_LEAP_SECONDS_OFFSET - GPS_UTC_DELTA
+            flagged_range_dicts.append(flagged_gps_dict)
 
         start_gps = request_content['startObsId']
         end_gps = request_content['endObsId']
@@ -89,9 +100,9 @@ def save_new_set():
         eor = request_content['eor']
 
         total_data_hrs, flagged_data_hrs = get_data_hours_in_set(
-            start_gps, end_gps, low_or_high, 'EOR' + eor, flagged_ranges)
+            start_gps, end_gps, low_or_high, 'EOR' + eor, flagged_range_dicts)
 
-        insert_set_into_db(name, start_gps, end_gps, flagged_ranges,
+        insert_set_into_db(name, start_gps, end_gps, flagged_range_dicts,
             low_or_high, 'EOR' + eor, total_data_hrs, flagged_data_hrs)
 
         return jsonify()
@@ -103,8 +114,16 @@ def upload_set():
     if (g.user is not None and g.user.is_authenticated()):
         set_name = request.form['set_name']
 
+        if set_name is None:
+            return jsonify(error=True, message="Name cannot be empty.")
+
+        set_name = set_name.strip()
+
+        if len(set_name) == 0:
+            return jsonify(error=True, message="Name cannot be empty.")
+
         if models.Set.query.filter(models.Set.name == set_name).count() > 0:
-            return jsonify(duplicate_name=True)
+            return jsonify(error=True, message="Name must be unique.")
 
         f = request.files['file']
 
@@ -140,7 +159,11 @@ def upload_set():
         for good_obs_id in good_obs_ids:
             next_index = all_obs_ids.index(good_obs_id)
             if next_index > last_index:
-                bad_ranges.append(all_obs_ids[last_index:next_index])
+                bad_range_dict = {}
+                bad_range_dict['start_gps'] = all_obs_ids[last_index]
+                bad_range_dict['end_gps'] = all_obs_ids[next_index - 1]
+                bad_range_dict['flaggedRange'] = all_obs_ids[last_index:next_index]
+                bad_ranges.append(bad_range_dict)
 
             last_index = next_index + 1
 

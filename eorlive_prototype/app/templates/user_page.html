@@ -6,7 +6,7 @@
         var str = "#delete_user_button_" + username;
         $(str).html("Working");
 
-        
+
         $.ajax({
             type: "POST",
             url: "/delete_user",
@@ -59,7 +59,7 @@
     {% for user in userList %}
         {% if user %}
             <tr class="rowClass userRow">
-                <td class="cellClass userCell"> {{ user.username }} <br> {{ user.first_name }} {{ user.last_name }} 
+                <td class="cellClass userCell"> {{ user.username }} <br> {{ user.first_name }} {{ user.last_name }}
                     <br> {{ user.email }} </td>
                 <td class="cellClass userCell">
                     {% for set in setList %}
