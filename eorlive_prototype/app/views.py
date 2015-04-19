@@ -96,14 +96,17 @@ def get_graph():
         end_time_str_full = end_datetime.strftime('%Y-%m-%d %H:%M:%S')
 
         if graph_type_str == 'Obs_Err':
-            observation_counts = histogram_utils.get_observation_counts(
+            observation_counts, utc_obsid_map = histogram_utils.get_observation_counts(
                 the_set.start, the_set.end, the_set.low_or_high, the_set.eor)
             error_counts = histogram_utils.get_error_counts(the_set.start, the_set.end)[0]
             range_end = end_datetime.strftime('%Y-%m-%dT%H:%M:%SZ') # For the function in histogram_utils.js
+            which_data_set = db_utils.which_data_set(the_set)
             return render_template('setView.html', the_set=the_set,
                 observation_counts=observation_counts, error_counts=error_counts,
                 plot_bands=plot_bands, start_time_str_full=start_time_str_full,
-                end_time_str_full=end_time_str_full, range_end=range_end)
+                end_time_str_full=end_time_str_full, range_end=range_end,
+                which_data_set=which_data_set, is_set=True,
+                utc_obsid_map=utc_obsid_map)
         else:
             graph_data = db_utils.get_graph_data(data_source_str, the_set.start, the_set.end, the_set)
             data_source_str_nospace = data_source_str.replace(' ', 'ಠ_ಠ')

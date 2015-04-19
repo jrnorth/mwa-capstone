@@ -10,7 +10,7 @@
             <input type="range" min="5" max="155" value="80" step="25" onchange="obs_err.sliderChanged(this)"/>
         </td>
         <td style="text-align:right">
-            <span>Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span id="data_set_span">Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
             <select id="low_high_dropdown" onchange="obs_err.setLowOrHighData(this)">
                 <option value="high">High</option>
                 <option value="low">Low</option>

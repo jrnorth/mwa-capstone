@@ -27,10 +27,11 @@ var obs_err = (function($) {
     var utc_obsid_map_h0 = {{ utc_obsid_map_h0 | tojson }};
     var utc_obsid_map_h1 = {{ utc_obsid_map_h1 | tojson }};
 
+    {% include "js/obs_err_set_construction.js" %}
+
     $(function() {
         $('#backbutton').hide();
         $('#error_table').hide();
-        $('#set_construction_panel').hide();
 
         $('#observations_histogram').highcharts('StockChart', {
             colors: [
@@ -177,12 +178,9 @@ var obs_err = (function($) {
             }]
         }, function (chart) {
             _chart = chart;
-            flaggedRanges = highEOR0FlaggedRanges;
-            $('#set_construction_panel').show();
+            setup();
         });
     });
-
-    {% include "js/obs_err_set_construction.js" %}
 
     return dataSourceObj;
 }(jQuery));
