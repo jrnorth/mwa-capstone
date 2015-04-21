@@ -10,6 +10,7 @@
             <input type="range" min="5" max="155" value="80" step="25" onchange="obs_err.sliderChanged(this)"/>
         </td>
         <td style="text-align:right">
+            {% if not is_set %}
             <span id="data_set_span">Data set:&nbsp;&nbsp;&nbsp;&nbsp;</span>
             <select id="low_high_dropdown" onchange="obs_err.setLowOrHighData(this)">
                 <option value="high">High</option>
@@ -19,6 +20,10 @@
                 <option value="EOR0">EOR0</option>
                 <option value="EOR1">EOR1</option>
             </select>
+            <br>
+            {% endif %}
+            <input id="remove_flagged_data_checkbox" type="checkbox"
+            onclick="obs_err.clickRemoveFlaggedDataCheckbox(this)">Hide flagged data
         </td>
     </tr>
 </table>
