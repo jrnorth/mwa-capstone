@@ -124,8 +124,7 @@ def get_graph_data(data_source_str, start_gps, end_gps, the_set):
                                 # Actual UTC time of the observation (for the graph)
             utc_millis = int((row[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
             for column_index in range(1, len(row)):
-                if row[column_index] is not None:
-                    data['series_dict'][columns[column_index - 1].name].append([utc_millis, row[column_index]])
+                data['series_dict'][columns[column_index - 1].name].append([utc_millis, row[column_index]])
             utc_obsid_map.append([utc_millis, row[0]])
 
         # l0, l1, h0, h1, or 'any'

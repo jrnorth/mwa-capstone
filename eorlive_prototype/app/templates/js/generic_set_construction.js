@@ -28,7 +28,10 @@ var setup = function() {
         // Count the # of observations in each band.
         for (var i = 0; i < flaggedRanges.length; ++i) {
             var thisRange = flaggedRanges[i];
-            thisRange.obs_count = getObsCountInRange(thisRange.from, thisRange.to);
+            var obsCountForRange = getObsCountInRange(thisRange.from, thisRange.to);
+            thisRange.obs_count = obsCountForRange.obsCount;
+            thisRange.start_index = obsCountForRange.startIndex;
+            thisRange.end_index = obsCountForRange.endIndex;
         }
         // Update the information in the panel.
         updateSetConstructionTable();
@@ -163,23 +166,41 @@ var getVariableSuffix = function() {
     }
 }
 
-var dataSetChanged = function() {
+var updateAllDataSeriesWithHiddenData = function() {
     var suffix = getVariableSuffix();
-
-    for (var seriesIndex = 0; seriesIndex < _chart.series.length; ++seriesIndex) {
+    for (var seriesIndex = 0; seriesIndex < _chart.series.length - 1; ++seriesIndex) {
         var thisSeries = _chart.series[seriesIndex];
-        if (seriesIndex < _chart.series.length - 1) {
-            thisSeries.setData(graph_data[thisSeries.name + suffix], false); // Don't redraw chart.
+
+        var seriesData = graph_data[thisSeries.name + suffix + "_copy"];
+        var seriesDataCopy = seriesData.map(function(arr) {
+            return arr.slice();
+        });
+
+        for (var flaggedRangeIndex = 0; flaggedRangeIndex < flaggedRanges.length; ++flaggedRangeIndex) {
+            var thisRange = flaggedRanges[flaggedRangeIndex];
+            if (thisRange.dataRemoved) {
+                for (var dataIndex = thisRange.start_index; dataIndex <= thisRange.end_index; ++dataIndex) {
+                    seriesDataCopy[dataIndex][1] = null;
+                }
+            }
+        }
+
+        if (seriesIndex < _chart.series.length - 2) {
+            thisSeries.setData(seriesDataCopy, false); // Don't redraw chart.
         } else {
-            thisSeries.setData(graph_data[thisSeries.name + suffix]); // Redraw chart.
+            thisSeries.setData(seriesDataCopy); // Redraw chart.
         }
     }
+};
 
+var dataSetChanged = function() {
     if (inConstructionMode) {
         removeAllPlotBands();
 
         // Set the correct flagged ranges.
         flaggedRanges = getCurrentFlaggedSet();
+
+        updateAllDataSeriesWithHiddenData();
 
         addAllPlotBands();
 
@@ -188,6 +209,8 @@ var dataSetChanged = function() {
     } else {
         // Set the correct flagged ranges.
         flaggedRanges = getCurrentFlaggedSet();
+
+        updateAllDataSeriesWithHiddenData();
     }
 };
 
@@ -249,8 +272,10 @@ var mergeOverlappingRanges = function() {
             lowerRange.to = Math.max(lowerRange.to, higherRange.to);
 
             // Since we merged two intervals, we have to update the observation & error counts.
-            var obsCount = getObsCountInRange(lowerRange.from, lowerRange.to);
-            lowerRange.obs_count = obsCount;
+            var obsCountForRange = getObsCountInRange(lowerRange.from, lowerRange.to);
+            lowerRange.obs_count = obsCountForRange.obsCount;
+            lowerRange.start_index = obsCountForRange.startIndex;
+            lowerRange.end_index = obsCountForRange.endIndex;
         } else { // No overlap.
             flaggedRanges.push(higherRange);
         }
@@ -284,7 +309,11 @@ var getObsCountInRange = function(startTime, endTime) {
 
     var obsCount = endIndex - startIndex + 1;
 
-    return obsCount;
+    return {
+        obsCount: obsCount,
+        startIndex: startIndex,
+        endIndex: endIndex
+    };
 };
 
 var updateFlaggedRangeIdsAndLabels = function() {
@@ -319,14 +348,17 @@ var addedNewFlaggedRange = function(plotBand) {
 };
 
 var flagRangeInSet = function(startTime, endTime) {
-    var obs_count = getObsCountInRange(startTime, endTime);
+    var obs_count_in_range = getObsCountInRange(startTime, endTime);
 
     var plotBand = {
         id: "",         // The id will be determined later.
         color: 'yellow',
         from: startTime,
         to: endTime,
-        obs_count: obs_count
+        obs_count: obs_count_in_range.obsCount,
+        start_index: obs_count_in_range.startIndex,
+        end_index: obs_count_in_range.endIndex,
+        dataRemoved: false
     };
 
     addedNewFlaggedRange(plotBand);
@@ -339,12 +371,16 @@ var updateSetConstructionTable = function() {
 
     for (var i = 0; i < flaggedRanges.length; ++i) {
         var flaggedRange = flaggedRanges[i];
+        var checkedStr = flaggedRanges[i].dataRemoved ? "checked" : "";
         tableHtml += '<tr><td>' + flaggedRange.label.text + '</td>' +
         '<td>' + new Date(flaggedRange.from).toISOString() + '</td>' +
         '<td>' + new Date(flaggedRange.to).toISOString() + '</td>' +
         '<td>' + flaggedRange.obs_count + '</td>' +
         '<td><button onclick=\'{{data_source_str_nospace}}.unflagRange("' + flaggedRange.id +
-        '")\'>Unflag range</button></td></tr>';
+        '")\'>Unflag range</button></td>' +
+        '<td><input id="remove_flagged_data_checkbox_{{data_source_str_nospace}}" type="checkbox"' +
+        'onclick=\'{{data_source_str_nospace}}.clickRemoveFlaggedDataCheckbox(this, "' +
+        flaggedRange.id + '")\'' + checkedStr + '>Hide flagged data</td></tr>';
     }
 
     $('#set_construction_table_{{data_source_str_nospace}} > tbody').html(tableHtml);
@@ -352,6 +388,7 @@ var updateSetConstructionTable = function() {
 
 var removedFlaggedRange = function(index) {
     removeAllPlotBands();
+    reinsertDataForRange(index);
     flaggedRanges.splice(index, 1);
     updateFlaggedRangeIdsAndLabels();
     addAllPlotBands();
@@ -368,6 +405,33 @@ var unflagRange = function(flaggedRangeId) {
     updateSetConstructionTable();
 };
 dataSourceObj.unflagRange = unflagRange;
+
+var reinsertDataForRange = function(index) {
+    var thisRange = flaggedRanges[index];
+    if (thisRange.dataRemoved) {
+        var suffix = getVariableSuffix();
+        for (var seriesIndex = 0; seriesIndex < _chart.series.length - 1; ++seriesIndex) {
+            var thisSeries = _chart.series[seriesIndex];
+
+            {% if is_set %}
+                var seriesData = copies[thisSeries.name];
+            {% else %}
+                var seriesData = graph_data[thisSeries.name + suffix + "_copy"];
+            {% endif %}
+            var seriesDataCopy = getSeriesDataCopyFromGraph(thisSeries);
+
+            for (var dataIndex = thisRange.start_index; dataIndex <= thisRange.end_index; ++dataIndex) {
+                seriesDataCopy[dataIndex][1] = seriesData[dataIndex][1];
+            }
+
+            if (seriesIndex < _chart.series.length - 2) {
+                thisSeries.setData(seriesDataCopy, false);
+            } else {
+                thisSeries.setData(seriesDataCopy);
+            }
+        }
+    }
+};
 
 var clickConstructionModeCheckbox = function(checkbox) {
     inConstructionMode = checkbox.checked;
@@ -389,6 +453,54 @@ var clickConstructionModeCheckbox = function(checkbox) {
     }
 };
 dataSourceObj.clickConstructionModeCheckbox = clickConstructionModeCheckbox;
+
+var getSeriesDataCopyFromGraph = function(series) {
+    var arrayCopy = [];
+    for (var i = 0; i < series.xData.length; ++i) {
+        arrayCopy[i] = [series.xData[i], series.yData[i]];
+    }
+    return arrayCopy;
+};
+
+var clickRemoveFlaggedDataCheckbox = function(checkbox, flaggedRangeId) {
+    var suffix = getVariableSuffix();
+    var remove = checkbox.checked;
+
+    for (var seriesIndex = 0; seriesIndex < _chart.series.length - 1; ++seriesIndex) {
+        var thisSeries = _chart.series[seriesIndex];
+        if (!remove) {
+            {% if is_set %}
+            var seriesData = copies[thisSeries.name]; // Get the original, unmodified copy of the data since
+            {% else %}                                        // Highcharts modifies the data used to create the chart.
+            var seriesData = graph_data[thisSeries.name + suffix + "_copy"];
+            {% endif %}
+        }
+        var seriesDataCopy = getSeriesDataCopyFromGraph(thisSeries);
+
+        for (var flaggedRangeIndex = 0; flaggedRangeIndex < flaggedRanges.length; ++flaggedRangeIndex) {
+            var thisRange = flaggedRanges[flaggedRangeIndex];
+            if (thisRange.id === flaggedRangeId) {
+                for (var dataIndex = thisRange.start_index; dataIndex <= thisRange.end_index; ++dataIndex) {
+                    if (remove) {
+                        seriesDataCopy[dataIndex][1] = null;
+                    } else {
+                        seriesDataCopy[dataIndex][1] = seriesData[dataIndex][1];
+                    }
+                }
+
+                thisRange.dataRemoved = remove;
+                break;
+            }
+        }
+
+        if (seriesIndex < _chart.series.length - 2) {
+            thisSeries.setData(seriesDataCopy, false); // Don't redraw chart.
+        } else {
+            thisSeries.setData(seriesDataCopy); // Redraw chart.
+        }
+    }
+};
+dataSourceObj.clickRemoveFlaggedDataCheckbox = clickRemoveFlaggedDataCheckbox;
 
 {% if width_slider %}
     {% include 'js/width_slider.js' %}
