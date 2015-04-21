@@ -15,12 +15,6 @@ var dataSourceObj = {};
 var setup = function() {
     $('#construction_controls_{{data_source_str_nospace}}').hide();
     {% if is_set %}
-        // Hide data set selectors (i.e. EOR0/EOR1 and low/high) because
-        // the user is modifying an existing set that already has low/high
-        // and EOR0/EOR1 associated with it.
-        $('#data_set_span_{{data_source_str_nospace}}').hide();
-        $('#low_high_dropdown_{{data_source_str_nospace}}').hide();
-        $('#eor_dropdown_{{data_source_str_nospace}}').hide();
         // The flagged ranges don't have ids or labels yet.
         updateFlaggedRangeIdsAndLabels();
         // Draw the plot bands.
@@ -164,10 +158,11 @@ var getVariableSuffix = function() {
     } else if (currentData[0] === 'high' && currentData[1] === 'EOR1') {
         return '_h1';
     }
-}
+};
 
 var updateAllDataSeriesWithHiddenData = function() {
     var suffix = getVariableSuffix();
+    var remove = $("#remove_flagged_data_checkbox_{{data_source_str_nospace}}").is(":checked");
     for (var seriesIndex = 0; seriesIndex < _chart.series.length - 1; ++seriesIndex) {
         var thisSeries = _chart.series[seriesIndex];
 
@@ -176,9 +171,9 @@ var updateAllDataSeriesWithHiddenData = function() {
             return arr.slice();
         });
 
-        for (var flaggedRangeIndex = 0; flaggedRangeIndex < flaggedRanges.length; ++flaggedRangeIndex) {
-            var thisRange = flaggedRanges[flaggedRangeIndex];
-            if (thisRange.dataRemoved) {
+        if (remove) {
+            for (var flaggedRangeIndex = 0; flaggedRangeIndex < flaggedRanges.length; ++flaggedRangeIndex) {
+                var thisRange = flaggedRanges[flaggedRangeIndex];
                 for (var dataIndex = thisRange.start_index; dataIndex <= thisRange.end_index; ++dataIndex) {
                     seriesDataCopy[dataIndex][1] = null;
                 }
@@ -340,7 +335,7 @@ var addedNewFlaggedRange = function(plotBand) {
 
     // Add new plot band.
     flaggedRanges.push(plotBand);
-
+    removeDataForNewFlaggedRangeIfNecessary(plotBand);
     mergeOverlappingRanges();
     updateFlaggedRangeIdsAndLabels();
 
@@ -357,8 +352,7 @@ var flagRangeInSet = function(startTime, endTime) {
         to: endTime,
         obs_count: obs_count_in_range.obsCount,
         start_index: obs_count_in_range.startIndex,
-        end_index: obs_count_in_range.endIndex,
-        dataRemoved: false
+        end_index: obs_count_in_range.endIndex
     };
 
     addedNewFlaggedRange(plotBand);
@@ -376,11 +370,8 @@ var updateSetConstructionTable = function() {
         '<td>' + new Date(flaggedRange.from).toISOString() + '</td>' +
         '<td>' + new Date(flaggedRange.to).toISOString() + '</td>' +
         '<td>' + flaggedRange.obs_count + '</td>' +
-        '<td><button onclick=\'{{data_source_str_nospace}}.unflagRange("' + flaggedRange.id +
-        '")\'>Unflag range</button></td>' +
-        '<td><input id="remove_flagged_data_checkbox_{{data_source_str_nospace}}" type="checkbox"' +
-        'onclick=\'{{data_source_str_nospace}}.clickRemoveFlaggedDataCheckbox(this, "' +
-        flaggedRange.id + '")\'' + checkedStr + '>Hide flagged data</td></tr>';
+        '<td><button onclick=\'{{data_source_str_nospace}}.unflagRange("' +
+        flaggedRange.id + '")\'>Unflag range</button></td></tr>';
     }
 
     $('#set_construction_table_{{data_source_str_nospace}} > tbody').html(tableHtml);
@@ -407,8 +398,8 @@ var unflagRange = function(flaggedRangeId) {
 dataSourceObj.unflagRange = unflagRange;
 
 var reinsertDataForRange = function(index) {
-    var thisRange = flaggedRanges[index];
-    if (thisRange.dataRemoved) {
+    if ($("#remove_flagged_data_checkbox_{{data_source_str_nospace}}").is(":checked")) {
+        var thisRange = flaggedRanges[index];
         var suffix = getVariableSuffix();
         for (var seriesIndex = 0; seriesIndex < _chart.series.length - 1; ++seriesIndex) {
             var thisSeries = _chart.series[seriesIndex];
@@ -462,8 +453,26 @@ var getSeriesDataCopyFromGraph = function(series) {
     return arrayCopy;
 };
 
-var clickRemoveFlaggedDataCheckbox = function(checkbox, flaggedRangeId) {
-    var suffix = getVariableSuffix();
+var removeDataForNewFlaggedRangeIfNecessary = function(flaggedRange) {
+    if ($("#remove_flagged_data_checkbox_{{data_source_str_nospace}}").is(":checked")) {
+        for (var seriesIndex = 0; seriesIndex < _chart.series.length - 1; ++seriesIndex) {
+            var thisSeries = _chart.series[seriesIndex];
+            var seriesDataCopy = getSeriesDataCopyFromGraph(thisSeries);
+
+            for (var dataIndex = flaggedRange.start_index; dataIndex <= flaggedRange.end_index; ++dataIndex) {
+                seriesDataCopy[dataIndex][1] = null;
+            }
+
+            if (seriesIndex < _chart.series.length - 2) {
+                thisSeries.setData(seriesDataCopy, false); // Don't redraw chart.
+            } else {
+                thisSeries.setData(seriesDataCopy); // Redraw chart.
+            }
+        }
+    }
+};
+
+var clickRemoveFlaggedDataCheckbox = function(checkbox) {
     var remove = checkbox.checked;
 
     for (var seriesIndex = 0; seriesIndex < _chart.series.length - 1; ++seriesIndex) {
@@ -471,7 +480,8 @@ var clickRemoveFlaggedDataCheckbox = function(checkbox, flaggedRangeId) {
         if (!remove) {
             {% if is_set %}
             var seriesData = copies[thisSeries.name]; // Get the original, unmodified copy of the data since
-            {% else %}                                        // Highcharts modifies the data used to create the chart.
+            {% else %}                                // Highcharts modifies the data used to create the chart.
+            var suffix = getVariableSuffix();
             var seriesData = graph_data[thisSeries.name + suffix + "_copy"];
             {% endif %}
         }
@@ -479,17 +489,12 @@ var clickRemoveFlaggedDataCheckbox = function(checkbox, flaggedRangeId) {
 
         for (var flaggedRangeIndex = 0; flaggedRangeIndex < flaggedRanges.length; ++flaggedRangeIndex) {
             var thisRange = flaggedRanges[flaggedRangeIndex];
-            if (thisRange.id === flaggedRangeId) {
-                for (var dataIndex = thisRange.start_index; dataIndex <= thisRange.end_index; ++dataIndex) {
-                    if (remove) {
-                        seriesDataCopy[dataIndex][1] = null;
-                    } else {
-                        seriesDataCopy[dataIndex][1] = seriesData[dataIndex][1];
-                    }
+            for (var dataIndex = thisRange.start_index; dataIndex <= thisRange.end_index; ++dataIndex) {
+                if (remove) {
+                    seriesDataCopy[dataIndex][1] = null;
+                } else {
+                    seriesDataCopy[dataIndex][1] = seriesData[dataIndex][1];
                 }
-
-                thisRange.dataRemoved = remove;
-                break;
             }
         }
 
