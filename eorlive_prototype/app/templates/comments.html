@@ -2,19 +2,23 @@
 <h3>Comments</h3>
 <hr>
 {% if comments %}
-    {% for comment in comments %}
-        {% if comment %}
-            <div id="comment_text_div" style="word-wrap: break-word;">
-                {{ comment.username }} : {{ comment.text }} : {{ comment.created_on }}
-            </div>
-            <br>
-        {% endif %}
-    {% endfor %}
+    {% if not logged_out %}
+        {% for comment in comments %}
+            {% if comment %}
+                <div id="comment_text_div" style="word-wrap: break-word;">
+                    {{ comment.username }} : {{ comment.text }} : {{ comment.created_on }}
+                </div>
+                <br>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <p> Log in to view comments.</p>
+    {% endif %}
 {% else %}
     {% if logged_out %}
-        <p> Log in to view comments </p>
+        <p> Log in to view comments.</p>
     {% else %}
-        <p>No Comments</p>
+        <p> No Comments.</p>
     {% endif %}
 {% endif %}
 
