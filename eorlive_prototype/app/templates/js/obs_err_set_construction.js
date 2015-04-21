@@ -498,7 +498,7 @@ var clickConstructionModeCheckbox = function(checkbox) {
     inConstructionMode = checkbox.checked;
     if (inConstructionMode) { // Entering construction mode.
         $('#construction_controls').show(); // Show set construction controls.
-
+        clickDragMode = $("#click_drag_dropdown").val();
         {% if not is_set %} // If we're looking at a set, the plot bands will always be on the graph.
             addAllPlotBands(); // Also, because the user can't change the data set, the table doesn't need to be updated.
 
@@ -507,7 +507,7 @@ var clickConstructionModeCheckbox = function(checkbox) {
         {% endif %}
     } else { // Exiting construction mode.
         $('#construction_controls').hide(); // Hide set construction controls.
-
+        clickDragMode = "zoom"; // Only allow zooming when not in construction mode.
         {% if not is_set %}
             removeAllPlotBands();
         {% endif %}
