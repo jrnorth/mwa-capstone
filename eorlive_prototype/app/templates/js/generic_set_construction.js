@@ -110,6 +110,10 @@ var saveSet = function() {
                 alert("Set saved successfully!");
                 //refresh the set view
                 applyFiltersAndSort();
+
+                //update the view status
+                var setName = $('#set_name_textbox_{{data_source_str_nospace}}').val();
+                $('#view_status_div').html("You are viewing a set (" + setName + ")");
             }
 
             setSaveButton("Save set", false);

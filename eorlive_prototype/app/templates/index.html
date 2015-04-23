@@ -20,6 +20,7 @@
                     {% endif %}
                     autocomplete='off'/>
                     <button onclick="getObservations(true)">Get observations</button>
+                    <span id = "view_status_div">
                     You are viewing a
                     <span id="set_or_date_range_label">
                     {% if the_set %}
@@ -27,6 +28,7 @@
                     {% else %}
                      date range
                     {% endif %}
+                    </span>
                     </span>
                 </div>
                 <div id='observations_main'></div>
