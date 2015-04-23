@@ -15,7 +15,7 @@
                 {% for comment in thread.comments %}
                     <p>
                         {{ comment.username }} @ {{ comment.created_on.strftime('%Y-%m-%d %H:%M') }}:
-                        {{ comment.text }}
+                        {{ comment.text | set_hyperlinks | safe }}
                     </p>
                 {% endfor %}
             </div>
