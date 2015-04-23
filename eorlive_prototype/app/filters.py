@@ -1,5 +1,5 @@
 from app.flask_app import app
-import re
+import re, urllib.parse
 
 # Sets should be inserted into comments using the special syntax
 # @set(set name). This string will be replaced by a hyperlink to the
@@ -28,7 +28,9 @@ def set_hyperlink_filter(comment):
         set_name = comment[expr.start() + len(EXPR_START_TEXT) : closing_paren_index]
         set_name_stripped = set_name.strip() # Set names aren't allowed to have leading/trailing whitespace.
 
-        link = "<a href=\"/set/" + set_name_stripped + "\" target='_blank'>" + set_name + "</a>"
+        set_name_escaped_for_url = urllib.parse.quote(set_name_stripped)
+
+        link = "<a href='/set/" + set_name_escaped_for_url + "' target='_blank'>" + set_name + "</a>"
 
         comment_copy = comment_copy.replace(EXPR_START_TEXT + set_name + ')', link, 1)
 
