@@ -3,30 +3,27 @@
     <button id='backbutton' onclick="obs_err.backToHistogram()">Back to histogram</button>
     <div id='error_table'></div>
     <div id="obs_err"></div>
-    <table id="width_slider" style="width:50%;margin:auto;">
-        <tr>
-            <td style="text-align:center">
-                Column width
-                <input type="range" min="5" max="155" value="80" step="25" onchange="obs_err.sliderChanged(this)"/>
-            </td>
-        </tr>
-    </table>
+    <div id='set_construction_panel'>
+        {% include 'set_construction_panel.html' %}
+    </div>
 </div>
 <script type="text/javascript">
 var obs_err = (function($) {
-    {% include "js/histogram_utils.js" %} <!-- Because there are functions that depend on Python variables -->
-
     var dataSourceObj = {};
-    var _chart;
     var observation_counts = {{ observation_counts | tojson }};
+    var observation_counts_copy = {{ observation_counts | tojson }};
     var error_counts = {{ error_counts | tojson }};
+    var error_counts_copy = {{ error_counts | tojson }};
     var plot_bands = {{ plot_bands | tojson }};
+    var utc_obsid_map_{{which_data_set}} = {{ utc_obsid_map | tojson }};
+
+    {% include "js/obs_err_set_construction.js" %}
 
     var backToHistogram = function() {
         $('#backbutton').hide();
         $('#error_table').hide();
         $('#obs_err').show();
-        $('#width_slider').show();
+        $('#set_construction_panel').show();
     };
     dataSourceObj.backToHistogram = backToHistogram;
 
@@ -52,6 +49,14 @@ var obs_err = (function($) {
             },
             chart: {
                 zoomType: "x",
+                events: {
+                    selection: function(event) {
+                        if (clickDragMode === 'flag') {
+                            event.preventDefault();
+                            flagClickAndDraggedRange(event);
+                        }
+                    }
+                }
             },
             legend: {
                 enabled: true
@@ -59,7 +64,7 @@ var obs_err = (function($) {
             plotOptions: {
                 column: {
                     dataGrouping: {
-                        groupPixelWidth: 100,
+                        groupPixelWidth: 80,
                         forced: true
                     },
                     pointPlacement: "between",
@@ -72,7 +77,7 @@ var obs_err = (function($) {
                                 var startTime = columnLimits.startTime, endTime = columnLimits.endTime;
 
                                 $('#obs_err').hide();
-                                $('#width_slider').hide();
+                                $('#set_construction_panel').hide();
                                 $('#error_table').html("<img src='/static/images/ajax-loader.gif' class='loading'/>");
                                 $('#error_table').show();
 
@@ -149,8 +154,7 @@ var obs_err = (function($) {
                 text: 'Observation & Error Count'
             },
             xAxis: {
-                ordinal: false,
-                plotBands: plot_bands
+                ordinal: false
             },
             yAxis: {
                 title: {
@@ -161,16 +165,17 @@ var obs_err = (function($) {
             },
             series: [{
                 type: 'column',
-                name: 'Observations',
+                name: 'observations',
                 data: observation_counts
             },
             {
                 type: 'column',
-                name: 'Errors',
+                name: 'errors',
                 data: error_counts
             }]
         }, function(chart) {
             _chart = chart;
+            setup();
         });
     });
 
@@ -190,7 +195,7 @@ var obs_err = (function($) {
 }(jQuery));
 
 function goToNGAS() {
-    window.open("http://ngas01.ivec.org/admin/observation/observationsetting?projectid=G0009&startTime={{start_time_str_full}}&endTime={{end_time_str_full}}", '_blank');
+    window.open("http://ngas01.ivec.org/admin/observation/observationsetting?projectid=G0009&startTime={{start_time_str_short}}&endTime={{end_time_str_short}}", '_blank');
 };
 
 function downloadSet() {

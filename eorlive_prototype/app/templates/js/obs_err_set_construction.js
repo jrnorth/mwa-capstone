@@ -2,12 +2,39 @@
 
 var _chart;
 var inConstructionMode = false;
-var flaggedRanges = [], lowEOR0FlaggedRanges = [], highEOR0FlaggedRanges = [];
+{% if is_set %}
+var flaggedRanges = plot_bands;
+var currentData = ['{{the_set.low_or_high}}', '{{the_set.eor}}'];
+{% else %}
+var lowEOR0FlaggedRanges = [], highEOR0FlaggedRanges = [];
 var lowEOR1FlaggedRanges = [], highEOR1FlaggedRanges = [];
-var currentData = ['high', '0'];
+var flaggedRanges = highEOR0FlaggedRanges;
+var currentData = ['high', 'EOR0'];
+{% endif %}
 var clickDragMode = 'zoom';
 
-$('#construction_controls').hide();
+var setup = function() {
+    $('#construction_controls').hide();
+    {% if is_set %}
+        // The flagged ranges don't have ids or labels yet.
+        updateFlaggedRangeIdsAndLabels();
+        // Draw the plot bands.
+        addAllPlotBands();
+        // Count the # of observations in each band.
+        for (var i = 0; i < flaggedRanges.length; ++i) {
+            var thisRange = flaggedRanges[i];
+            var counts = getObsAndErrorCountInRange(thisRange.from, thisRange.to);
+            thisRange.obs_count = counts.obsCount;
+            thisRange.err_count = counts.errCount;
+            thisRange.obs_start_index = counts.obsStartIndex;
+            thisRange.obs_end_index = counts.obsEndIndex;
+            thisRange.err_start_index = counts.errStartIndex;
+            thisRange.err_end_index = counts.errEndIndex;
+        }
+        // Update the information in the panel.
+        updateSetConstructionTable();
+    {% endif %}
+};
 
 var saveSet = function() {
     var setSaveButton = function(text, disabled) {
@@ -102,36 +129,85 @@ var saveSet = function() {
 dataSourceObj.saveSet = saveSet;
 
 var getCurrentDataSeries = function() {
-    if (currentData[0] === 'low' && currentData[1] === '0')
-        return low_eor0_counts;
-    else if (currentData[0] === 'low')
-        return low_eor1_counts;
-    else if (currentData[0] === 'high' && currentData[1] === '0')
-        return high_eor0_counts;
-    else
-        return high_eor1_counts;
+    {% if is_set %} // The user can't change the EOR or low/high, so there is only one set of observations that
+    return observation_counts; // corresponds to the EOR and low/high specified by the set.
+    {% else %}
+    if (currentData[0] === 'low' && currentData[1] === 'EOR0')
+        return observation_counts_l0;
+    else if (currentData[0] === 'low' && currentData[1] === 'EOR1')
+        return observation_counts_l1;
+    else if (currentData[0] === 'high' && currentData[1] === 'EOR0')
+        return observation_counts_h0;
+    else if (currentData[0] === 'high' && currentData[1] === 'EOR1')
+        return observation_counts_h1;
+    {% endif %}
 };
 
 var getCurrentFlaggedSet = function() {
-    if (currentData[0] === 'low' && currentData[1] === '0')
+    if (currentData[0] === 'low' && currentData[1] === 'EOR0')
         return lowEOR0FlaggedRanges;
-    else if (currentData[0] === 'low')
+    else if (currentData[0] === 'low' && currentData[1] === 'EOR1')
         return lowEOR1FlaggedRanges;
-    else if (currentData[0] === 'high' && currentData[1] === '0')
+    else if (currentData[0] === 'high' && currentData[1] === 'EOR0')
         return highEOR0FlaggedRanges;
-    else
+    else if (currentData[0] === 'high' && currentData[1] === 'EOR1')
         return highEOR1FlaggedRanges;
 };
 
 var getCurrentObsIdMap = function() {
-    if (currentData[0] === 'low' && currentData[1] === '0')
+    if (currentData[0] === 'low' && currentData[1] === 'EOR0')
         return utc_obsid_map_l0;
-    else if (currentData[0] === 'low')
+    else if (currentData[0] === 'low' && currentData[1] === 'EOR1')
         return utc_obsid_map_l1;
-    else if (currentData[0] === 'high' && currentData[1] === '0')
+    else if (currentData[0] === 'high' && currentData[1] === 'EOR0')
         return utc_obsid_map_h0;
-    else
+    else if (currentData[0] === 'high' && currentData[1] === 'EOR1')
         return utc_obsid_map_h1;
+    else
+        return utc_obsid_map_any;
+};
+
+var getVariableSuffix = function() {
+    if (currentData[0] === 'low' && currentData[1] === 'EOR0') {
+        return '_l0';
+    } else if (currentData[0] === 'low' && currentData[1] === 'EOR1') {
+        return '_l1';
+    } else if (currentData[0] === 'high' && currentData[1] === 'EOR0') {
+        return '_h0';
+    } else if (currentData[0] === 'high' && currentData[1] === 'EOR1') {
+        return '_h1';
+    }
+};
+
+var hideDataOnDataSetChange = function() {
+    var suffix = getVariableSuffix();
+    var remove = $("#remove_flagged_data_checkbox").is(":checked");
+    var obsSeries = _chart.series[0];
+    var errSeries = _chart.series[1];
+
+    var obsSeriesData = copies['observation_counts' + suffix];
+    var obsSeriesDataCopy = obsSeriesData.map(function(arr) {
+        return arr.slice();
+    });
+    var errSeriesData = error_counts_copy;
+    var errSeriesDataCopy = errSeriesData.map(function(arr) {
+        return arr.slice();
+    });
+
+    if (remove) {
+        for (var flaggedRangeIndex = 0; flaggedRangeIndex < flaggedRanges.length; ++flaggedRangeIndex) {
+            var thisRange = flaggedRanges[flaggedRangeIndex];
+            for (var obsIndex = thisRange.obs_start_index; obsIndex <= thisRange.obs_end_index; ++obsIndex) {
+                obsSeriesDataCopy[obsIndex][1] = null;
+            }
+            for (var errIndex = thisRange.err_start_index; errIndex <= thisRange.err_end_index; ++errIndex) {
+                errSeriesDataCopy[errIndex][1] = null;
+            }
+        }
+    }
+
+    obsSeries.setData(obsSeriesDataCopy, false);
+    errSeries.setData(errSeriesDataCopy);
 };
 
 var dataSetChanged = function() {
@@ -142,6 +218,7 @@ var dataSetChanged = function() {
 
         // Set the correct flagged ranges.
         flaggedRanges = getCurrentFlaggedSet();
+        hideDataOnDataSetChange();
 
         addAllPlotBands();
 
@@ -150,6 +227,7 @@ var dataSetChanged = function() {
     } else {
         // Set the correct flagged ranges.
         flaggedRanges = getCurrentFlaggedSet();
+        hideDataOnDataSetChange();
     }
 };
 
@@ -256,6 +334,10 @@ var mergeOverlappingRanges = function() {
             var counts = getObsAndErrorCountInRange(lowerRange.from, lowerRange.to);
             lowerRange.obs_count = counts.obsCount;
             lowerRange.err_count = counts.errCount;
+            lowerRange.obs_start_index = counts.obsStartIndex;
+            lowerRange.obs_end_index = counts.obsEndIndex;
+            lowerRange.err_start_index = counts.errStartIndex;
+            lowerRange.err_end_index = counts.errEndIndex;
         } else { // No overlap.
             flaggedRanges.push(higherRange);
         }
@@ -287,7 +369,11 @@ var getObsAndErrorCountInRange = function(startTime, endTime) {
 
     return {
         obsCount: obsCount,
-        errCount: errCount
+        errCount: errCount,
+        obsStartIndex: dataIndices.obsStartIndex,
+        obsEndIndex: dataIndices.obsEndIndex,
+        errStartIndex: dataIndices.errStartIndex,
+        errEndIndex: dataIndices.errEndIndex
     };
 };
 
@@ -315,7 +401,7 @@ var addedNewFlaggedRange = function(plotBand) {
 
     // Add new plot band.
     flaggedRanges.push(plotBand);
-
+    removeDataForNewFlaggedRangeIfNecessary(plotBand);
     mergeOverlappingRanges();
     updateFlaggedRangeIdsAndLabels();
 
@@ -331,7 +417,11 @@ var flagRangeInSet = function(startTime, endTime) {
         from: startTime,
         to: endTime,
         obs_count: counts.obsCount,
-        err_count: counts.errCount
+        err_count: counts.errCount,
+        obs_start_index: counts.obsStartIndex,
+        obs_end_index: counts.obsEndIndex,
+        err_start_index: counts.errStartIndex,
+        err_end_index: counts.errEndIndex
     };
 
     addedNewFlaggedRange(plotBand);
@@ -358,6 +448,7 @@ var updateSetConstructionTable = function() {
 
 var removedFlaggedRange = function(index) {
     removeAllPlotBands();
+    reinsertDataForRange(index);
     flaggedRanges.splice(index, 1);
     updateFlaggedRangeIdsAndLabels();
     addAllPlotBands();
@@ -375,22 +466,122 @@ var unflagRange = function(flaggedRangeId) {
 };
 dataSourceObj.unflagRange = unflagRange;
 
+var reinsertDataForRange = function(index) {
+    if ($("#remove_flagged_data_checkbox").is(":checked")) {
+        var thisRange = flaggedRanges[index];
+        var obsSeries = _chart.series[0];
+        var errSeries = _chart.series[1];
+        {% if is_set %}
+        var obsSeriesData = observation_counts_copy;
+        {% else %}
+        var suffix = getVariableSuffix();
+        var obsSeriesData = copies['observation_counts' + suffix];
+        {% endif %}
+        var errSeriesData = error_counts_copy;
+
+        var obsSeriesGraphData = getSeriesDataCopyFromGraph(obsSeries);
+        var errSeriesGraphData = getSeriesDataCopyFromGraph(errSeries);
+
+        for (var obsIndex = thisRange.obs_start_index; obsIndex <= thisRange.obs_end_index; ++obsIndex) {
+            obsSeriesGraphData[obsIndex][1] = obsSeriesData[obsIndex][1];
+        }
+        for (var errIndex = thisRange.err_start_index; errIndex <= thisRange.err_end_index; ++errIndex) {
+            errSeriesGraphData[errIndex][1] = errSeriesData[errIndex][1];
+        }
+
+        obsSeries.setData(obsSeriesGraphData, false);
+        errSeries.setData(errSeriesGraphData);
+    }
+};
+
 var clickConstructionModeCheckbox = function(checkbox) {
     inConstructionMode = checkbox.checked;
     if (inConstructionMode) { // Entering construction mode.
         $('#construction_controls').show(); // Show set construction controls.
+        clickDragMode = $("#click_drag_dropdown").val();
+        {% if not is_set %} // If we're looking at a set, the plot bands will always be on the graph.
+            addAllPlotBands(); // Also, because the user can't change the data set, the table doesn't need to be updated.
 
-        addAllPlotBands();
-
-        // Update the information in the panel.
-        updateSetConstructionTable();
+            // Update the information in the table.
+            updateSetConstructionTable();
+        {% endif %}
     } else { // Exiting construction mode.
         $('#construction_controls').hide(); // Hide set construction controls.
-
-        removeAllPlotBands();
+        clickDragMode = "zoom"; // Only allow zooming when not in construction mode.
+        {% if not is_set %}
+            removeAllPlotBands();
+        {% endif %}
     }
 };
 dataSourceObj.clickConstructionModeCheckbox = clickConstructionModeCheckbox;
+
+var getSeriesDataCopyFromGraph = function(series) {
+    var arrayCopy = [];
+    for (var i = 0; i < series.xData.length; ++i) {
+        arrayCopy[i] = [series.xData[i], series.yData[i]];
+    }
+    return arrayCopy;
+};
+
+var removeDataForNewFlaggedRangeIfNecessary = function(flaggedRange) {
+    if ($("#remove_flagged_data_checkbox").is(":checked")) {
+        var obsSeries = _chart.series[0];
+        var errSeries = _chart.series[1];
+        var obsSeriesGraphData = getSeriesDataCopyFromGraph(obsSeries);
+        var errSeriesGraphData = getSeriesDataCopyFromGraph(errSeries);
+
+        for (var obsIndex = flaggedRange.obs_start_index; obsIndex <= flaggedRange.obs_end_index; ++obsIndex) {
+            obsSeriesGraphData[obsIndex][1] = null;
+        }
+        for (var errIndex = flaggedRange.err_start_index; errIndex <= flaggedRange.err_end_index; ++errIndex) {
+            errSeriesGraphData[errIndex][1] = null;
+        }
+
+        obsSeries.setData(obsSeriesGraphData, false);
+        errSeries.setData(errSeriesGraphData);
+    }
+};
+
+var clickRemoveFlaggedDataCheckbox = function(checkbox) {
+    var remove = checkbox.checked;
+
+    var obsSeries = _chart.series[0];
+    var errSeries = _chart.series[1];
+
+    if (!remove) {
+        {% if is_set %}
+        var obsSeriesData = observation_counts_copy;
+        {% else %}
+        var suffix = getVariableSuffix();
+        var obsSeriesData = copies['observation_counts' + suffix];
+        {% endif %}
+        var errSeriesData = error_counts_copy;
+    }
+    var obsSeriesGraphData = getSeriesDataCopyFromGraph(obsSeries);
+    var errSeriesGraphData = getSeriesDataCopyFromGraph(errSeries);
+
+    for (var flaggedRangeIndex = 0; flaggedRangeIndex < flaggedRanges.length; ++flaggedRangeIndex) {
+        var thisRange = flaggedRanges[flaggedRangeIndex];
+        for (var obsIndex = thisRange.obs_start_index; obsIndex <= thisRange.obs_end_index; ++obsIndex) {
+            if (remove) {
+                obsSeriesGraphData[obsIndex][1] = null;
+            } else {
+                obsSeriesGraphData[obsIndex][1] = obsSeriesData[obsIndex][1];
+            }
+        }
+        for (var errIndex = thisRange.err_start_index; errIndex <= thisRange.err_end_index; ++errIndex) {
+            if (remove) {
+                errSeriesGraphData[errIndex][1] = null;
+            } else {
+                errSeriesGraphData[errIndex][1] = errSeriesData[errIndex][1];
+            }
+        }
+    }
+
+    obsSeries.setData(obsSeriesGraphData, false);
+    errSeries.setData(errSeriesGraphData);
+};
+dataSourceObj.clickRemoveFlaggedDataCheckbox = clickRemoveFlaggedDataCheckbox;
 
 var sliderChanged = function(slider) {
     var newOptions = {

@@ -36,7 +36,7 @@
     },
     series: [
     {% if is_set %}
-        {% for series in graph_data %}
+        {% for series in graph_data['series_dict'] %}
         {
             type: 'column',
             name: "{{series}}",

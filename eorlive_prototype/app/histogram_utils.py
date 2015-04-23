@@ -57,12 +57,14 @@ def get_observation_counts(start_gps, end_gps, low_or_high, eor):
     GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = db_utils.get_gps_utc_constants()
 
     observation_counts = []
+    utc_obsid_map = []
 
     for observation in response:
         utc_millis = int((observation[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
         observation_counts.append([utc_millis, 1])
+        utc_obsid_map.append([utc_millis, observation[0]])
 
-    return observation_counts
+    return (observation_counts, utc_obsid_map)
 
 def get_plot_bands(the_set):
     flagged_subsets = models.FlaggedSubset.query.filter(models.FlaggedSubset.set_id == the_set.id).all()

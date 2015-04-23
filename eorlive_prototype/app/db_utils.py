@@ -111,23 +111,33 @@ def get_graph_data(data_source_str, start_gps, end_gps, the_set):
 
     if the_set is not None:
         # Initialize empty data structure
+        data['series_dict'] = {} # 'series_dict' holds the data for each series (table column) in the data source
         for column in columns:
-            data[column.name] = []
+            data['series_dict'][column.name] = []
 
         GPS_LEAP_SECONDS_OFFSET, GPS_UTC_DELTA = get_gps_utc_constants()
 
+        utc_obsid_map = []
         results = join_with_obsids_from_set(results, the_set, data_source)
 
         for row in results:
                                 # Actual UTC time of the observation (for the graph)
             utc_millis = int((row[0] - GPS_LEAP_SECONDS_OFFSET + GPS_UTC_DELTA) * 1000)
             for column_index in range(1, len(row)):
-                if row[column_index] is not None:
-                    data[columns[column_index - 1].name].append([utc_millis, row[column_index]])
+                data['series_dict'][columns[column_index - 1].name].append([utc_millis, row[column_index]])
+            utc_obsid_map.append([utc_millis, row[0]])
+
+        # l0, l1, h0, h1, or 'any'
+        whichDataSet = which_data_set(the_set)
+        data[whichDataSet] = utc_obsid_map
     else: #No set, so we need to separate the data into sets for low/high and EOR0/EOR1
         data = separate_data_into_sets(data, results, columns, data_source, start_gps, end_gps)
 
     return data
+
+def which_data_set(the_set):
+    is_any = the_set.low_or_high == 'any' or the_set.eor == 'any'
+    return 'any' if is_any else the_set.low_or_high[0] + the_set.eor[3]
 
 def separate_data_into_sets(data, data_source_results, columns, data_source, start_gps, end_gps):
     projectid_clause = "AND projectid='G0009'" if data_source.projectid else ""
