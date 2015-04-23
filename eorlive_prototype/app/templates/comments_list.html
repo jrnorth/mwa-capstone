@@ -1,27 +1,31 @@
 <div id="comments_list" class="collapse-container">
-    {% if threads | length > 0 %}
-        {% for thread in threads %}
-            <p>
-                <span class="arrow-r"></span>
-                {{ thread.title }} ({{ thread.comments | length }} replies,
-                last updated {{ thread.last_updated.strftime('%Y-%m-%d %H:%M') }})
-                {% if g.user and g.user.is_authenticated() %}
-                <button type="button" class="replyButton" onclick="reply(event, '{{thread.id}}', '{{thread.title}}')">
-                    Reply
-                </button>
-                {% endif %}
-            </p>
-            <div>
-                {% for comment in thread.comments %}
-                    <p>
-                        {{ comment.username }} @ {{ comment.created_on.strftime('%Y-%m-%d %H:%M') }}:
-                        {{ comment.text | set_hyperlinks | safe }}
-                    </p>
-                {% endfor %}
-            </div>
-        {% endfor %}
+    {% if g.user and g.user.is_authenticated() %}
+        {% if threads | length > 0 %}
+            {% for thread in threads %}
+                <p>
+                    <span class="arrow-r"></span>
+                    {{ thread.title }} ({{ thread.comments | length }} replies,
+                    last updated {{ thread.last_updated.strftime('%Y-%m-%d %H:%M') }})
+                    {% if g.user and g.user.is_authenticated() %}
+                    <button type="button" class="replyButton" onclick="reply(event, '{{thread.id}}', '{{thread.title}}')">
+                        Reply
+                    </button>
+                    {% endif %}
+                </p>
+                <div>
+                    {% for comment in thread.comments %}
+                        <p>
+                            {{ comment.username }} @ {{ comment.created_on.strftime('%Y-%m-%d %H:%M') }}:
+                            {{ comment.text | set_hyperlinks | safe }}
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% else %}
+            No comments
+        {% endif %}
     {% else %}
-        No comments
+        Log in to view comments.
     {% endif %}
 </div>
 <script>
