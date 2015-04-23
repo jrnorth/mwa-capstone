@@ -28,7 +28,7 @@ def set_hyperlink_filter(comment):
         set_name = comment[expr.start() + len(EXPR_START_TEXT) : closing_paren_index]
         set_name_stripped = set_name.strip() # Set names aren't allowed to have leading/trailing whitespace.
 
-        link = "<a href='/set/" + set_name_stripped + "' target='_blank'>" + set_name + "</a>"
+        link = "<a href=\"/set/" + set_name_stripped + "\" target='_blank'>" + set_name + "</a>"
 
         comment_copy = comment_copy.replace(EXPR_START_TEXT + set_name + ')', link, 1)
 
