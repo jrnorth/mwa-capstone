@@ -49,7 +49,7 @@
                         {% endfor %}
                         {% if active_data_sources | length == 0 %}
                             <li>
-                                <a href="/profile">No active data sources (click to add sources in profile)</a>
+                                <a href="#no-active-data-sources">No active data sources</a>
                             </li>
                         {% endif %}
                     {% else %} <!-- Not logged in, just see the histogram -->
@@ -64,6 +64,13 @@
                         </li>
                     {% endif %}
                     </ul>
+                    {% if g.user and g.user.is_authenticated() and active_data_sources | length == 0 %}
+                        <div id="no-active-data-sources">
+                            <a href="/profile" style="color:#428bca;">
+                                Activate data sources on your profile page
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
                 {% if the_set %}
                     {% include 'set_details.html' %}
