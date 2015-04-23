@@ -38,6 +38,8 @@ def index(setName = None):
                 start_time_str_short=start_time_str_short,
                 end_time_str_short=end_time_str_short,
                 active_data_sources=active_data_sources)
+        else:
+            flash('That set doesn\'t exist', 'error')
 
     return render_template('index.html', active_data_sources=active_data_sources)
 
@@ -202,7 +204,7 @@ def login():
             error = 'Invalid username/password combination.'
         else:
             login_user(u)
-            flash('You were logged in')
+            flash('You were logged in', 'flash')
             return redirect(url_for('index'))
     return render_template('login.html', error=error)
 
@@ -238,14 +240,14 @@ def signup():
 
             u = models.User.query.get(username)
             login_user(u)
-            flash('You were logged in')
+            flash('You were logged in', 'flash')
             return redirect(url_for('index'))
     return render_template('signup.html', error=error)
 
 @app.route('/logout')
 def logout():
     logout_user()
-    flash('You were logged out')
+    flash('You were logged out', 'flash')
     return redirect(url_for('index'))
 
 @app.route('/profile')
