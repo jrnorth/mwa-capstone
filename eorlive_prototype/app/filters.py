@@ -1,4 +1,5 @@
 from app.flask_app import app
+from app import models
 import re
 
 # Sets should be inserted into comments using the special syntax
@@ -27,6 +28,10 @@ def set_hyperlink_filter(comment):
 
         set_name = comment[expr.start() + len(EXPR_START_TEXT) : closing_paren_index]
         set_name_stripped = set_name.strip() # Set names aren't allowed to have leading/trailing whitespace.
+
+        the_set = models.Set.query.filter(models.Set.name == set_name_stripped).first()
+        if the_set is None:
+            return comment_copy.replace(EXPR_START_TEXT + set_name_stripped + ')', set_name_stripped, 1)
 
         link = "<a href='/set/" + set_name_stripped + "' target='_blank'>" + set_name + "</a>"
 
