@@ -1,6 +1,7 @@
 from flask import render_template, request, g, make_response, jsonify
 import psycopg2
 import os
+import re
 from app.flask_app import app, db
 from app import db_utils, models
 
@@ -165,6 +166,16 @@ def create_data_source():
         data_source_name = data_source_name.strip()
         if len(data_source_name) == 0:
             return jsonify(error=True, message="Name cannot be empty.")
+
+        # The data source name (with spaces replaced by ಠ_ಠ) is used as
+        # a JavaScript variable name and as an ID in HTML, so it needs
+        # to obey the rules for those identifiers, minus a few
+        # options such as $ since they would need to be escaped in
+        # the HTML IDs.
+        if not re.match(r'^[a-zA-Z_][0-9a-zA-Z_ ]*$', data_source_name):
+            return jsonify(error=True, message="""Your data source name must
+                start with a letter or _ that is followed by digits,
+                letters, _, or spaces.""")
 
         #Is the data source name unique?
         if models.GraphDataSource.query.filter(models.GraphDataSource.name == data_source_name).first() is not None:
